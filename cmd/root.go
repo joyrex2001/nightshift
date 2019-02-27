@@ -33,10 +33,8 @@ func init() {
 	rootCmd.PersistentFlags().Bool("enable-tls", false, "Enable TLS on webserver")
 	rootCmd.PersistentFlags().String("key-file", "", "TLS keyfile")
 	rootCmd.PersistentFlags().String("cert-file", "", "TLS certificate file")
-	//	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Verbose mode")
 	rootCmd.PersistentFlags().String("namespace", "", "OpenShift namespace")
 	rootCmd.PersistentFlags().String("label", "", "Label used on pods to scan")
-	viper.BindPFlag("generic.verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 	viper.BindPFlag("health.listen-addr", rootCmd.PersistentFlags().Lookup("healthz-addr"))
 	viper.BindPFlag("web.listen-addr", rootCmd.PersistentFlags().Lookup("listen-addr"))
 	viper.BindPFlag("web.enable-tls", rootCmd.PersistentFlags().Lookup("enable-tls"))
@@ -68,17 +66,13 @@ func homeDir() string {
 }
 
 func initConfig() {
-	// Don't forget to read config either from cfgFile or from home directory!
 	if cfgFile != "" {
-		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Search config in home directory with name "config" (without extension).
 		viper.AddConfigPath(".")
 		viper.AddConfigPath(homeDir())
 		viper.SetConfigName("config")
 	}
-
 	if err := viper.ReadInConfig(); err != nil {
 		// fmt.Printf("not using config file: %s\n", err)
 	} else {

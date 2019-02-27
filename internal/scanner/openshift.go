@@ -45,7 +45,6 @@ func getKubernetes() (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-
 func (s *OpenShiftScanner) GetSchedule() ([]schedule.Schedule, error) {
 	if s.kubernetes == nil {
 		return nil, fmt.Errorf("unable to connect to kubernetes")

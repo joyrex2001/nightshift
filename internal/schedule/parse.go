@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // parse will parse the given schedule description and store its equivalent
@@ -78,8 +79,8 @@ func (s *Schedule) parseWeekday(text string) error {
 }
 
 // getWeekday will parse given string and return equivalent day in week.
-func getWeekday(text string) (int, error) {
-	var days = map[string]int{"sun": 7, "mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6}
+func getWeekday(text string) (time.Weekday, error) {
+	var days = map[string]time.Weekday{"sun": 7, "mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6}
 	wd, ok := days[text]
 	if !ok {
 		return 0, fmt.Errorf("invalid weekday: %s", text)

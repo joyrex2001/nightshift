@@ -3,6 +3,7 @@ package schedule
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestParse(t *testing.T) {
@@ -17,7 +18,7 @@ func TestParse(t *testing.T) {
 			sched: &Schedule{
 				hour: 18,
 				min:  00,
-				dayOfWeek: map[int]bool{
+				dayOfWeek: map[time.Weekday]bool{
 					1: true,
 				},
 				settings: map[string]string{
@@ -31,7 +32,7 @@ func TestParse(t *testing.T) {
 			sched: &Schedule{
 				hour: 10,
 				min:  00,
-				dayOfWeek: map[int]bool{
+				dayOfWeek: map[time.Weekday]bool{
 					1: true,
 					2: true,
 					3: true,
@@ -51,7 +52,7 @@ func TestParse(t *testing.T) {
 			sched: &Schedule{
 				hour: 13,
 				min:  30,
-				dayOfWeek: map[int]bool{
+				dayOfWeek: map[time.Weekday]bool{
 					3: true,
 					5: true,
 				},
@@ -76,7 +77,7 @@ func TestParse(t *testing.T) {
 			sched: &Schedule{
 				hour: 13,
 				min:  00,
-				dayOfWeek: map[int]bool{
+				dayOfWeek: map[time.Weekday]bool{
 					3: true,
 					5: true,
 				},
@@ -96,7 +97,7 @@ func TestParse(t *testing.T) {
 			sched: &Schedule{
 				hour: 13,
 				min:  00,
-				dayOfWeek: map[int]bool{
+				dayOfWeek: map[time.Weekday]bool{
 					3: true,
 					4: true,
 					5: true,
@@ -114,7 +115,7 @@ func TestParse(t *testing.T) {
 			sched: &Schedule{
 				hour: 3,
 				min:  10,
-				dayOfWeek: map[int]bool{
+				dayOfWeek: map[time.Weekday]bool{
 					3: true,
 					4: true,
 					5: true,
@@ -139,7 +140,7 @@ func TestParse(t *testing.T) {
 	}
 	for i, tst := range tests {
 		s := &Schedule{
-			dayOfWeek: map[int]bool{},
+			dayOfWeek: map[time.Weekday]bool{},
 			settings:  map[string]string{},
 		}
 		err := s.parse(tst.data)
