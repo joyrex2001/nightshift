@@ -33,7 +33,7 @@ func Main() {
 	addr := viper.GetString("web.listen-addr")
 	hndlr := backend.NewHandler()
 	srv := http.Server{
-		Addr: addr,
+		Addr:         addr,
 		Handler:      backend.HTTPLogger(hndlr),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 10 * time.Second,

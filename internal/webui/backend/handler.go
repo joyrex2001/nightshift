@@ -7,8 +7,8 @@ import (
 	"sync"
 	"text/template"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/golang/glog"
+	"github.com/julienschmidt/httprouter"
 )
 
 func NewHandler() *handler {
@@ -16,8 +16,8 @@ func NewHandler() *handler {
 }
 
 type handler struct {
-	once       sync.Once
-	mux        *httprouter.Router
+	once sync.Once
+	mux  *httprouter.Router
 }
 
 func (f *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
