@@ -5,5 +5,18 @@ import (
 )
 
 type Scanner interface {
-	GetSchedule() ([]schedule.Schedule, error)
+	GetObjects() ([]Object, error)
 }
+
+type Object struct {
+	UID      string
+	Name     string
+	Type     ObjectType
+	Schedule []*schedule.Schedule
+}
+
+type ObjectType int
+
+const (
+	REPLICASET ObjectType = iota
+)

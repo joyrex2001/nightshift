@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -25,13 +26,17 @@ func New(text string) (*Schedule, error) {
 
 // GetNextTrigger will return the time the next trigger should occur according
 // to this schedule.
-func (s *Schedule) GetNextTrigger() time.Time {
+func (s *Schedule) GetNextTrigger() (time.Time, error) {
 	now := time.Now()
 	next := s.getTodayTrigger()
-	for now.After(next) || !s.hasDayOfWeek(next.Weekday()) {
+	found := 7
+	for ; now.After(next) || !s.hasDayOfWeek(next.Weekday()); found-- {
 		next = next.AddDate(0, 0, 1)
 	}
-	return next
+	if found == 0 {
+		return now, fmt.Errorf("can't find next trigger, invalid schedule?")
+	}
+	return next, nil
 }
 
 // hasDayOfWeek checks if the given weekday is a valid configured weekday for
