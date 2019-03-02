@@ -12,7 +12,7 @@ func (a *Agent) UpdateSchedule() {
 
 	// TODO: itterate through scanners
 	ns := viper.GetString("openshift.namespace")
-	lb := ""
+	lb := viper.GetString("openshift.label")
 
 	os := scanner.NewOpenShiftScanner(ns, lb)
 	obj, err := os.GetObjects()

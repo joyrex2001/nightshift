@@ -5,10 +5,11 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	v1 "github.com/openshift/api/apps/v1"
+	appsv1 "github.com/openshift/client-go/apps/clientset/versioned/typed/apps/v1"
 	"github.com/spf13/viper"
-	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -51,7 +52,7 @@ func getKubernetes() (*rest.Config, error) {
 // GetObjects will return a populated list of Objects containing the relavant
 // resources with their schedule info.
 func (s *OpenShiftScanner) GetObjects() ([]Object, error) {
-	rcs, err := s.getReplicationControllers()
+	rcs, err := s.getDeploymentConfigs()
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +61,7 @@ func (s *OpenShiftScanner) GetObjects() ([]Object, error) {
 
 // getObjects will itterate through the list of replication controllers and
 // populate a list of objects containing the schedule configuration (if any).
-func (s *OpenShiftScanner) getObjects(rcs *v1.ReplicationControllerList) ([]Object, error) {
+func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, error) {
 	objs := []Object{}
 	for _, rc := range rcs.Items {
 		ann, _ := rc.ObjectMeta.Annotations["joyrex2001.com/nightshift.schedule"]
@@ -71,26 +72,26 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.ReplicationControllerList) ([]Obje
 		objs = append(objs, Object{
 			Name:     rc.ObjectMeta.Name,
 			UID:      string(rc.ObjectMeta.UID),
-			Type:     REPLICASET,
+			Type:     DEPLOYMENTCONFIG,
 			Schedule: sched,
 		})
 	}
 	return objs, nil
 }
 
-// getReplicationControllers will return all replication controllers in the
+// getDeploymentConfigs will return all replication controllers in the
 // namespace that match the label selector.
-func (s *OpenShiftScanner) getReplicationControllers() (*v1.ReplicationControllerList, error) {
+func (s *OpenShiftScanner) getDeploymentConfigs() (*v1.DeploymentConfigList, error) {
 	if s.kubernetes == nil {
 		return nil, fmt.Errorf("unable to connect to kubernetes")
 	}
 
-	core, err := corev1.NewForConfig(s.kubernetes)
+	apps, err := appsv1.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
 	}
 
-	return core.ReplicationControllers(s.Namespace).List(metav1.ListOptions{
+	return apps.DeploymentConfigs(s.Namespace).List(metav1.ListOptions{
 		LabelSelector: s.Label,
 	})
 }

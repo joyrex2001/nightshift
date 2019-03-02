@@ -19,4 +19,5 @@ type ObjectType int
 
 const (
 	REPLICASET ObjectType = iota
+	DEPLOYMENTCONFIG
 )
