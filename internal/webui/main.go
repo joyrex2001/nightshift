@@ -8,7 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/viper"
 
-	"github.com/joyrex2001/nightswitch/internal/webui/backend"
+	"github.com/joyrex2001/nightshift/internal/webui/backend"
 )
 
 // healthz will start listening for /healthz http requests on given address.

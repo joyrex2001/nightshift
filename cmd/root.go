@@ -10,14 +10,14 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 
-	"github.com/joyrex2001/nightswitch/internal"
+	"github.com/joyrex2001/nightshift/internal"
 )
 
 var cfgFile string
 
 var rootCmd = &cobra.Command{
-	Use:   "nightswitch",
-	Short: "nightswitch is an application to dynamically scale OpenShift resources.",
+	Use:   "nightshift",
+	Short: "nightshift is an application to dynamically scale OpenShift resources.",
 	Long:  ``,
 	Run:   internal.Main,
 }

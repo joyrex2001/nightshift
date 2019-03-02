@@ -4,7 +4,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/viper"
 
-	"github.com/joyrex2001/nightswitch/internal/scanner"
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 func (a *Agent) UpdateSchedule() {

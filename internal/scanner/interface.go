@@ -1,7 +1,7 @@
 package scanner
 
 import (
-	"github.com/joyrex2001/nightswitch/internal/schedule"
+	"github.com/joyrex2001/nightshift/internal/schedule"
 )
 
 type Scanner interface {

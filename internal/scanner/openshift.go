@@ -13,7 +13,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/joyrex2001/nightswitch/internal/schedule"
+	"github.com/joyrex2001/nightshift/internal/schedule"
 )
 
 type OpenShiftScanner struct {
