@@ -1,6 +1,7 @@
 package webui
 
 import (
+	"context"
 	"net/http"
 	"sync"
 	"time"
@@ -13,6 +14,7 @@ import (
 
 type WebUI struct {
 	m    sync.Mutex
+	srv  *http.Server
 	done chan bool
 }
 
@@ -38,7 +40,7 @@ func (a *WebUI) Start() {
 	go func() {
 		addr := viper.GetString("web.listen-addr")
 		hndlr := backend.NewHandler()
-		srv := http.Server{
+		a.srv = &http.Server{
 			Addr:         addr,
 			Handler:      backend.HTTPLogger(hndlr, []string{"/healthz"}),
 			ReadTimeout:  30 * time.Second,
@@ -52,16 +54,22 @@ func (a *WebUI) Start() {
 
 		glog.Infof("Starting webui on %s...", addr)
 		if tls {
-			glog.Fatal(srv.ListenAndServeTLS(cert, key))
+			glog.Fatal(a.srv.ListenAndServeTLS(cert, key))
 		} else {
-			glog.Fatal(srv.ListenAndServe())
+			glog.Fatal(a.srv.ListenAndServe())
 		}
 	}()
 }
 
 // Stop will stop the webserver.
-func (a *WebUI) Stop() {
+func (a *WebUI) Stop() error {
 	a.m.Lock()
 	defer a.m.Unlock()
+
+	if err := a.srv.Shutdown(context.TODO()); err != nil {
+		return err
+	}
+
 	a.done <- true
+	return nil
 }
