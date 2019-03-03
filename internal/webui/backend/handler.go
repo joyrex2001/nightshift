@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"sync"
 	"text/template"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/julienschmidt/httprouter"
@@ -33,6 +34,7 @@ func (f *handler) init() {
 	f.mux = httprouter.New()
 	f.mux.GET("/private/*filepath", f.Authenticate(f.ServeFiles("private")))
 	f.mux.GET("/public/*filepath", f.ServeFiles("public"))
+	f.mux.GET("/healthz", f.Healthz)
 	f.mux.GET("/", f.Redirect(307, "/private/"))
 }
 
@@ -58,6 +60,12 @@ func (f *handler) Redirect(status int, location string) httprouter.Handle {
 		http.Redirect(w, r, location, status)
 		return
 	}
+}
+
+// Healthz will return a liveness response.
+func (f *handler) Healthz(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	fmt.Fprintf(w, "{ status: 'OK', timestamp: %d }", time.Now().Unix())
+	return
 }
 
 // Error will return an error page based on the error.tmpl template.

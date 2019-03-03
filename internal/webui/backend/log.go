@@ -40,12 +40,18 @@ func (w *stResponseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func HTTPLogger(handler http.Handler) http.Handler {
+func HTTPLogger(handler http.Handler, ignore []string) http.Handler {
+	skip := map[string]bool{}
+	for _, s := range ignore {
+		skip[s] = true
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := time.Now()
 		interceptWriter := stResponseWriter{w, 0, 0}
-
 		handler.ServeHTTP(&interceptWriter, r)
+		if nolog, _ := skip[r.URL.Path]; nolog {
+			return
+		}
 		glog.Infof("HTTP - %s - - - \"%s %s %s\" %d %d %s %dus\n",
 			r.RemoteAddr,
 			r.Method,
