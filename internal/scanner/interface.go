@@ -9,15 +9,15 @@ type Scanner interface {
 }
 
 type Object struct {
-	UID      string
-	Name     string
-	Type     ObjectType
-	Schedule []*schedule.Schedule
+	Namespace string
+	UID       string
+	Name      string
+	Type      ObjectType
+	Schedule  []*schedule.Schedule
 }
 
 type ObjectType int
 
 const (
-	REPLICASET ObjectType = iota
-	DEPLOYMENTCONFIG
+	DeploymentConfig ObjectType = iota
 )

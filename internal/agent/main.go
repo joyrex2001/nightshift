@@ -3,12 +3,17 @@ package agent
 import (
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 type Agent struct {
 	Interval time.Duration
 	m        sync.Mutex
 	done     chan bool
+	scanners []scanner.Scanner
 }
 
 var instance *Agent
@@ -20,13 +25,22 @@ func New() *Agent {
 		instance = &Agent{
 			done:     make(chan bool),
 			Interval: 5 * time.Minute,
+			scanners: []scanner.Scanner{},
 		}
 	})
 	return instance
 }
 
+// AddScanner will add a scanner to the agent.
+func (a *Agent) AddScanner(scanner scanner.Scanner) {
+	a.m.Lock()
+	defer a.m.Unlock()
+	a.scanners = append(a.scanners, scanner)
+}
+
 // Start will start the agent.
 func (a *Agent) Start() {
+	glog.Info("Starting agent...")
 	go func() {
 		a.loop()
 	}()

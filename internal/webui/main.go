@@ -7,12 +7,16 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/spf13/viper"
 
 	"github.com/joyrex2001/nightshift/internal/webui/backend"
 )
 
 type WebUI struct {
+	Addr string
+	TLS  bool
+	Cert string
+	Key  string
+
 	m    sync.Mutex
 	srv  *http.Server
 	done chan bool
@@ -33,28 +37,18 @@ func New() *WebUI {
 
 // Start will start the webserver.
 func (a *WebUI) Start() {
-	enabled := viper.GetBool("web.enable")
-	if !enabled {
-		return
-	}
 	go func() {
-		addr := viper.GetString("web.listen-addr")
 		hndlr := backend.NewHandler()
 		a.srv = &http.Server{
-			Addr:         addr,
+			Addr:         a.Addr,
 			Handler:      backend.HTTPLogger(hndlr, []string{"/healthz"}),
 			ReadTimeout:  30 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  30 * time.Second,
 		}
-
-		cert := viper.GetString("web.cert-file")
-		key := viper.GetString("web.key-file")
-		tls := viper.GetBool("web.enable-tls")
-
-		glog.Infof("Starting webui on %s...", addr)
-		if tls {
-			glog.Fatal(a.srv.ListenAndServeTLS(cert, key))
+		glog.Infof("Starting webui on %s...", a.Addr)
+		if a.TLS {
+			glog.Fatal(a.srv.ListenAndServeTLS(a.Cert, a.Key))
 		} else {
 			glog.Fatal(a.srv.ListenAndServe())
 		}

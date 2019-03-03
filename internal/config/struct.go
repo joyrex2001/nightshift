@@ -1,6 +1,6 @@
 package config
 
-type NightShift struct {
+type Config struct {
 	Scanner []Scanner `yaml:"scanner"`
 }
 

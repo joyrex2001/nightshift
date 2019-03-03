@@ -70,10 +70,11 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, e
 			glog.Errorf("error parsing schedule annotation '%s' for %s (%s); %s", ann, rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
 		}
 		objs = append(objs, Object{
-			Name:     rc.ObjectMeta.Name,
-			UID:      string(rc.ObjectMeta.UID),
-			Type:     DEPLOYMENTCONFIG,
-			Schedule: sched,
+			Name:      rc.ObjectMeta.Name,
+			Namespace: s.Namespace,
+			UID:       string(rc.ObjectMeta.UID),
+			Type:      DeploymentConfig,
+			Schedule:  sched,
 		})
 	}
 	return objs, nil

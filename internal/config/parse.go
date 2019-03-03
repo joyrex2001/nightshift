@@ -5,24 +5,24 @@ import (
 	"io/ioutil"
 )
 
-func New(file string) (*NightShift, error) {
+func New(file string) (*Config, error) {
 	y, err := ioutil.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
-	m, err := LoadNightShift(y)
+	m, err := loadConfig(y)
 	if err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-// LoadModel will load the given []byte of yaml data to a Model info object.
-func LoadNightShift(y []byte) (*NightShift, error) {
-	ns := &NightShift{}
-	err := yaml.Unmarshal(y, ns)
+// loadConfig will load the given []byte of yaml data to a Config object.
+func loadConfig(y []byte) (*Config, error) {
+	cfg := &Config{}
+	err := yaml.Unmarshal(y, cfg)
 	if err != nil {
 		return nil, err
 	}
-	return ns, nil
+	return cfg, nil
 }

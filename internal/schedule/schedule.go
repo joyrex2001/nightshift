@@ -9,6 +9,7 @@ type Schedule struct {
 	dayOfWeek map[time.Weekday]bool
 	hour      int
 	min       int
+	org       string
 	settings  map[string]string
 }
 
@@ -17,6 +18,7 @@ func New(text string) (*Schedule, error) {
 	s := &Schedule{
 		dayOfWeek: map[time.Weekday]bool{},
 		settings:  map[string]string{},
+		org:       text,
 	}
 	if err := s.parse(text); err != nil {
 		return nil, err
@@ -50,4 +52,9 @@ func (s *Schedule) hasDayOfWeek(day time.Weekday) bool {
 func (s *Schedule) getTodayTrigger() time.Time {
 	now := time.Now()
 	return time.Date(now.Year(), now.Month(), now.Day(), s.hour, s.min, 0, 0, time.Local)
+}
+
+// AsString will return the Schedule struct in human readable form.
+func (s *Schedule) String() string {
+	return s.org
 }

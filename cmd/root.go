@@ -86,7 +86,7 @@ func initConfig() {
 	} else {
 		setFlag("stderrthreshold", "logging.threshold")
 		setFlag("v", "logging.level")
-		glog.Infof("using config: %s\n", viper.ConfigFileUsed())
+		glog.Infof("Using config: %s\n", viper.ConfigFileUsed())
 	}
 }
 

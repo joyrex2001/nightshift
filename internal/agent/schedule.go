@@ -17,7 +17,7 @@ func (a *Agent) UpdateSchedule() {
 	os := scanner.NewOpenShiftScanner(ns, lb)
 	obj, err := os.GetObjects()
 	if err != nil {
-		glog.Errorf("error scanning pods: %s", err)
+		glog.Errorf("Error scanning pods: %s", err)
 	}
-	glog.Infof("Scanned objects: %#v", obj)
+	glog.Infof("Scanned objects: %v", obj)
 }
