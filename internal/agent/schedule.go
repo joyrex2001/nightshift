@@ -11,10 +11,9 @@ func (a *Agent) UpdateSchedule() {
 	glog.Info("Updating schedule...")
 
 	// TODO: itterate through scanners
-	ns := viper.GetString("openshift.namespace")
-	lb := viper.GetString("openshift.label")
-
-	os := scanner.NewOpenShiftScanner(ns, lb)
+	os := scanner.NewOpenShiftScanner()
+	os.Namespace = viper.GetString("openshift.namespace")
+	os.Label = viper.GetString("openshift.label")
 	obj, err := os.GetObjects()
 	if err != nil {
 		glog.Errorf("Error scanning pods: %s", err)

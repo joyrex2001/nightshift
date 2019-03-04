@@ -17,22 +17,20 @@ import (
 )
 
 type OpenShiftScanner struct {
-	Namespace  string
-	Label      string
-	kubernetes *rest.Config
+	Namespace       string
+	Label           string
+	ForceSchedule   []*schedule.Schedule
+	DefaultSchedule []*schedule.Schedule
+	kubernetes      *rest.Config
 }
 
-// New will instantiate a new scanner object for given namespace and label
-// to specify which resources to scan.
-func NewOpenShiftScanner(namespace, label string) Scanner {
+// NewOpenShiftScanner will instantiate a new OpenShiftScanner object.
+func NewOpenShiftScanner() *OpenShiftScanner {
 	kubernetes, err := getKubernetes()
 	if err != nil {
 		glog.Warning("failed instantiating k8s client: %s", err)
 	}
-
 	return &OpenShiftScanner{
-		Namespace:  namespace,
-		Label:      label,
 		kubernetes: kubernetes,
 	}
 }
@@ -59,42 +57,59 @@ func (s *OpenShiftScanner) GetObjects() ([]Object, error) {
 	return s.getObjects(rcs)
 }
 
-// getObjects will itterate through the list of replication controllers and
-// populate a list of objects containing the schedule configuration (if any).
-func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, error) {
-	objs := []Object{}
-	for _, rc := range rcs.Items {
-		ann, _ := rc.ObjectMeta.Annotations["joyrex2001.com/nightshift.schedule"]
-		sched, err := s.annotationToSchedule(ann)
-		if err != nil {
-			glog.Errorf("error parsing schedule annotation '%s' for %s (%s); %s", ann, rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-		}
-		objs = append(objs, Object{
-			Name:      rc.ObjectMeta.Name,
-			Namespace: s.Namespace,
-			UID:       string(rc.ObjectMeta.UID),
-			Type:      DeploymentConfig,
-			Schedule:  sched,
-		})
-	}
-	return objs, nil
-}
-
 // getDeploymentConfigs will return all replication controllers in the
 // namespace that match the label selector.
 func (s *OpenShiftScanner) getDeploymentConfigs() (*v1.DeploymentConfigList, error) {
 	if s.kubernetes == nil {
 		return nil, fmt.Errorf("unable to connect to kubernetes")
 	}
-
 	apps, err := appsv1.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
 	}
-
 	return apps.DeploymentConfigs(s.Namespace).List(metav1.ListOptions{
 		LabelSelector: s.Label,
 	})
+}
+
+// getObjects will itterate through the list of replication controllers and
+// populate a list of objects containing the schedule configuration (if any).
+func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, error) {
+	objs := []Object{}
+	for _, rc := range rcs.Items {
+		sched, err := s.getSchedule(rc.ObjectMeta.Annotations)
+		if err != nil {
+			glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
+		}
+		if sched != nil {
+			objs = append(objs, Object{
+				Name:      rc.ObjectMeta.Name,
+				Namespace: s.Namespace,
+				UID:       string(rc.ObjectMeta.UID),
+				Type:      DeploymentConfig,
+				Schedule:  sched,
+			})
+		}
+	}
+	return objs, nil
+}
+
+// getSchedule will return a list of schedules, taken the annotations and
+// defaults into account.
+func (s *OpenShiftScanner) getSchedule(annotations map[string]string) ([]*schedule.Schedule, error) {
+	dis := strings.ToLower(annotations["joyrex2001.com/nightshift.ignore"])
+	if dis == "true" {
+		return nil, nil
+	} else if dis != "false" && dis != "" {
+		return nil, fmt.Errorf("invalid value '%s' for nightshift.ignore", dis)
+	}
+	if ann := annotations["joyrex2001.com/nightshift.schedule"]; ann != "" {
+		return s.annotationToSchedule(ann)
+	}
+	if s.ForceSchedule != nil {
+		return s.ForceSchedule, nil
+	}
+	return s.DefaultSchedule, nil
 }
 
 // annotationToSchedule will convert the contents of the schedule annotation
