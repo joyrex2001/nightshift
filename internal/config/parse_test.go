@@ -17,17 +17,17 @@ func TestNew(t *testing.T) {
 func TestParse(t *testing.T) {
 	tests := []struct {
 		file   string
-		result *NightShift
+		result *Config
 		err    bool
 	}{
 		{
 			file:   "testdata/nonexistingfile",
-			result: &NightShift{},
+			result: &Config{},
 			err:    true,
 		},
 		{
 			file: "testdata/example.yaml",
-			result: &NightShift{
+			result: &Config{
 				Scanner: []Scanner{
 					Scanner{
 						Namespace: []string{"development"},
