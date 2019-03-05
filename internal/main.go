@@ -9,6 +9,7 @@ import (
 
 	"github.com/joyrex2001/nightshift/internal/agent"
 	"github.com/joyrex2001/nightshift/internal/config"
+	"github.com/joyrex2001/nightshift/internal/scanner"
 	"github.com/joyrex2001/nightshift/internal/webui"
 )
 
@@ -24,8 +25,9 @@ func Main(cmd *cobra.Command, args []string) {
 // resources according to the schedules.
 func startAgent() {
 	agent := agent.New()
-	cfg := loadConfig()
-	_ = cfg
+	if cfg := loadConfig(); cfg != nil {
+		addScanners(agent, cfg)
+	}
 	agent.Start()
 }
 
@@ -40,6 +42,46 @@ func loadConfig() *config.Config {
 		return cfg
 	}
 	return nil
+}
+
+// addScanners will add configured scanners to the provided agent. The scanners
+// are added in the order of priority, lowest priority is added first.
+func addScanners(agent *agent.Agent, cfg *config.Config) {
+	// add main config
+	ns := viper.GetString("openshift.namespace")
+	sel := viper.GetString("openshift.label")
+	if ns != "" || sel != "" {
+		scanr := scanner.NewOpenShiftScanner()
+		scanr.Namespace = ns
+		scanr.Label = sel
+		agent.AddScanner(scanr)
+	}
+	// go through configured scanners
+	for _, scan := range cfg.Scanner {
+		def, _ := scan.Default.GetSchedule()
+		// add namespace scanner
+		for _, ns = range scan.Namespace {
+			scanr := scanner.NewOpenShiftScanner()
+			scanr.DefaultSchedule = def
+			scanr.Namespace = ns
+			agent.AddScanner(scanr)
+		}
+		// add exceptions specified in deployments
+		for _, depl := range scan.Deployment {
+			sched, _ := depl.GetSchedule()
+			scanr := scanner.NewOpenShiftScanner()
+			scanr.DefaultSchedule = def
+			scanr.ForceSchedule = sched
+			for _, ns = range scan.Namespace {
+				scanr.Namespace = ns
+				for _, sel := range depl.Selector {
+					scanr.Label = sel
+					agent.AddScanner(scanr)
+				}
+			}
+		}
+	}
+	return
 }
 
 // startWebUI will start the management webserver.

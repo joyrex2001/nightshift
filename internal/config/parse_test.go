@@ -1,6 +1,7 @@
 package config
 
 import (
+	"io/ioutil"
 	"reflect"
 	"testing"
 
@@ -8,9 +9,31 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	_, err := New("testdata/example.yaml")
-	if err != nil {
-		t.Errorf("failed parsing: %s", err)
+	tests := []struct {
+		file string
+		err  bool
+	}{
+		{
+			file: "testdata/example.yaml",
+			err:  false,
+		},
+		{
+			file: "testdata/nonexistingfile",
+			err:  true,
+		},
+		{
+			file: "testdata/invalidschedule.yaml",
+			err:  true,
+		},
+	}
+	for i, tst := range tests {
+		_, err := New(tst.file)
+		if err != nil && !tst.err {
+			t.Errorf("failed test %d - unexpected err: %s", i, err)
+		}
+		if err == nil && tst.err {
+			t.Errorf("failed test %d - expected err, but got none", i)
+		}
 	}
 }
 
@@ -21,24 +44,19 @@ func TestParse(t *testing.T) {
 		err    bool
 	}{
 		{
-			file:   "testdata/nonexistingfile",
-			result: &Config{},
-			err:    true,
-		},
-		{
 			file: "testdata/example.yaml",
 			result: &Config{
 				Scanner: []Scanner{
 					Scanner{
 						Namespace: []string{"development"},
-						Default: Default{
+						Default: &Default{
 							Schedule: []string{
 								"Mon-Fri  9:00 replicas=1",
 								"Mon-Fri 18:00 replicas=0",
 							},
 						},
-						Deployment: []Deployment{
-							Deployment{
+						Deployment: []*Deployment{
+							&Deployment{
 								Selector: []string{"app=shell"},
 								Schedule: []string{""},
 							},
@@ -46,14 +64,14 @@ func TestParse(t *testing.T) {
 					},
 					Scanner{
 						Namespace: []string{"batch"},
-						Default: Default{
+						Default: &Default{
 							Schedule: []string{
 								"Mon-Fri  9:00 replicas=0",
 								"Mon-Fri 18:00 replicas=1",
 							},
 						},
-						Deployment: []Deployment{
-							Deployment{
+						Deployment: []*Deployment{
+							&Deployment{
 								Selector: []string{"app=shell"},
 								Schedule: nil,
 							},
@@ -65,7 +83,11 @@ func TestParse(t *testing.T) {
 		},
 	}
 	for i, tst := range tests {
-		res, err := New(tst.file)
+		y, err := ioutil.ReadFile(tst.file)
+		if err != nil {
+			t.Errorf("failed test %d - test configfile %s does not exist", i, err)
+		}
+		res, err := loadConfig(y)
 		if err != nil && !tst.err {
 			t.Errorf("failed test %d - unexpected err: %s", i, err)
 		}
