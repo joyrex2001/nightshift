@@ -26,10 +26,9 @@ func New(text string) (*Schedule, error) {
 	return s, nil
 }
 
-// GetNextTrigger will return the time the next trigger should occur according
-// to this schedule.
-func (s *Schedule) GetNextTrigger() (time.Time, error) {
-	now := time.Now()
+// GetNextTrigger will return the time the next trigger that occurs after
+// given time (now) should occur according to this schedule.
+func (s *Schedule) GetNextTrigger(now time.Time) (time.Time, error) {
 	next := s.getTodayTrigger()
 	found := 7
 	for ; now.After(next) || !s.hasDayOfWeek(next.Weekday()); found-- {

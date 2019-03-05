@@ -14,6 +14,9 @@ type Agent struct {
 	m        sync.Mutex
 	done     chan bool
 	scanners []scanner.Scanner
+	objects  map[string]scanner.Object
+	now      time.Time
+	past     time.Time
 }
 
 var instance *Agent
@@ -25,6 +28,7 @@ func New() *Agent {
 		instance = &Agent{
 			done:     make(chan bool),
 			Interval: 5 * time.Minute,
+			past:     time.Now(),
 			scanners: []scanner.Scanner{},
 		}
 	})
