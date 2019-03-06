@@ -28,7 +28,7 @@ func New() *Agent {
 		instance = &Agent{
 			done:     make(chan bool),
 			Interval: 5 * time.Minute,
-			past:     time.Now(),
+			past:     time.Now().Add(-5 * time.Minute),
 			scanners: []scanner.Scanner{},
 		}
 	})

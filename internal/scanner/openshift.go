@@ -88,6 +88,7 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, e
 				UID:       string(rc.ObjectMeta.UID),
 				Type:      DeploymentConfig,
 				Schedule:  sched,
+				Scale:     s.getScaler(rc.ObjectMeta.Name),
 			})
 		}
 	}
@@ -128,4 +129,25 @@ func (s *OpenShiftScanner) annotationToSchedule(annotation string) ([]*schedule.
 		sched = append(sched, s)
 	}
 	return sched, nil
+}
+
+// getScaler will return a Scaler funtion for given Object.
+func (s *OpenShiftScanner) getScaler(name string) Scaler {
+	return func(replicas int) error {
+		glog.Infof("Scaling %s/%s to %d replicas", s.Namespace, name, replicas)
+		if s.kubernetes == nil {
+			return fmt.Errorf("unable to connect to kubernetes")
+		}
+		apps, err := appsv1.NewForConfig(s.kubernetes)
+		if err != nil {
+			return err
+		}
+		scale, err := apps.DeploymentConfigs(s.Namespace).GetScale(name, metav1.GetOptions{})
+		if err != nil {
+			return fmt.Errorf("GetScale failed with: %s", err)
+		}
+		scale.Spec.Replicas = int32(replicas)
+		_, err = apps.DeploymentConfigs(s.Namespace).UpdateScale(name, scale)
+		return err
+	}
 }

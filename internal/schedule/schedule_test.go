@@ -66,3 +66,49 @@ func TestHasDayOfWeek(t *testing.T) {
 		}
 	}
 }
+
+func TestGetReplicas(t *testing.T) {
+	tests := []struct {
+		replicas int
+		err      bool
+		sched    *Schedule
+	}{
+		{
+			replicas: 1,
+			err:      false,
+			sched: &Schedule{
+				settings: map[string]string{
+					"replicas": "1",
+				},
+			},
+		},
+		{
+			replicas: 0,
+			err:      true,
+			sched: &Schedule{
+				settings: map[string]string{
+					"replicas": "d",
+				},
+			},
+		},
+		{
+			replicas: 0,
+			err:      true,
+			sched: &Schedule{
+				settings: map[string]string{},
+			},
+		},
+	}
+	for i, tst := range tests {
+		r, err := tst.sched.GetReplicas()
+		if err != nil && !tst.err {
+			t.Errorf("failed test %d - unexpected err: %s", i, err)
+		}
+		if err == nil && tst.err {
+			t.Errorf("failed test %d - expected err, but got none", i)
+		}
+		if r != tst.replicas {
+			t.Errorf("failed test %d; expected %d replicas, got %d", i, tst.replicas, r)
+		}
+	}
+}

@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -51,6 +52,16 @@ func (s *Schedule) hasDayOfWeek(day time.Weekday) bool {
 func (s *Schedule) getTodayTrigger() time.Time {
 	now := time.Now()
 	return time.Date(now.Year(), now.Month(), now.Day(), s.hour, s.min, 0, 0, time.Local)
+}
+
+// GetReplicas will return the number of replicas that should be applied
+// according to the schedule.
+func (s *Schedule) GetReplicas() (int, error) {
+	r, ok := s.settings["replicas"]
+	if !ok {
+		return 0, fmt.Errorf("replicas definition not found in schedule")
+	}
+	return strconv.Atoi(r)
 }
 
 // AsString will return the Schedule struct in human readable form.

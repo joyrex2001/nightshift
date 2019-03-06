@@ -23,6 +23,15 @@ func (a *Agent) Scale() {
 	for _, obj := range a.objects {
 		for _, e := range a.getEvents(obj) {
 			glog.Infof("Scale event: %v", e)
+			if e.obj.Scale != nil {
+				repl, err := e.sched.GetReplicas()
+				if err == nil {
+					err = e.obj.Scale(repl)
+				}
+				if err != nil {
+					glog.Errorf("Error scaling deployment: %s", err)
+				}
+			}
 		}
 	}
 	a.past = a.now
