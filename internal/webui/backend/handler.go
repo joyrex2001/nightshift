@@ -88,7 +88,7 @@ func (f *handler) Error(w http.ResponseWriter, r *http.Request, code int, cerr e
 // GetTemplate will return a template instance for given file. This file should
 // be present in the internal/frontend/templates folder.
 func (f *handler) GetTemplate(file string) (*template.Template, error) {
-	d, err := ioutil.ReadFile("./internal/frontend/templates/" + file)
+	d, err := ioutil.ReadFile("./internal/webui/frontend/templates/" + file)
 	if err != nil {
 		return nil, err
 	}
