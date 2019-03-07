@@ -28,7 +28,7 @@ type OpenShiftScanner struct {
 func NewOpenShiftScanner() *OpenShiftScanner {
 	kubernetes, err := getKubernetes()
 	if err != nil {
-		glog.Warning("failed instantiating k8s client: %s", err)
+		glog.Warningf("failed instantiating k8s client: %s", err)
 	}
 	return &OpenShiftScanner{
 		kubernetes: kubernetes,
