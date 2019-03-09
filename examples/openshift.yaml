@@ -1,0 +1,90 @@
+---
+apiVersion: v1
+kind: Template
+labels:
+  template: nightshift
+objects:
+
+- kind: DeploymentConfig
+  apiVersion: v1
+  metadata:
+    name: "${NAME}"
+    labels:
+      app: "${NAME}"
+  selector:
+    name: "${NAME}"
+  spec:
+    selector:
+      name: "${NAME}"
+    ImagePullPolicy: Always
+    replicas: 1
+    strategy:
+      type: "Recreate"
+    template:
+      metadata:
+        labels:
+          name: "${NAME}"
+        name: "${NAME}"
+      spec:
+        containers:
+          - name: ${NAME}
+            image: "${NIGHTSHIFT_IMAGE}"
+            args: ["--config", "/etc/nightshift/config.yaml"]
+            ports:
+              - containerPort: 8080
+            readinessProbe:
+              httpGet:
+                path: "/healthz"
+                port: 8080
+              initialDelaySeconds: 3
+              timeoutSeconds: 3
+            livenessProbe:
+              httpGet:
+                path: "/healthz"
+                port: 8080
+              initialDelaySeconds: 5
+              timeoutSeconds: 3
+            resources:
+              limits:
+                memory: "64Mi"
+              requests:
+                cpu: "0.1"
+            volumeMounts:
+              - mountPath: /etc/nightshift/
+                name: config-volume
+        serviceAccount: "${SERVICE_ACCOUNT}"
+        volumes:
+          - name: config-volume
+            configMap:
+              name: ${NIGHTSHIFT_CONFIGMAP}
+
+parameters:
+- name: NAME
+  description: |-
+    The name assigned to all of the objects defined in this template.
+  displayName: Name
+  required: true
+  value: nightshift
+
+- name: NIGHTSHIFT_IMAGE
+  description: |-
+    The container image to be used for running this service.
+  displayName: Container image.
+  required: true
+  value: "docker.io/joyrex2001/nightshift:latest"
+
+- name: NIGHTSHIFT_CONFIGMAP
+  description: |-
+    The name of the configmap that contains the config.yaml configuration file.
+  displayName: Nightshift configmap name.
+  required: true
+  value: "nightshift-config"
+
+- name: SERVICE_ACCOUNT
+  displayName: Service account
+  description: |-
+    Service account to be used when running this service. This service service
+    should have read and write permissions on the projects it should be able
+    to scale.
+  required: false
+  value: "nightshift"
