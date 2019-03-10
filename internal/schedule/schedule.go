@@ -14,6 +14,12 @@ type Schedule struct {
 	settings  map[string]string
 }
 
+var timezone *time.Location
+
+func init() {
+	SetTimeZone("UTC")
+}
+
 // New will return a Schedule object for given schedule description.
 func New(text string) (*Schedule, error) {
 	s := &Schedule{
@@ -27,11 +33,21 @@ func New(text string) (*Schedule, error) {
 	return s, nil
 }
 
+// SetTimeZone will configure the timezone in which schedules strings
+// are defined.
+func SetTimeZone(tz string) error {
+	loc, err := time.LoadLocation(tz)
+	if err == nil {
+		timezone = loc
+	}
+	return err
+}
+
 // GetNextTrigger will return the time the next trigger that occurs after
 // given time (now) should occur according to this schedule.
 func (s *Schedule) GetNextTrigger(now time.Time) (time.Time, error) {
 	next := s.getTodayTrigger()
-	found := 7
+	found := 8
 	for ; now.After(next) || !s.hasDayOfWeek(next.Weekday()); found-- {
 		next = next.AddDate(0, 0, 1)
 	}
@@ -51,7 +67,7 @@ func (s *Schedule) hasDayOfWeek(day time.Weekday) bool {
 // getTodayTrigger will get the trigger time if the trigger would run today.
 func (s *Schedule) getTodayTrigger() time.Time {
 	now := time.Now()
-	return time.Date(now.Year(), now.Month(), now.Day(), s.hour, s.min, 0, 0, time.Local)
+	return time.Date(now.Year(), now.Month(), now.Day(), s.hour, s.min, 0, 0, timezone)
 }
 
 // GetReplicas will return the number of replicas that should be applied

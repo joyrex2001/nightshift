@@ -10,12 +10,21 @@ import (
 	"github.com/joyrex2001/nightshift/internal/agent"
 	"github.com/joyrex2001/nightshift/internal/config"
 	"github.com/joyrex2001/nightshift/internal/scanner"
+	"github.com/joyrex2001/nightshift/internal/schedule"
 	"github.com/joyrex2001/nightshift/internal/webui"
 )
 
 // Main is the main entry point of this service and will start the party and
 // rock the boat.
 func Main(cmd *cobra.Command, args []string) {
+	// generic initialization
+	tz := viper.GetString("generic.timezone")
+	if err := schedule.SetTimeZone(tz); err != nil {
+		glog.Errorf("Invalid timezone specified: %s", err)
+	} else {
+		glog.Errorf("Using timezone: %s", tz)
+	}
+	// start subsystems
 	startAgent()
 	startWebUI()
 	forever()
