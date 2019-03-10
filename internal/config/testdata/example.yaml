@@ -19,3 +19,4 @@ scanner:
       deployment:
         - selector:
           - "app=shell"
+          - "app=nightshift"

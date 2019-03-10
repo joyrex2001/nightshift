@@ -72,7 +72,7 @@ func TestParse(t *testing.T) {
 						},
 						Deployment: []*Deployment{
 							&Deployment{
-								Selector: []string{"app=shell"},
+								Selector: []string{"app=shell", "app=nightshift"},
 								Schedule: nil,
 							},
 						},

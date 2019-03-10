@@ -80,12 +80,12 @@ func addScanners(agent *agent.Agent, cfg *config.Config) {
 		// add exceptions specified in deployments
 		for _, depl := range scan.Deployment {
 			sched, _ := depl.GetSchedule()
-			scanr := scanner.NewOpenShiftScanner()
-			scanr.DefaultSchedule = def
-			scanr.ForceSchedule = sched
 			for _, ns = range scan.Namespace {
-				scanr.Namespace = ns
 				for _, sel := range depl.Selector {
+					scanr := scanner.NewOpenShiftScanner()
+					scanr.DefaultSchedule = def
+					scanr.ForceSchedule = sched
+					scanr.Namespace = ns
 					scanr.Label = sel
 					agent.AddScanner(scanr)
 				}
