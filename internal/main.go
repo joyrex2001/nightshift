@@ -22,7 +22,7 @@ func Main(cmd *cobra.Command, args []string) {
 	if err := schedule.SetTimeZone(tz); err != nil {
 		glog.Errorf("Invalid timezone specified: %s", err)
 	} else {
-		glog.Errorf("Using timezone: %s", tz)
+		glog.Infof("Using timezone: %s", tz)
 	}
 	// start subsystems
 	startAgent()
@@ -37,6 +37,8 @@ func startAgent() {
 	if cfg := loadConfig(); cfg != nil {
 		addScanners(agent, cfg)
 	}
+	agent.Interval = viper.GetDuration("generic.interval")
+	glog.Infof("Refresh interval: %s", agent.Interval)
 	agent.Start()
 }
 
