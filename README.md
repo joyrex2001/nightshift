@@ -4,7 +4,7 @@ Nightshift is a service that will enable automatic down and upscaling of
 deployments within an OpenShift project to save resource usage (or use
 resources for something else). Typically this service will run in a container
 in a seperate namespace, where it will monitor and scale the namespaces
-according to a presert configuration.
+according to a preset configuration.
 
 ## Install in OpenShift
 

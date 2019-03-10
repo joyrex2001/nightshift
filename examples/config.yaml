@@ -2,13 +2,17 @@ web:
     enable: true
     listen-addr: ":8080"
 
+generic:
+    timezone: "Local"
+    interval: "15m"
+
 logging:
     threshold: "info"
     verbose: 3
 
 scanner:
     - namespace:
-        - "hco-vvandam"
+        - "development"
       default:
         schedule:
           - "Mon-Fri  8:00 replicas=1"

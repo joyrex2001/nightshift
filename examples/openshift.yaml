@@ -9,6 +9,8 @@ objects:
   apiVersion: v1
   metadata:
     name: "${NAME}"
+    annotations:
+      joyrex2001.com/nightshift.ignore: "true"
     labels:
       app: "${NAME}"
   selector:
