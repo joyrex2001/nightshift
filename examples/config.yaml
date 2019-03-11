@@ -12,7 +12,9 @@ logging:
 
 scanner:
     - namespace:
-        - "development"
+        - "development-1"
+        - "development-2"
+        - "development-3"
       default:
         schedule:
           - "Mon-Fri  8:00 replicas=1"
@@ -22,4 +24,20 @@ scanner:
             - "app=shell"
             - "app=nightshift"
           schedule:
-          - ""
+            - ""
+    - namespace:
+        - "staging"
+      default:
+        schedule:
+          - "Mon-Fri  8:00 replicas=5"
+          - "Mon-Fri 18:00 replicas=2"
+      deployment:
+        - selector:
+            - "app=analytics"
+          schedule:
+          - "Mon-Fri  8:00 replicas=2"
+          - "Mon-Fri 18:00 replicas=5"
+        - selector:
+            - "app=nightshift"
+          schedule:
+            - ""

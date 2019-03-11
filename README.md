@@ -45,45 +45,69 @@ set.
 ### Schedule
 
 Nightshift scales deployments according to a schedule. A schedule can be
-added to a pod with an annotation, or can be defined in a config file. An
-example of a schedule configuration is: ```Mon-Fri  9:00 replicas=1```.
+added to a pod with an annotation, or can be defined in a config file. A
+schedule definition contains out of 3 elements; a section defining the day(s)
+in the week this schedule applies to, a time and the action that should be
+taken.
+
+The first section defines the day(s) of the week. This can be a combination
+of single day(s), a range of days, or both. Each day is specified by the first
+three letters of the English name. If multiple days, or ranges are specified,
+they should be seperated by a comma. A range is specified by two days seperated
+by a hyphen.
+
+The second part defines the time. The time is specified in the timezone that
+has been configured in the configuration file (default is Local, which usually
+equals to UTC in most deployments).
+
+The last part defines the action that needs to be taken in this time event. At
+this point only the number of replicas can bet specified.
+
+An example of a schedule configuration is: ```Mon-Wed,Fri 9:00 replicas=1```.
 
 ### Annotations
 
-The annotations supported by nightshift are:
+Nightshift can be configured by both a configuration file, as well as
+annotations that should be set on a DeploymentConfig. These annotations will
+always override the configuration specified in the configuration file. The
+annotations supported by nightshift are:
 
-* ```joyrex2001.com/nightshift.schedule``` in which a schedule can be specified. Multiple schedules are allowed, and should be seperated with a ;.
-* ```joyrex2001.com/nightshift.ignore``` which can be set to ```true``` to ignore this deployment.
+* ```joyrex2001.com/nightshift.schedule``` in which a schedule can be specified.
+Multiple schedules are allowed, and should be seperated with a semicolon.
+* ```joyrex2001.com/nightshift.ignore``` which can be set to ```true``` to
+ignore this deployment.
 
 ### Configuration file
 
-The best way to configure nightshift is by using a configuration file. The
-configuration file will specify which
+The most flexible way to configure nightshift is by using a configuration file.
+The configuration file allow complex schedules, with both default schedules as
+well as allowing to fix schedules for certain label criteria, specified with
+a selector.
+
+In the below example , namespace ```development``` will be scanned for
+annotations. If a deployment in this namespace doesn't have any schedule
+annotations, it will apply the default schedule. For a deployment that matches
+the label ```app=shell```, no schedule will be applied at all.
 
 ```
-logging:
-    threshold: "info"
-    verbose: 3
-
-openshift:
-    namespace: "staging"
-
 scanner:
-    - namespace:
-        - "development"
-      default:
+  - namespace:
+      - "development"
+    default:
+      schedule:
+        - "Mon-Fri  9:00 replicas=1"
+        - "Mon-Fri 18:00 replicas=0"
+    deployment:
+      - selector:
+          - "app=shell"
         schedule:
-          - "Mon-Fri  9:00 replicas=1"
-          - "Mon-Fri 18:00 replicas=0"
-      deployment:
-        - selector:
-            - "app=shell"
-          schedule:
-            - ""
+          - ""
 ```
 
-In this example, the namespace ```staging``` will be scanned for annotations
-only. The namespace ```development``` will be scanned for annotations. If a
-deployment doesn't have any schedule annotations, it will apply the default
-schedule. For a deployment that matches the label ```app=shell```, no schedule
-will be applied at all.
+See the examples folder for another example, which also includes basic
+nightshift configuration.
+
+## See also
+
+* Build status: [![CircleCI](https://circleci.com/gh/joyrex2001/nightshift.svg?style=svg)](https://circleci.com/gh/joyrex2001/nightshift)
+* https://hub.docker.com/r/joyrex2001/nightshift
