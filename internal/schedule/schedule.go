@@ -66,7 +66,7 @@ func (s *Schedule) hasDayOfWeek(day time.Weekday) bool {
 
 // getTodayTrigger will get the trigger time if the trigger would run today.
 func (s *Schedule) getTodayTrigger() time.Time {
-	now := time.Now()
+	now := time.Now().In(timezone)
 	return time.Date(now.Year(), now.Month(), now.Day(), s.hour, s.min, 0, 0, timezone)
 }
 
