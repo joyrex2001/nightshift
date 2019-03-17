@@ -37,8 +37,9 @@ func startAgent() {
 	if cfg := loadConfig(); cfg != nil {
 		addScanners(agent, cfg)
 	}
-	agent.Interval = viper.GetDuration("generic.interval")
-	glog.Infof("Refresh interval: %s", agent.Interval)
+	interval := viper.GetDuration("generic.interval")
+	agent.SetInterval(interval)
+	glog.Infof("Refresh interval: %s", interval)
 	agent.Start()
 }
 
@@ -57,7 +58,7 @@ func loadConfig() *config.Config {
 
 // addScanners will add configured scanners to the provided agent. The scanners
 // are added in the order of priority, lowest priority is added first.
-func addScanners(agent *agent.Agent, cfg *config.Config) {
+func addScanners(agent agent.Agent, cfg *config.Config) {
 	// add main config
 	ns := viper.GetString("openshift.namespace")
 	sel := viper.GetString("openshift.label")

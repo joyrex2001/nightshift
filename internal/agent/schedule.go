@@ -6,7 +6,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
-func (a *Agent) UpdateSchedule() {
+func (a *worker) UpdateSchedule() {
 	glog.Info("Updating schedule start...")
 	a.objects = map[string]scanner.Object{}
 	for _, scnr := range a.scanners {

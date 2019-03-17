@@ -17,7 +17,7 @@ type event struct {
 }
 
 // Scale will process all scanned objects and scale them accordingly.
-func (a *Agent) Scale() {
+func (a *worker) Scale() {
 	glog.Info("Scaling resources start...")
 	a.now = time.Now()
 	for _, obj := range a.objects {
@@ -40,19 +40,22 @@ func (a *Agent) Scale() {
 
 // getEvents will return the events in chronological order that have to be
 // done for the given object in the current tick.
-func (a *Agent) getEvents(obj scanner.Object) []event {
+func (a *worker) getEvents(obj scanner.Object) []event {
+	var err error
 	ev := []event{}
 	for _, s := range obj.Schedule {
-		next, err := s.GetNextTrigger(a.past)
-		if err != nil {
-			glog.Errorf("Error processing trigger: %s", err)
-			continue
-		}
-		if a.now.After(next) || a.now == next {
-			ev = append(ev, event{next, obj, s})
+		for next := a.past; !next.After(a.now); next = next.AddDate(0, 0, 1) {
+			next, err = s.GetNextTrigger(next)
+			if err != nil {
+				glog.Errorf("Error processing trigger: %s", err)
+				continue
+			}
+			if a.now.After(next) || a.now == next {
+				ev = append(ev, event{next, obj, s})
+			}
 		}
 	}
 	// order events by time
-	sort.Slice(ev, func(i, j int) bool { return ev[j].at.Before(ev[i].at) })
+	sort.Slice(ev, func(i, j int) bool { return ev[i].at.Before(ev[j].at) })
 	return ev
 }

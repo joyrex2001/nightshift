@@ -46,7 +46,7 @@ func SetTimeZone(tz string) error {
 // GetNextTrigger will return the time the next trigger that occurs after
 // given time (now) should occur according to this schedule.
 func (s *Schedule) GetNextTrigger(now time.Time) (time.Time, error) {
-	next := s.getTodayTrigger()
+	next := s.getTodayTrigger(now)
 	found := 8
 	for ; now.After(next) || !s.hasDayOfWeek(next.Weekday()); found-- {
 		next = next.AddDate(0, 0, 1)
@@ -65,8 +65,8 @@ func (s *Schedule) hasDayOfWeek(day time.Weekday) bool {
 }
 
 // getTodayTrigger will get the trigger time if the trigger would run today.
-func (s *Schedule) getTodayTrigger() time.Time {
-	now := time.Now().In(timezone)
+func (s *Schedule) getTodayTrigger(now time.Time) time.Time {
+	now = now.In(timezone)
 	return time.Date(now.Year(), now.Month(), now.Day(), s.hour, s.min, 0, 0, timezone)
 }
 
