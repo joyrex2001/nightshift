@@ -55,6 +55,9 @@ func (c *Config) processSchedule() error {
 // objects, or an error if the schedule strings are invalid.
 func (d *Default) GetSchedule() ([]*schedule.Schedule, error) {
 	var err error
+	if d == nil {
+		return nil, nil
+	}
 	if d.parsed {
 		return d.schedule, nil
 	}

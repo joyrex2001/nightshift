@@ -1,0 +1,8 @@
+scanner:
+    - namespace:
+        - "development"
+      deployment:
+        - selector:
+            - "app=shell"
+          schedule:
+            - ""

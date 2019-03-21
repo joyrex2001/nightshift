@@ -25,6 +25,10 @@ func TestNew(t *testing.T) {
 			file: "testdata/invalidschedule.yaml",
 			err:  true,
 		},
+		{
+			file: "testdata/nodefault.yaml",
+			err:  false,
+		},
 	}
 	for i, tst := range tests {
 		_, err := New(tst.file)
