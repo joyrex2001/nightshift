@@ -17,11 +17,8 @@ import (
 )
 
 type OpenShiftScanner struct {
-	Namespace       string
-	Label           string
-	ForceSchedule   []*schedule.Schedule
-	DefaultSchedule []*schedule.Schedule
-	kubernetes      *rest.Config
+	config     Config
+	kubernetes *rest.Config
 }
 
 // NewOpenShiftScanner will instantiate a new OpenShiftScanner object.
@@ -47,6 +44,17 @@ func getKubernetes() (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
+// SetConfig will set the generic configuration for this scanner.
+func (s *OpenShiftScanner) SetConfig(cfg Config) {
+	cfg.Type = OpenShift
+	s.config = cfg
+}
+
+// SetConfig will set the generic configuration for this scanner.
+func (s *OpenShiftScanner) GetConfig() Config {
+	return s.config
+}
+
 // GetObjects will return a populated list of Objects containing the relavant
 // resources with their schedule info.
 func (s *OpenShiftScanner) GetObjects() ([]Object, error) {
@@ -67,8 +75,8 @@ func (s *OpenShiftScanner) getDeploymentConfigs() (*v1.DeploymentConfigList, err
 	if err != nil {
 		return nil, err
 	}
-	return apps.DeploymentConfigs(s.Namespace).List(metav1.ListOptions{
-		LabelSelector: s.Label,
+	return apps.DeploymentConfigs(s.config.Namespace).List(metav1.ListOptions{
+		LabelSelector: s.config.Label,
 	})
 }
 
@@ -84,9 +92,9 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, e
 		if sched != nil {
 			objs = append(objs, Object{
 				Name:      rc.ObjectMeta.Name,
-				Namespace: s.Namespace,
+				Namespace: s.config.Namespace,
 				UID:       string(rc.ObjectMeta.UID),
-				Type:      DeploymentConfig,
+				Type:      OpenShift,
 				Schedule:  sched,
 				Scale:     s.getScaler(rc.ObjectMeta.Name),
 			})
@@ -107,10 +115,10 @@ func (s *OpenShiftScanner) getSchedule(annotations map[string]string) ([]*schedu
 	if ann := annotations["joyrex2001.com/nightshift.schedule"]; ann != "" {
 		return s.annotationToSchedule(ann)
 	}
-	if s.ForceSchedule != nil {
-		return s.ForceSchedule, nil
+	if s.config.ForceSchedule != nil {
+		return s.config.ForceSchedule, nil
 	}
-	return s.DefaultSchedule, nil
+	return s.config.DefaultSchedule, nil
 }
 
 // annotationToSchedule will convert the contents of the schedule annotation
@@ -134,7 +142,7 @@ func (s *OpenShiftScanner) annotationToSchedule(annotation string) ([]*schedule.
 // getScaler will return a Scaler funtion for given Object.
 func (s *OpenShiftScanner) getScaler(name string) Scaler {
 	return func(replicas int) error {
-		glog.Infof("Scaling %s/%s to %d replicas", s.Namespace, name, replicas)
+		glog.Infof("Scaling %s/%s to %d replicas", s.config.Namespace, name, replicas)
 		if s.kubernetes == nil {
 			return fmt.Errorf("unable to connect to kubernetes")
 		}
@@ -142,12 +150,12 @@ func (s *OpenShiftScanner) getScaler(name string) Scaler {
 		if err != nil {
 			return err
 		}
-		scale, err := apps.DeploymentConfigs(s.Namespace).GetScale(name, metav1.GetOptions{})
+		scale, err := apps.DeploymentConfigs(s.config.Namespace).GetScale(name, metav1.GetOptions{})
 		if err != nil {
 			return fmt.Errorf("GetScale failed with: %s", err)
 		}
 		scale.Spec.Replicas = int32(replicas)
-		_, err = apps.DeploymentConfigs(s.Namespace).UpdateScale(name, scale)
+		_, err = apps.DeploymentConfigs(s.config.Namespace).UpdateScale(name, scale)
 		return err
 	}
 }

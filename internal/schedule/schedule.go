@@ -6,14 +6,6 @@ import (
 	"time"
 )
 
-type Schedule struct {
-	dayOfWeek map[time.Weekday]bool
-	hour      int
-	min       int
-	org       string
-	settings  map[string]string
-}
-
 var timezone *time.Location
 
 func init() {
@@ -23,9 +15,9 @@ func init() {
 // New will return a Schedule object for given schedule description.
 func New(text string) (*Schedule, error) {
 	s := &Schedule{
-		dayOfWeek: map[time.Weekday]bool{},
-		settings:  map[string]string{},
-		org:       text,
+		dayOfWeek:   map[time.Weekday]bool{},
+		settings:    map[string]string{},
+		Description: text,
 	}
 	if err := s.parse(text); err != nil {
 		return nil, err
@@ -78,9 +70,4 @@ func (s *Schedule) GetReplicas() (int, error) {
 		return 0, fmt.Errorf("replicas definition not found in schedule")
 	}
 	return strconv.Atoi(r)
-}
-
-// AsString will return the Schedule struct in human readable form.
-func (s *Schedule) String() string {
-	return s.org
 }

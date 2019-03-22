@@ -33,14 +33,14 @@ func Main(cmd *cobra.Command, args []string) {
 // startAgent will start the agent that will monitor and scale the openshift
 // resources according to the schedules.
 func startAgent() {
-	agent := agent.New()
+	agt := agent.New()
 	if cfg := loadConfig(); cfg != nil {
-		addScanners(agent, cfg)
+		addScanners(agt, cfg)
 	}
 	interval := viper.GetDuration("generic.interval")
-	agent.SetInterval(interval)
+	agt.SetInterval(interval)
 	glog.Infof("Refresh interval: %s", interval)
-	agent.Start()
+	agt.Start()
 }
 
 // loadConfig will load the nightshift configuration from the configfile.
@@ -63,36 +63,51 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 	ns := viper.GetString("openshift.namespace")
 	sel := viper.GetString("openshift.label")
 	if ns != "" || sel != "" {
-		scanr := scanner.NewOpenShiftScanner()
-		scanr.Namespace = ns
-		scanr.Label = sel
-		agent.AddScanner(scanr)
+		addScanner(agent, scanner.Config{
+			Type:      scanner.OpenShift,
+			Namespace: ns,
+			Label:     sel,
+		})
 	}
 	// go through configured scanners
 	for _, scan := range cfg.Scanner {
 		def, _ := scan.Default.GetSchedule()
 		// add namespace scanner
 		for _, ns = range scan.Namespace {
-			scanr := scanner.NewOpenShiftScanner()
-			scanr.DefaultSchedule = def
-			scanr.Namespace = ns
-			agent.AddScanner(scanr)
+			addScanner(agent, scanner.Config{
+				Type:            scanner.OpenShift,
+				Namespace:       ns,
+				DefaultSchedule: def,
+			})
 		}
 		// add exceptions specified in deployments
 		for _, depl := range scan.Deployment {
 			sched, _ := depl.GetSchedule()
 			for _, ns = range scan.Namespace {
 				for _, sel := range depl.Selector {
-					scanr := scanner.NewOpenShiftScanner()
-					scanr.DefaultSchedule = def
-					scanr.ForceSchedule = sched
-					scanr.Namespace = ns
-					scanr.Label = sel
-					agent.AddScanner(scanr)
+					addScanner(agent, scanner.Config{
+						Type:            scanner.OpenShift,
+						Namespace:       ns,
+						DefaultSchedule: def,
+						ForceSchedule:   sched,
+						Label:           sel,
+					})
 				}
 			}
 		}
 	}
+	return
+}
+
+// addScanner will add a scanner specified with the scanner.Config object to
+// the given agent.
+func addScanner(agent agent.Agent, cfg scanner.Config) {
+	scanr, err := scanner.NewForConfig(cfg)
+	if err != nil {
+		glog.Errorf("Error adding scanners: %s", err)
+		return
+	}
+	agent.AddScanner(scanr)
 	return
 }
 

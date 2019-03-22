@@ -34,6 +34,8 @@ func (f *handler) init() {
 	f.mux = httprouter.New()
 	f.mux.GET("/private/*filepath", f.Authenticate(f.ServeFiles("private")))
 	f.mux.GET("/public/*filepath", f.ServeFiles("public"))
+	f.mux.GET("/api/objects", f.Authenticate(f.GetObjects))
+	f.mux.GET("/api/scanners", f.Authenticate(f.GetScanners))
 	f.mux.GET("/healthz", f.Healthz)
 	f.mux.GET("/", f.Redirect(307, "/private/"))
 }

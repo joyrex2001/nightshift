@@ -15,8 +15,9 @@ func (s *Schedule) parse(text string) error {
 	text = trimSpaces(text)
 	text = strings.Replace(text, ", ", ",", -1)
 	text = strings.Replace(text, "- ", "-", -1)
-	text = strings.Replace(text, ":", " ", -1)
 	text = strings.ToLower(text)
+	s.Description = text
+	text = strings.Replace(text, ":", " ", -1)
 
 	flds := strings.Split(text, " ")
 	if err := s.parseWeekday(flds[0]); err != nil {

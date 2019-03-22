@@ -103,9 +103,12 @@ func TestGetSchedule(t *testing.T) {
 		},
 	}
 	for i, tst := range tests {
-		os := &OpenShiftScanner{
+		config := Config{
 			DefaultSchedule: tst.def,
 			ForceSchedule:   tst.force,
+		}
+		os := &OpenShiftScanner{
+			config: config,
 		}
 		res, err := os.getSchedule(tst.data)
 		if err != nil && !tst.err {

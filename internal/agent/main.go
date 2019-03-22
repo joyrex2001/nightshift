@@ -9,13 +9,6 @@ import (
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
-type Agent interface {
-	AddScanner(scanner.Scanner)
-	SetInterval(time.Duration)
-	Start()
-	Stop()
-}
-
 type worker struct {
 	interval time.Duration
 	m        sync.Mutex
@@ -52,6 +45,21 @@ func (a *worker) AddScanner(scanner scanner.Scanner) {
 	a.m.Lock()
 	defer a.m.Unlock()
 	a.scanners = append(a.scanners, scanner)
+}
+
+// GetObjects will return the gathered objects.
+func (a *worker) GetObjects() map[string]scanner.Object {
+	a.m.Lock()
+	defer a.m.Unlock()
+	return a.objects
+}
+
+// GetScanners will return the configured scanners.
+func (a *worker) GetScanners() []scanner.Scanner {
+	// disabled; AddScanner is only done during initialization...
+	// a.m.Lock()
+	// defer a.m.Unlock()
+	return a.scanners
 }
 
 // Start will start the agent.

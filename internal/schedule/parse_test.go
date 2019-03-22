@@ -24,6 +24,7 @@ func TestParse(t *testing.T) {
 				settings: map[string]string{
 					"replicas": "0",
 				},
+				Description: "mon 18:00 replicas=0",
 			},
 		},
 		{
@@ -44,6 +45,7 @@ func TestParse(t *testing.T) {
 				settings: map[string]string{
 					"replicas": "1",
 				},
+				Description: "mon-sun 10:00 replicas=1",
 			},
 		},
 		{
@@ -59,6 +61,7 @@ func TestParse(t *testing.T) {
 				settings: map[string]string{
 					"replicas": "3",
 				},
+				Description: "wed,fri 13:30 replicas=3",
 			},
 		},
 		{
@@ -84,6 +87,7 @@ func TestParse(t *testing.T) {
 				settings: map[string]string{
 					"replicas": "4",
 				},
+				Description: "wed,fri 13:00 replicas=4",
 			},
 		},
 		{
@@ -107,6 +111,7 @@ func TestParse(t *testing.T) {
 				settings: map[string]string{
 					"replicas": "4",
 				},
+				Description: "wed,thu-sun 13:00 replicas=4",
 			},
 		},
 		{
@@ -125,6 +130,7 @@ func TestParse(t *testing.T) {
 				settings: map[string]string{
 					"replicas": "4",
 				},
+				Description: "wed,thu-sun 3:10 replicas=4",
 			},
 		},
 		{
