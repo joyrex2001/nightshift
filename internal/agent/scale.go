@@ -35,7 +35,7 @@ func (a *worker) Scale() {
 		}
 	}
 	a.past = a.now
-	glog.Info("Scaling resources finished...")
+	glog.V(4).Info("Scaling resources finished...")
 }
 
 // getEvents will return the events in chronological order that have to be

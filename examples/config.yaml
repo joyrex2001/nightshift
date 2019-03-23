@@ -3,7 +3,7 @@ web:
     listen-addr: ":8080"
 
 generic:
-    timezone: "Local"
+    timezone: "Europe/Amsterdam"
     interval: "15m"
 
 logging:

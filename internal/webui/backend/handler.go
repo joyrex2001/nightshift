@@ -2,14 +2,15 @@ package backend
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"sync"
-	"text/template"
 	"time"
 
+	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/golang/glog"
 	"github.com/julienschmidt/httprouter"
+
+	"github.com/joyrex2001/nightshift/internal/webui/backend/internalfs"
 )
 
 func NewHandler() *handler {
@@ -32,12 +33,11 @@ func (f *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (f *handler) init() {
 	// web routing
 	f.mux = httprouter.New()
-	f.mux.GET("/private/*filepath", f.Authenticate(f.ServeFiles("private")))
-	f.mux.GET("/public/*filepath", f.ServeFiles("public"))
+	f.mux.GET("/public/*filepath", f.Authenticate(f.ServeFiles("")))
 	f.mux.GET("/api/objects", f.Authenticate(f.GetObjects))
 	f.mux.GET("/api/scanners", f.Authenticate(f.GetScanners))
 	f.mux.GET("/healthz", f.Healthz)
-	f.mux.GET("/", f.Redirect(307, "/private/"))
+	f.mux.GET("/", f.Redirect(307, "/public"))
 }
 
 // ServeFiles will host http files based on a filestore as determined by the
@@ -53,7 +53,12 @@ func (f *handler) ServeFiles(folder string) httprouter.Handle {
 
 // FileStore will return a http filesystem object for given folder.
 func (f *handler) FileStore(folder string) http.FileSystem {
-	return http.Dir("./internal/webui/frontend/" + folder)
+	return &assetfs.AssetFS{
+		Asset:     internalfs.Asset,
+		AssetDir:  internalfs.AssetDir,
+		AssetInfo: internalfs.AssetInfo,
+		Prefix:    folder,
+	}
 }
 
 // Redirect will redirect the user to given location.
@@ -66,33 +71,16 @@ func (f *handler) Redirect(status int, location string) httprouter.Handle {
 
 // Healthz will return a liveness response.
 func (f *handler) Healthz(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, "{ status: 'OK', timestamp: %d }", time.Now().Unix())
 	return
 }
 
-// Error will return an error page based on the error.tmpl template.
+// Error will return an error response in json.
 func (f *handler) Error(w http.ResponseWriter, r *http.Request, code int, cerr error) {
 	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, "{ status: %d, error: %s }", code, cerr)
 	glog.Errorf("HTTP %d: %s", code, cerr)
-	tmpl, err := f.GetTemplate("error.tmpl")
-	if err != nil {
-		return
-	}
-	tmpl.Execute(w, &struct {
-		Code  int
-		Error string
-	}{
-		Code:  code,
-		Error: fmt.Sprintf("%s", cerr),
-	})
-}
-
-// GetTemplate will return a template instance for given file. This file should
-// be present in the internal/frontend/templates folder.
-func (f *handler) GetTemplate(file string) (*template.Template, error) {
-	d, err := ioutil.ReadFile("./internal/webui/frontend/templates/" + file)
-	if err != nil {
-		return nil, err
-	}
-	return template.New(file).Parse(string(d))
+	return
 }

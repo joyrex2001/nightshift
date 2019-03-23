@@ -1,0 +1,3 @@
+package webui
+
+//go:generate go-bindata -pkg=internalfs -o backend/internalfs/files.go -prefix=./frontend/dist ./frontend/dist/...

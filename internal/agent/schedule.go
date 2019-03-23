@@ -14,11 +14,11 @@ func (a *worker) UpdateSchedule() {
 		if err != nil {
 			glog.Errorf("Error scanning pods: %s", err)
 		}
-		glog.V(4).Infof("Scan result: %#v", objs)
+		glog.V(5).Infof("Scan result: %#v", objs)
 		for _, obj := range objs {
 			a.objects[obj.UID] = obj
 		}
 	}
-	glog.Infof("Scanned objects: %v", a.objects)
-	glog.Info("Updating schedule finished...")
+	glog.V(4).Infof("Scanned objects: %v", a.objects)
+	glog.V(4).Info("Updating schedule finished...")
 }
