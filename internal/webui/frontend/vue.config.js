@@ -4,6 +4,7 @@ module.exports = {
       port: 5000,
       https: false,
       hotOnly: false,
+      proxy: 'http://localhost:8080',
     },
     publicPath: '/public/'
 }

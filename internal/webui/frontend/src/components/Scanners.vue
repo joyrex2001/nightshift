@@ -1,32 +1,44 @@
 <template>
   <div class="scanners">
 
+      <ul id="scannerlist">
+        <li v-for="scanner in scanners">
+          {{ scanner.namespace }} |
+          {{ scanner.label }}
+        </li>
+      </ul>
+
   </div>
 </template>
 
 <script lang="ts">
+import axios from 'axios';
 import { Component, Prop, Vue } from 'vue-property-decorator';
 
 @Component
 export default class Scanners extends Vue {
-  @Prop() private msg!: string;
+  @Prop() private scanners!: object[];
+  @Prop() private errors!: object[];
+
+  private created() {
+    axios.get(`/api/scanners`)
+        .then( (response) => {
+            this.scanners = response.data;
+        })
+        .catch( (e) => {
+            this.errors.push(e);
+        });
+  }
 }
+
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
 ul {
   list-style-type: none;
   padding: 0;
 }
 li {
-  display: inline-block;
   margin: 0 10px;
-}
-a {
-  color: #000083;
 }
 </style>

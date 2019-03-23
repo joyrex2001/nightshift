@@ -3,8 +3,10 @@
     <div id="nav">
           <img alt="Nightshift" src="./assets/nightshift-logo.png" style="float:left; padding:0.6em;">
           <h1>Nightshift</h1>
-          <router-link to="/">Home</router-link> |
+          <router-link to="/scanners">Scanners</router-link> |
+          <router-link to="/objects">Objects</router-link> |
           <router-link to="/about">About</router-link>
+          <hr>
     </div>
     <router-view/>
   </div>
@@ -18,7 +20,7 @@
   color: #000000;
 }
 #nav {
-  padding: 30px;
+  padding: 2px;
 }
 
 #nav a {

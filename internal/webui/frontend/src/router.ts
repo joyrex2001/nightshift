@@ -1,17 +1,26 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Home from './views/Home.vue';
+import ScannersOverview from './views/ScannersOverview.vue';
 
 Vue.use(Router);
 
 export default new Router({
-  mode: 'history',
+  mode: 'hash',
   base: process.env.BASE_URL,
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: Home,
+      redirect: '/scanners'
+    },
+    {
+      path: '/scanners',
+      name: 'scanners',
+      component: ScannersOverview,
+    },
+    {
+      path: '/objects',
+      name: 'objects',
+      component: () => import(/* webpackChunkName: "about" */ './views/ObjectsOverview.vue'),
     },
     {
       path: '/about',
