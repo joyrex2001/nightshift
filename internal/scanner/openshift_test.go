@@ -9,8 +9,7 @@ import (
 func TestGetSchedule(t *testing.T) {
 	tests := []struct {
 		data  map[string]string
-		def   []*schedule.Schedule
-		force []*schedule.Schedule
+		sched []*schedule.Schedule
 		err   bool
 		count int
 	}{
@@ -60,21 +59,19 @@ func TestGetSchedule(t *testing.T) {
 			count: 0,
 		},
 		{
-			def:   []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
 			data:  map[string]string{},
 			err:   false,
 			count: 2,
 		},
 		{
-			def:   []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
-			force: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
 			data:  map[string]string{},
 			err:   false,
 			count: 3,
 		},
 		{
-			def:   []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
-			force: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
 			data: map[string]string{
 				"joyrex2001.com/nightshift.schedule": `Mon 18:00 replicas=0; Mon 9:00 replicas=1;`,
 				"joyrex2001.com/nightshift.ignore":   `true`,
@@ -83,8 +80,7 @@ func TestGetSchedule(t *testing.T) {
 			count: 0,
 		},
 		{
-			def:   []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
-			force: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
 			data: map[string]string{
 				"joyrex2001.com/nightshift.schedule": `Mon 18:00 replicas=0;`,
 				"joyrex2001.com/nightshift.ignore":   `false`,
@@ -93,7 +89,7 @@ func TestGetSchedule(t *testing.T) {
 			count: 1,
 		},
 		{
-			def: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
 			data: map[string]string{
 				"joyrex2001.com/nightshift.schedule": `Mon 18:00 replicas=0;`,
 				"joyrex2001.com/nightshift.ignore":   `false`,
@@ -104,8 +100,7 @@ func TestGetSchedule(t *testing.T) {
 	}
 	for i, tst := range tests {
 		config := Config{
-			DefaultSchedule: tst.def,
-			ForceSchedule:   tst.force,
+			Schedule: tst.sched,
 		}
 		os := &OpenShiftScanner{
 			config: config,

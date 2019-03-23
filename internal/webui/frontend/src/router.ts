@@ -10,7 +10,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: '/scanners'
+      redirect: '/scanners',
     },
     {
       path: '/scanners',

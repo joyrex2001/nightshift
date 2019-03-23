@@ -115,10 +115,7 @@ func (s *OpenShiftScanner) getSchedule(annotations map[string]string) ([]*schedu
 	if ann := annotations["joyrex2001.com/nightshift.schedule"]; ann != "" {
 		return s.annotationToSchedule(ann)
 	}
-	if s.config.ForceSchedule != nil {
-		return s.config.ForceSchedule, nil
-	}
-	return s.config.DefaultSchedule, nil
+	return s.config.Schedule, nil
 }
 
 // annotationToSchedule will convert the contents of the schedule annotation

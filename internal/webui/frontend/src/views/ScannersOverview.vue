@@ -6,12 +6,13 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Scanners from '@/components/Scanners.vue'; // @ is an alias to /src
+import Scanners from '@/components/Scanners.vue';
 
 @Component({
   components: {
     Scanners,
   },
 })
+
 export default class ScannersOverview extends Vue {}
 </script>

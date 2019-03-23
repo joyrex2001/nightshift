@@ -1,11 +1,12 @@
 <template>
   <div id="app">
     <div id="nav">
-          <img alt="Nightshift" src="./assets/nightshift-logo.png" style="float:left; padding:0.6em;">
-          <h1>Nightshift</h1>
+          <img class="logo" alt="Nightshift" src="./assets/nightshift-logo.png">
+          <h1>NIGHTSHIFT admin</h1>
           <router-link to="/scanners">Scanners</router-link> |
           <router-link to="/objects">Objects</router-link> |
           <router-link to="/about">About</router-link>
+          <br>
           <hr>
     </div>
     <router-view/>
@@ -19,13 +20,24 @@
   -moz-osx-font-smoothing: grayscale;
   color: #000000;
 }
+
 #nav {
   padding: 2px;
+  background-image: linear-gradient(#000000, white); /* #77b8f7, #4788c7 */
+}
+
+#nav .logo {
+  float: left;
+  padding: 0.6em;
+}
+#nav h1 {
+  color: #fff;
+  text-shadow: 2px 2px #000000;
 }
 
 #nav a {
   font-weight: bold;
-  color: #004080;
+  color: #0060a0;
 }
 
 #nav a.router-link-exact-active {

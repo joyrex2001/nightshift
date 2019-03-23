@@ -3,3 +3,9 @@
       For more information visit the <a href="https://github.com/joyrex2001/nightshift">github</a> page.
   </div>
 </template>
+
+<style scoped>
+.about {
+  margin: 10px 10px;
+}
+</style>

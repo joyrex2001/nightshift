@@ -14,9 +14,8 @@ type Object struct {
 }
 
 type Config struct {
-	Namespace       string               `json:"namespace"`
-	Label           string               `json:"label"`
-	ForceSchedule   []*schedule.Schedule `json:"force"`
-	DefaultSchedule []*schedule.Schedule `json:"default"`
-	Type            ScannerType          `json:"type"`
+	Namespace string               `json:"namespace"`
+	Label     string               `json:"label"`
+	Schedule  []*schedule.Schedule `json:"schedule"`
+	Type      ScannerType          `json:"type"`
 }

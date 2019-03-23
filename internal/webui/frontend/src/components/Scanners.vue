@@ -5,6 +5,7 @@
         <li v-for="scanner in scanners">
           {{ scanner.namespace }} |
           {{ scanner.label }}
+          <Schedule :schedule="scanner.schedule"/>
         </li>
       </ul>
 
@@ -14,8 +15,14 @@
 <script lang="ts">
 import axios from 'axios';
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import Schedule from '@/components/Schedule.vue';
 
-@Component
+@Component({
+  components: {
+    Schedule,
+  },
+})
+
 export default class Scanners extends Vue {
   @Prop() private scanners!: object[];
   @Prop() private errors!: object[];

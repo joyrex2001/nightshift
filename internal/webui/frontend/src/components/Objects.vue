@@ -3,9 +3,8 @@
 
       <ul id="objectlist">
         <li v-for="object in objects">
-          {{ object.uid }} |
-          {{ object.namespace }} |
-          {{ object.name }}
+          {{ object.namespace }} | {{ object.name }}
+          <Schedule :schedule="object.schedule"/>
         </li>
       </ul>
 
@@ -15,8 +14,14 @@
 <script lang="ts">
 import axios from 'axios';
 import { Component, Prop, Vue } from 'vue-property-decorator';
+import Schedule from '@/components/Schedule.vue';
 
-@Component
+@Component({
+  components: {
+    Schedule,
+  },
+})
+
 export default class Objects extends Vue {
   @Prop() private objects!: object[];
   @Prop() private errors!: object[];

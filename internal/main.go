@@ -75,9 +75,9 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 		// add namespace scanner
 		for _, ns = range scan.Namespace {
 			addScanner(agent, scanner.Config{
-				Type:            scanner.OpenShift,
-				Namespace:       ns,
-				DefaultSchedule: def,
+				Type:      scanner.OpenShift,
+				Namespace: ns,
+				Schedule:  def,
 			})
 		}
 		// add exceptions specified in deployments
@@ -86,11 +86,10 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 			for _, ns = range scan.Namespace {
 				for _, sel := range depl.Selector {
 					addScanner(agent, scanner.Config{
-						Type:            scanner.OpenShift,
-						Namespace:       ns,
-						DefaultSchedule: def,
-						ForceSchedule:   sched,
-						Label:           sel,
+						Type:      scanner.OpenShift,
+						Namespace: ns,
+						Schedule:  sched,
+						Label:     sel,
 					})
 				}
 			}
