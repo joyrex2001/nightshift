@@ -1,7 +1,6 @@
 <template>
   <div id="app">
     <div id="nav">
-          <img class="logo" alt="Nightshift" src="./assets/nightshift-logo.png">
           <h1>NIGHTSHIFT admin</h1>
           <router-link to="/scanners">Scanners</router-link> |
           <router-link to="/objects">Objects</router-link> |
@@ -22,7 +21,7 @@
 }
 
 #nav {
-  padding: 2px;
+  padding: 5px;
   background-image: linear-gradient(#000000, white); /* #77b8f7, #4788c7 */
 }
 
@@ -32,6 +31,7 @@
 }
 #nav h1 {
   color: #fff;
+  margin: 0px;
   text-shadow: 2px 2px #000000;
 }
 
