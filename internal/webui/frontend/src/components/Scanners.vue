@@ -25,23 +25,23 @@ export default class Scanners extends Vue {
   @Prop() private errors!: object[];
 
   private created() {
+    this.fields = {
+        namespace: {
+            label: 'Namespace',
+            sortable: true,
+        },
+        label: {
+            label: 'Label',
+            sortable: true,
+        },
+        schedule: {
+            label: 'Schedule',
+            sortable: true,
+        },
+    };
     axios.get(`/api/scanners`)
         .then( (response) => {
             this.scanners = response.data;
-            this.fields = {
-                namespace: {
-                    label: 'Namespace',
-                    sortable: true,
-                },
-                label: {
-                    label: 'Label',
-                    sortable: true,
-                },
-                schedule: {
-                    label: 'Schedule',
-                    sortable: true,
-                },
-            };
         })
         .catch( (e) => {
             this.errors.push(e);
