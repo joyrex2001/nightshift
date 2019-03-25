@@ -1,13 +1,10 @@
 <template>
   <div class="objects">
-
-      <ul id="objectlist">
-        <li v-for="object in objects">
-          {{ object.namespace }} | {{ object.name }}
-          <Schedule :schedule="object.schedule"/>
-        </li>
-      </ul>
-
+    <b-table striped hover small :items="objects" :fields="fields">
+      <template slot="schedule" slot-scope="data">
+        <Schedule :schedule="data.value"/>
+      </template>
+    </b-table>
   </div>
 </template>
 
@@ -23,10 +20,25 @@ import Schedule from '@/components/Schedule.vue';
 })
 
 export default class Objects extends Vue {
+  @Prop() private fields!: object;
   @Prop() private objects!: object[];
   @Prop() private errors!: object[];
 
   private created() {
+    this.fields = {
+      namespace: {
+          label: 'Namespace',
+          sortable: true,
+      },
+      name: {
+          label: 'Name',
+          sortable: true,
+      },
+      schedule: {
+          label: 'Schedule',
+          sortable: true,
+      },
+    };
     axios.get(`/api/objects`)
         .then( (response) => {
             this.objects = response.data;

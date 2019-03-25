@@ -1,14 +1,10 @@
 <template>
   <div class="scanners">
-
-      <ul id="scannerlist">
-        <li v-for="scanner in scanners">
-          {{ scanner.namespace }} |
-          {{ scanner.label }}
-          <Schedule :schedule="scanner.schedule"/>
-        </li>
-      </ul>
-
+    <b-table striped hover small :items="scanners" :fields="fields">
+      <template slot="schedule" slot-scope="data">
+         <Schedule :schedule="data.value"/>
+      </template>
+    </b-table>
   </div>
 </template>
 
@@ -24,6 +20,7 @@ import Schedule from '@/components/Schedule.vue';
 })
 
 export default class Scanners extends Vue {
+  @Prop() private fields!: object;
   @Prop() private scanners!: object[];
   @Prop() private errors!: object[];
 
@@ -31,6 +28,20 @@ export default class Scanners extends Vue {
     axios.get(`/api/scanners`)
         .then( (response) => {
             this.scanners = response.data;
+            this.fields = {
+                namespace: {
+                    label: 'Namespace',
+                    sortable: true,
+                },
+                label: {
+                    label: 'Label',
+                    sortable: true,
+                },
+                schedule: {
+                    label: 'Schedule',
+                    sortable: true,
+                },
+            };
         })
         .catch( (e) => {
             this.errors.push(e);

@@ -5,8 +5,6 @@
           <router-link to="/scanners">Scanners</router-link> |
           <router-link to="/objects">Objects</router-link> |
           <router-link to="/about">About</router-link>
-          <br>
-          <hr>
     </div>
     <router-view/>
   </div>
@@ -29,6 +27,7 @@
   float: left;
   padding: 0.6em;
 }
+
 #nav h1 {
   color: #fff;
   margin: 0px;

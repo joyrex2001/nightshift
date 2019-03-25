@@ -1,10 +1,8 @@
 <template>
   <div class="schedules">
-      <ul id="schedulelist">
-        <li v-for="sched in schedule">
-          {{ sched.Description }}
-        </li>
-      </ul>
+    <div class="row" v-for="sched in schedule">
+      {{ sched.Description }}
+    </div>
   </div>
 </template>
 
