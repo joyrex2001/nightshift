@@ -1,8 +1,8 @@
 <template>
   <div class="scanners">
-    <b-table striped hover small :items="scanners" :fields="fields">
+    <b-table striped hover bordered small :items="scanners" :fields="fields">
       <template slot="schedule" slot-scope="data">
-         <Schedule :schedule="data.value"/>
+         <schedule :schedule="data.value"/>
       </template>
     </b-table>
   </div>
@@ -31,7 +31,7 @@ export default class Scanners extends Vue {
             sortable: true,
         },
         label: {
-            label: 'Label',
+            label: 'Label selector',
             sortable: true,
         },
         schedule: {
@@ -51,12 +51,11 @@ export default class Scanners extends Vue {
 
 </script>
 
-<style scoped>
-ul {
-  list-style-type: none;
-  padding: 0;
+<style>
+tr:focus {
+    outline: none;
 }
-li {
-  margin: 0 10px;
+th:focus {
+    outline: none;
 }
 </style>

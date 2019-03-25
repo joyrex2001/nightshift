@@ -15,21 +15,18 @@
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 0.9em;
   color: #000000;
 }
 
 #nav {
   padding: 5px;
-  background-image: linear-gradient(#000000, white); /* #77b8f7, #4788c7 */
-}
-
-#nav .logo {
-  float: left;
-  padding: 0.6em;
+  background-image: linear-gradient(#000000, white);
 }
 
 #nav h1 {
   color: #fff;
+  font-weight: bold;
   margin: 0px;
   text-shadow: 2px 2px #000000;
 }

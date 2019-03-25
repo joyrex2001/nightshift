@@ -1,6 +1,6 @@
 <template>
   <div class="schedules">
-    <div class="row" v-for="sched in schedule">
+    <div v-for="sched in schedule">
       {{ sched.Description }}
     </div>
   </div>
@@ -15,13 +15,3 @@ export default class Schedule extends Vue {
 }
 
 </script>
-
-<style scoped>
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  margin: 0 10px;
-}
-</style>
