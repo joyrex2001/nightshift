@@ -101,7 +101,7 @@ export default class Objects extends Vue {
   }
 
   private scale(evt: object) {
-      axios.post(`/api/objects/scale/${this.replicas}`)
+      axios.post(`/api/objects/scale/${this.replicas}`, this.selected)
           .then( (response) => {
               this.$root.$emit('bv::show::modal', 'success', '#btnShow');
           })

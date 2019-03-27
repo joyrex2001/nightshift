@@ -2,7 +2,9 @@ package backend
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 
@@ -31,6 +33,31 @@ func (f *handler) GetScanners(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(res); err != nil {
+		f.Error(w, r, http.StatusInternalServerError, err)
+	}
+	return
+}
+
+// PostObjectsScale will scale the provided pods to the number of specified
+// replicas.
+func (f *handler) PostObjectsScale(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	replicas, err := strconv.Atoi(ps.ByName("replicas"))
+	if err != nil {
+		f.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+	if replicas < 0 {
+		f.Error(w, r, http.StatusInternalServerError, fmt.Errorf("invalid number of replicas: %d", replicas))
+		return
+	}
+	in := []scanner.Object{}
+	if err = json.NewDecoder(r.Body).Decode(&in); err != nil {
+		f.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+	// TODO: scale objects
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(in); err != nil {
 		f.Error(w, r, http.StatusInternalServerError, err)
 	}
 	return
