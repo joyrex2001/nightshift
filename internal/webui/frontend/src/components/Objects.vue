@@ -4,7 +4,7 @@
     <b-navbar v-show="selected.length" fixed="bottom" type="dark" variant="light">
       <b-nav-form>
         <b-form-input class="mr-sm-2" type="number" v-model.number="replicas" placeholder="Replicas" />
-        <b-button size="sm" class="my-2 my-sm-0" type="button" v-on:click="scale">Scale now</b-button>
+        <b-button size="sm" class="my-2 my-sm-0" type="button" v-on:click="showScaleDialog">Scale now</b-button>
       </b-nav-form>
     </b-navbar>
 
@@ -21,10 +21,25 @@
       <div class="d-block">Invalid number of replicas!</div>
     </b-modal>
 
-    <b-modal ok-only title="Scaling" id="scaling">
-      <div class="d-block">NOT YET IMPLEMENTED</div>
-      <div class="d-block">Scaling to {{ replicas }} replicas.</div>
+    <b-modal ok-only title="Error" id="failed">
+      <div class="d-block">{{ this.error }}</div>
     </b-modal>
+
+    <b-modal@ok="reload" ok-only title="Success" id="success">
+      <div class="d-block">
+          Resource scaling has been succesfully scheduled.
+      </div>
+    </b-modal>
+
+    <b-modal @ok="scale" title="Scale selected resources" id="scaling">
+      <div class="d-block">
+          The selection will be scaled to {{ replicas }} replicas.
+          Are you sure?
+      </div>
+    </b-modal>
+
+    <div>&nbsp;</div>
+    <div>&nbsp;</div>
 
   </div>
 </template>
@@ -43,20 +58,12 @@ import Schedule from '@/components/Schedule.vue';
 export default class Objects extends Vue {
   @Prop() private fields!: object;
   @Prop() private objects!: object[];
-  @Prop() private errors!: object[];
+  @Prop() private error!: object;
   @Prop() private replicas!: number;
 
   @Prop() private selected!: object[];
   private rowSelected(items: object[]) {
         this.selected = items;
-  }
-
-  private scale() {
-      if (typeof(this.replicas) === 'undefined' || this.replicas < 0) {
-          this.$root.$emit('bv::show::modal', 'invalid', '#btnShow');
-          return;
-      }
-      this.$root.$emit('bv::show::modal', 'scaling', '#btnShow');
   }
 
   private created() {
@@ -80,11 +87,35 @@ export default class Objects extends Vue {
             this.objects = response.data;
         })
         .catch( (e) => {
-            this.errors.push(e);
+            this.error = e;
+            this.$root.$emit('bv::show::modal', 'failed', '#btnShow');
         });
   }
-}
 
+  private showScaleDialog() {
+      if (typeof(this.replicas) === 'undefined' || this.replicas < 0) {
+          this.$root.$emit('bv::show::modal', 'invalid', '#btnShow');
+          return;
+      }
+      this.$root.$emit('bv::show::modal', 'scaling', '#btnShow');
+  }
+
+  private scale(evt: object) {
+      axios.post(`/api/objects/scale/${this.replicas}`)
+          .then( (response) => {
+              this.$root.$emit('bv::show::modal', 'success', '#btnShow');
+          })
+          .catch( (e) => {
+              this.error = e;
+              this.$root.$emit('bv::show::modal', 'failed', '#btnShow');
+          });
+  }
+
+  private reload(evt: object) {
+      this.$router.go(0);
+  }
+
+}
 </script>
 
 <style>

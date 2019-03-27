@@ -5,6 +5,10 @@
          <schedule :schedule="data.value"/>
       </template>
     </b-table>
+
+    <b-modal ok-only title="Error" id="failed">
+      <div class="d-block">{{ this.error }}</div>
+    </b-modal>
   </div>
 </template>
 
@@ -22,7 +26,7 @@ import Schedule from '@/components/Schedule.vue';
 export default class Scanners extends Vue {
   @Prop() private fields!: object;
   @Prop() private scanners!: object[];
-  @Prop() private errors!: object[];
+  @Prop() private error!: object;
 
   private created() {
     this.fields = {
@@ -44,7 +48,8 @@ export default class Scanners extends Vue {
             this.scanners = response.data;
         })
         .catch( (e) => {
-            this.errors.push(e);
+            this.error = e;
+            this.$root.$emit('bv::show::modal', 'failed', '#btnShow');
         });
   }
 }
