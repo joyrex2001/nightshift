@@ -31,6 +31,8 @@ RUN cd /go/src/${CODE} \
 FROM docker.io/busybox:latest
 
 COPY --from=nightshift /app /app
+COPY --from=nightshift /usr/share/zoneinfo /usr/share/zoneinfo
+
 WORKDIR /app
 
 ENTRYPOINT ["/app/nightshift"]
