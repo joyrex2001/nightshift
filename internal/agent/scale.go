@@ -22,7 +22,7 @@ func (a *worker) Scale() {
 	a.now = time.Now()
 	for _, obj := range a.objects {
 		for _, e := range a.getEvents(obj) {
-			glog.Infof("Scale event: %v", e)
+			glog.V(4).Infof("Scale event: %v", e)
 			if e.obj.Scale != nil {
 				repl, err := e.sched.GetReplicas()
 				if err == nil {

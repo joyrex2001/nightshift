@@ -55,10 +55,25 @@ func (f *handler) PostObjectsScale(w http.ResponseWriter, r *http.Request, ps ht
 		f.Error(w, r, http.StatusInternalServerError, err)
 		return
 	}
-	// TODO: scale objects
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(in); err != nil {
+	if err := scaleObjects(in, replicas); err != nil {
 		f.Error(w, r, http.StatusInternalServerError, err)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 	return
+}
+
+// scaleObjects will scale the array of objects to given amount of replicas.
+func scaleObjects(objects []scanner.Object, replicas int) error {
+	for _, obj := range objects {
+		scanner, err := scanner.New(obj.Type)
+		if err != nil {
+			return err
+		}
+		if err := scanner.Scale(obj, replicas); err != nil {
+			return err
+		}
+	}
+	return nil
 }
