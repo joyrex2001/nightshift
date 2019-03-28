@@ -75,5 +75,6 @@ func scaleObjects(objects []scanner.Object, replicas int) error {
 			return err
 		}
 	}
+	agent.New().UpdateSchedule()
 	return nil
 }

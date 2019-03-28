@@ -81,6 +81,10 @@ export default class Objects extends Vue {
           label: 'Schedule',
           sortable: true,
       },
+      replicas: {
+          label: 'Current',
+          sortable: true,
+      },
     };
     axios.get(`/api/objects`)
         .then( (response) => {

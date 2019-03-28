@@ -18,6 +18,8 @@ type event struct {
 
 // Scale will process all scanned objects and scale them accordingly.
 func (a *worker) Scale() {
+	a.m.Lock()
+	defer a.m.Unlock()
 	glog.Info("Scaling resources start...")
 	a.now = time.Now()
 	for _, obj := range a.objects {

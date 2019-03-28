@@ -10,6 +10,7 @@ type Object struct {
 	Name      string               `json:"name"`
 	Type      ScannerType          `json:"type"`
 	Schedule  []*schedule.Schedule `json:"schedule"`
+	Replicas  int                  `json:"replicas"`
 	Scale     Scaler               `json:"-"`
 }
 

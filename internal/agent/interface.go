@@ -11,6 +11,7 @@ type Agent interface {
 	SetInterval(time.Duration)
 	GetObjects() map[string]scanner.Object
 	GetScanners() []scanner.Scanner
+	UpdateSchedule()
 	Start()
 	Stop()
 }

@@ -102,6 +102,7 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, e
 				UID:       string(rc.ObjectMeta.UID),
 				Type:      OpenShift,
 				Schedule:  sched,
+				Replicas:  int(rc.Spec.Replicas),
 				Scale:     s.getScaler(rc.ObjectMeta.Name, s.config.Namespace),
 			})
 		}

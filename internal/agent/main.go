@@ -96,8 +96,6 @@ func (a *worker) loop() {
 // configuration as specified with the given annotations, as well as Updating
 // the number of replicas for deployments and statefulsets.
 func (a *worker) tick() {
-	a.m.Lock()
-	defer a.m.Unlock()
 	a.UpdateSchedule()
 	a.Scale()
 }
