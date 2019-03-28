@@ -76,7 +76,7 @@ objects:
               - --upstream=http://localhost:8080
               - --tls-cert=/etc/tls/private/tls.crt
               - --tls-key=/etc/tls/private/tls.key
-              - --openshift-sar={"namespace":"$(MY_POD_NAMESPACE)","resource":"services","name":"prometheus","verb":"get"}
+              - --openshift-sar={"namespace":"$(MY_POD_NAMESPACE)","resource":"services","name":"${NAME}","verb":"update"}
               - --cookie-secret=${COOKIE_SECRET}
             env:
               - name: MY_POD_NAMESPACE
@@ -109,7 +109,7 @@ objects:
               timeoutSeconds: 3
             resources:
               limits:
-                memory: "64Mi"
+                memory: "128Mi"
               requests:
                 cpu: "0.1"
             volumeMounts:

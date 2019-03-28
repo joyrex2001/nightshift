@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -111,4 +112,24 @@ func TestGetReplicas(t *testing.T) {
 			t.Errorf("failed test %d; expected %d replicas, got %d", i, tst.replicas, r)
 		}
 	}
+}
+
+func TestGetTodayTrigger(t *testing.T) {
+	SetTimeZone("Europe/Amsterdam")
+	s := Schedule{hour: 18, min: 0}
+	t1 := time.Date(2019, 1, 1, 23, 0, 0, 0, time.UTC)
+	t2 := s.getTodayTrigger(t1)
+	t3 := time.Date(2019, 1, 2, 17, 30, 0, 0, time.UTC)
+
+	fmt.Printf("t1=%s\n", t1)
+	fmt.Printf("t2=%s\n", t2)
+	fmt.Printf("t3=%s\n", t3)
+
+	fmt.Printf("t2.epoch=%d\n", t2.Unix())
+	fmt.Printf("t3.epoch=%d\n", t3.Unix())
+
+	if t3.After(t2) {
+		fmt.Printf("ok=========\n")
+	}
+
 }
