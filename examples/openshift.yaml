@@ -5,6 +5,38 @@ labels:
   template: nightshift
 objects:
 
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: "${SERVICE_ACCOUNT}"
+    annotations:
+      serviceaccounts.openshift.io/oauth-redirectreference.primary: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"${NAME}"}}'
+
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: "${NAME}"
+  spec:
+    to:
+      kind: Service
+      name: "${NAME}"
+    tls:
+      termination: Reencrypt
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: "${NAME}"
+    annotations:
+      service.alpha.openshift.io/serving-cert-secret-name: "${NAME}-proxy-tls"
+  spec:
+    ports:
+    - name: auth-proxy
+      port: 443
+      targetPort: 8443
+    selector:
+      name: "${NAME}"
+
 - kind: DeploymentConfig
   apiVersion: v1
   metadata:
@@ -28,12 +60,41 @@ objects:
           name: "${NAME}"
         name: "${NAME}"
       spec:
+        serviceAccount: "${SERVICE_ACCOUNT}"
         containers:
+
+          - name: oauth-proxy
+            image: openshift/oauth-proxy:latest
+            imagePullPolicy: IfNotPresent
+            ports:
+              - containerPort: 8443
+                name: auth-proxy
+            args:
+              - --https-address=:8443
+              - --provider=openshift
+              - --openshift-service-account=${SERVICE_ACCOUNT}
+              - --upstream=http://localhost:8080
+              - --tls-cert=/etc/tls/private/tls.crt
+              - --tls-key=/etc/tls/private/tls.key
+              - --openshift-sar={"namespace":"$(MY_POD_NAMESPACE)","resource":"services","name":"prometheus","verb":"get"}
+              - --cookie-secret=${COOKIE_SECRET}
+            env:
+              - name: MY_POD_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+            volumeMounts:
+              - mountPath: /etc/tls/private
+                name: proxy-tls
+
           - name: ${NAME}
             image: "${NIGHTSHIFT_IMAGE}"
-            args: ["--config", "/etc/nightshift/config.yaml"]
+            args:
+              - --config=/etc/nightshift/config.yaml
+              - --enable-web=true
             ports:
               - containerPort: 8080
+                name: nightshift
             readinessProbe:
               httpGet:
                 path: "/healthz"
@@ -54,11 +115,14 @@ objects:
             volumeMounts:
               - mountPath: /etc/nightshift/
                 name: config-volume
-        serviceAccount: "${SERVICE_ACCOUNT}"
+
         volumes:
           - name: config-volume
             configMap:
               name: ${NIGHTSHIFT_CONFIGMAP}
+          - name: proxy-tls
+            secret:
+              secretName: "${NAME}-proxy-tls"
 
 parameters:
 - name: NAME
@@ -90,3 +154,9 @@ parameters:
     to scale.
   required: false
   value: "nightshift"
+
+- name: COOKIE_SECRET
+  description: cookie secret for oauth-proxy
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  required: true
