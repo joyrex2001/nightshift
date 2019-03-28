@@ -8,9 +8,9 @@
       </b-nav-form>
     </b-navbar>
 
-    <b-table
+    <b-table class="noselect"
         striped hover bordered small
-        :select-mode="range" selectable @row-selected="rowSelected"
+        select-mode="range" selectable @row-selected="rowSelected"
         :items="objects" :fields="fields">
       <template slot="schedule" slot-scope="data">
         <schedule :schedule="data.value"/>
@@ -124,6 +124,15 @@ tr:focus {
 }
 th:focus {
     outline: none;
+}
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }
 .b-row-selected:focus  {
     border: 1px solid black;

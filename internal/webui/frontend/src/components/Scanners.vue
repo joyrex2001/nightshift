@@ -1,6 +1,6 @@
 <template>
   <div class="scanners">
-    <b-table striped hover bordered small :items="scanners" :fields="fields">
+    <b-table class="noselect" striped hover bordered small :items="scanners" :fields="fields">
       <template slot="schedule" slot-scope="data">
          <schedule :schedule="data.value"/>
       </template>

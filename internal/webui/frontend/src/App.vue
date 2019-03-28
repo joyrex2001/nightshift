@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div id="nav">
+    <div id="nav" class="noselect">
           <h1>NIGHTSHIFT admin</h1>
           <router-link to="/scanners">Scanners</router-link> |
           <router-link to="/objects">Objects</router-link> |
@@ -38,5 +38,14 @@
 
 #nav a.router-link-exact-active {
   color: #0080ff;
+}
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }
 </style>
