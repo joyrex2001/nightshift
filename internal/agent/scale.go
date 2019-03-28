@@ -25,14 +25,12 @@ func (a *worker) Scale() {
 	for _, obj := range a.objects {
 		for _, e := range a.getEvents(obj) {
 			glog.V(4).Infof("Scale event: %v", e)
-			if e.obj.Scale != nil {
-				repl, err := e.sched.GetReplicas()
-				if err == nil {
-					err = e.obj.Scale(repl)
-				}
-				if err != nil {
-					glog.Errorf("Error scaling deployment: %s", err)
-				}
+			repl, err := e.sched.GetReplicas()
+			if err == nil {
+				err = e.obj.Scale(repl)
+			}
+			if err != nil {
+				glog.Errorf("Error scaling deployment: %s", err)
 			}
 		}
 	}

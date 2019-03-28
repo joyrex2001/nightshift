@@ -67,11 +67,7 @@ func (f *handler) PostObjectsScale(w http.ResponseWriter, r *http.Request, ps ht
 // scaleObjects will scale the array of objects to given amount of replicas.
 func scaleObjects(objects []scanner.Object, replicas int) error {
 	for _, obj := range objects {
-		scanner, err := scanner.New(obj.Type)
-		if err != nil {
-			return err
-		}
-		if err := scanner.Scale(obj, replicas); err != nil {
+		if err := obj.Scale(replicas); err != nil {
 			return err
 		}
 	}

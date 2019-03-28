@@ -67,8 +67,21 @@ func (s *OpenShiftScanner) GetObjects() ([]Object, error) {
 
 // Scale will scale a given object to given amount of replicas.
 func (s *OpenShiftScanner) Scale(obj Object, replicas int) error {
-	scaler := s.getScaler(obj.Name, obj.Namespace)
-	return scaler(replicas)
+	glog.Infof("Scaling %s/%s to %d replicas", obj.Namespace, obj.Name, replicas)
+	if s.kubernetes == nil {
+		return fmt.Errorf("unable to connect to kubernetes")
+	}
+	apps, err := appsv1.NewForConfig(s.kubernetes)
+	if err != nil {
+		return err
+	}
+	scale, err := apps.DeploymentConfigs(obj.Namespace).GetScale(obj.Name, metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("GetScale failed with: %s", err)
+	}
+	scale.Spec.Replicas = int32(replicas)
+	_, err = apps.DeploymentConfigs(obj.Namespace).UpdateScale(obj.Name, scale)
+	return err
 }
 
 // getDeploymentConfigs will return all replication controllers in the
@@ -103,7 +116,6 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, e
 				Type:      OpenShift,
 				Schedule:  sched,
 				Replicas:  int(rc.Spec.Replicas),
-				Scale:     s.getScaler(rc.ObjectMeta.Name, s.config.Namespace),
 			})
 		}
 	}
@@ -141,25 +153,4 @@ func (s *OpenShiftScanner) annotationToSchedule(annotation string) ([]*schedule.
 		sched = append(sched, s)
 	}
 	return sched, nil
-}
-
-// getScaler will return a Scaler funtion for given Object.
-func (s *OpenShiftScanner) getScaler(name, namespace string) Scaler {
-	return func(replicas int) error {
-		glog.Infof("Scaling %s/%s to %d replicas", namespace, name, replicas)
-		if s.kubernetes == nil {
-			return fmt.Errorf("unable to connect to kubernetes")
-		}
-		apps, err := appsv1.NewForConfig(s.kubernetes)
-		if err != nil {
-			return err
-		}
-		scale, err := apps.DeploymentConfigs(namespace).GetScale(name, metav1.GetOptions{})
-		if err != nil {
-			return fmt.Errorf("GetScale failed with: %s", err)
-		}
-		scale.Spec.Replicas = int32(replicas)
-		_, err = apps.DeploymentConfigs(namespace).UpdateScale(name, scale)
-		return err
-	}
 }
