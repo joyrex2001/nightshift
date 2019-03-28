@@ -83,6 +83,9 @@ objects:
                 valueFrom:
                   fieldRef:
                     fieldPath: metadata.namespace
+            resources:
+              limits:
+                memory: "64Mi"
             volumeMounts:
               - mountPath: /etc/tls/private
                 name: proxy-tls
@@ -92,9 +95,6 @@ objects:
             args:
               - --config=/etc/nightshift/config.yaml
               - --enable-web=true
-            ports:
-              - containerPort: 8080
-                name: nightshift
             readinessProbe:
               httpGet:
                 path: "/healthz"
@@ -109,7 +109,7 @@ objects:
               timeoutSeconds: 3
             resources:
               limits:
-                memory: "128Mi"
+                memory: "64Mi"
               requests:
                 cpu: "0.1"
             volumeMounts:

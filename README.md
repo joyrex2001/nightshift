@@ -8,14 +8,14 @@ according to a preset configuration.
 
 ## Install in OpenShift
 
-It is advised to run the Nightshift agent in a separate namespace. In order to
-allow OpenShift scaling the services, it needs to run with a service account
-that has both read and edit permissions on the namespace it should control.
-Adding the service account can be done with the below commands, where a
-service account named "nightshift" is created in the project specified with
-"source" which has access to the project "target". If multiple projects
-should be scaled by nightshift, the policies should be added for each project
-individually.
+Nightshift can be run both from a seperate namespace, or in the namespace which
+it will schedule. In order to allow OpenShift scaling the services, it needs to
+run with a service account that has both read and edit permissions on the
+namespace it should control. Adding the service account can be done with the
+below commands, where a service account named "nightshift" is created in the
+project specified with "source" which has access to the project "target". If
+multiple projects should be scaled by nightshift, the policies should be added
+for each project individually.
 
 ```bash
 oc create sa nightshift -n <source>
@@ -25,9 +25,10 @@ oc policy add-role-to-user edit system:serviceaccount:<target>:nightshift -n <so
 
 This repository also includes an example OpenShift template, which contains
 the basis configuration for installing the service. The configuration is stored
-in a configmap, which for convenience has been added to the template as well.
-Note that for a production setup, this configmap should be adjusted to reflect
-the required setup (see also the Configration section). The template pulls the
+in a configmap, the example folder contains an example for this as well. The
+template includes the OpenShift oauth proxy for authentication with an
+OpenShift account. Access is restricted to users that have update permissions
+in the project where nightshift is deployed. The example template pulls the
 nightshift image from docker hub.
 
 ```bash
