@@ -115,7 +115,7 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
-			data: `Wed, Thu-Sun 3:10 replicas=4`,
+			data: `Wed, Thu-Sun 3:10 replicas=4 state=save`,
 			err:  false,
 			sched: &Schedule{
 				hour: 3,
@@ -129,8 +129,9 @@ func TestParse(t *testing.T) {
 				},
 				settings: map[string]string{
 					"replicas": "4",
+					"state":    "save",
 				},
-				Description: "wed,thu-sun 3:10 replicas=4",
+				Description: "wed,thu-sun 3:10 replicas=4 state=save",
 			},
 		},
 		{

@@ -19,3 +19,12 @@ type Schedule struct {
 func (s *Schedule) String() string {
 	return s.Description
 }
+
+// State describes the possible values of the 'state' attribute.
+type State string
+
+var (
+	RestoreState State = "restore"
+	SaveState    State = "save"
+	NoState      State = ""
+)
