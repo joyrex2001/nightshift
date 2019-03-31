@@ -22,6 +22,7 @@ type Object struct {
 	Schedule  []*schedule.Schedule `json:"schedule"`
 	State     *State               `json:"state"`
 	Replicas  int                  `json:"replicas"`
+	scanner   Scanner              `json:"-"`
 }
 
 // State defines a state of the object.
