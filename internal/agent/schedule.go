@@ -10,7 +10,7 @@ func (a *worker) UpdateSchedule() {
 	a.m.Lock()
 	defer a.m.Unlock()
 	glog.Info("Updating schedule start...")
-	a.objects = map[string]scanner.Object{}
+	a.objects = map[string]*scanner.Object{}
 	for _, scnr := range a.scanners {
 		objs, err := scnr.GetObjects()
 		if err != nil {

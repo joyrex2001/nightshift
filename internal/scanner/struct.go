@@ -20,17 +20,11 @@ type Object struct {
 	Name      string               `json:"name"`
 	Type      ScannerType          `json:"type"`
 	Schedule  []*schedule.Schedule `json:"schedule"`
+	State     *State               `json:"state"`
 	Replicas  int                  `json:"replicas"`
 }
 
-// Scale will scale the Object to the given amount of replicas.
-func (obj Object) Scale(replicas int) error {
-	scanner, err := New(obj.Type)
-	if err != nil {
-		return err
-	}
-	if err := scanner.Scale(obj, replicas); err != nil {
-		return err
-	}
-	return nil
+// State defines a state of the object.
+type State struct {
+	Replicas int
 }

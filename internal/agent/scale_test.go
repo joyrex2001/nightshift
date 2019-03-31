@@ -71,7 +71,7 @@ func TestGetEvents(t *testing.T) {
 		agt := &worker{}
 		agt.past = tst.past
 		agt.now = tst.now
-		obj := scanner.Object{}
+		obj := &scanner.Object{}
 		obj.Schedule = []*schedule.Schedule{}
 		for _, s := range tst.sched {
 			sc, err := schedule.New(s)

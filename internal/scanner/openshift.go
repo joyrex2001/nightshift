@@ -57,7 +57,7 @@ func (s *OpenShiftScanner) GetConfig() Config {
 
 // GetObjects will return a populated list of Objects containing the relavant
 // resources with their schedule info.
-func (s *OpenShiftScanner) GetObjects() ([]Object, error) {
+func (s *OpenShiftScanner) GetObjects() ([]*Object, error) {
 	rcs, err := s.getDeploymentConfigs()
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (s *OpenShiftScanner) GetObjects() ([]Object, error) {
 }
 
 // Scale will scale a given object to given amount of replicas.
-func (s *OpenShiftScanner) Scale(obj Object, replicas int) error {
+func (s *OpenShiftScanner) Scale(obj *Object, replicas int) error {
 	glog.Infof("Scaling %s/%s to %d replicas", obj.Namespace, obj.Name, replicas)
 	if s.kubernetes == nil {
 		return fmt.Errorf("unable to connect to kubernetes")
@@ -84,8 +84,22 @@ func (s *OpenShiftScanner) Scale(obj Object, replicas int) error {
 	return err
 }
 
-// getDeploymentConfigs will return all replication controllers in the
-// namespace that match the label selector.
+// LoadState will load the State in an object with a the value of the State
+// annoation on the deployment config.
+func (s *OpenShiftScanner) LoadState(obj *Object) error {
+	glog.Infof("TODO: LoadState")
+	return nil
+}
+
+// SaveState will save the current number of replicas as an annotation on the
+// deployment config.
+func (s *OpenShiftScanner) SaveState(obj *Object) error {
+	glog.Infof("TODO: SaveState")
+	return nil
+}
+
+// getDeploymentConfigs will return all deploymentconfigs in the namespace that
+// match the label selector.
 func (s *OpenShiftScanner) getDeploymentConfigs() (*v1.DeploymentConfigList, error) {
 	if s.kubernetes == nil {
 		return nil, fmt.Errorf("unable to connect to kubernetes")
@@ -99,17 +113,17 @@ func (s *OpenShiftScanner) getDeploymentConfigs() (*v1.DeploymentConfigList, err
 	})
 }
 
-// getObjects will itterate through the list of replication controllers and
-// populate a list of objects containing the schedule configuration (if any).
-func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]Object, error) {
-	objs := []Object{}
+// getObjects will itterate through the list of deployment configs and populate
+// a list of objects containing the schedule configuration (if any).
+func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, error) {
+	objs := []*Object{}
 	for _, rc := range rcs.Items {
 		sched, err := s.getSchedule(rc.ObjectMeta.Annotations)
 		if err != nil {
 			glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
 		}
 		if sched != nil {
-			objs = append(objs, Object{
+			objs = append(objs, &Object{
 				Name:      rc.ObjectMeta.Name,
 				Namespace: s.config.Namespace,
 				UID:       string(rc.ObjectMeta.UID),

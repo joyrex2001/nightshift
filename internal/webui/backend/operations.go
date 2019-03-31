@@ -14,7 +14,7 @@ import (
 
 // GetObjects will return the list of currently scanned objects.
 func (f *handler) GetObjects(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	res := []scanner.Object{}
+	res := []*scanner.Object{}
 	for _, obj := range agent.New().GetObjects() {
 		res = append(res, obj)
 	}
@@ -50,7 +50,7 @@ func (f *handler) PostObjectsScale(w http.ResponseWriter, r *http.Request, ps ht
 		f.Error(w, r, http.StatusInternalServerError, fmt.Errorf("invalid number of replicas: %d", replicas))
 		return
 	}
-	in := []scanner.Object{}
+	in := []*scanner.Object{}
 	if err = json.NewDecoder(r.Body).Decode(&in); err != nil {
 		f.Error(w, r, http.StatusInternalServerError, err)
 		return
@@ -65,7 +65,7 @@ func (f *handler) PostObjectsScale(w http.ResponseWriter, r *http.Request, ps ht
 }
 
 // scaleObjects will scale the array of objects to given amount of replicas.
-func scaleObjects(objects []scanner.Object, replicas int) error {
+func scaleObjects(objects []*scanner.Object, replicas int) error {
 	for _, obj := range objects {
 		if err := obj.Scale(replicas); err != nil {
 			return err

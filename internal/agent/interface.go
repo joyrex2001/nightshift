@@ -9,7 +9,7 @@ import (
 type Agent interface {
 	AddScanner(scanner.Scanner)
 	SetInterval(time.Duration)
-	GetObjects() map[string]scanner.Object
+	GetObjects() map[string]*scanner.Object
 	GetScanners() []scanner.Scanner
 	UpdateSchedule()
 	Start()
