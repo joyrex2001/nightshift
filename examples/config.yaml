@@ -17,8 +17,8 @@ scanner:
         - "development-3"
       default:
         schedule:
-          - "Mon-Fri  8:00 replicas=1"
-          - "Mon-Fri 18:00 replicas=0"
+          - "Mon-Fri  8:00 replicas=1 state=restore"
+          - "Mon-Fri 18:00 replicas=0 state=save"
       deployment:
         - selector:
             - "app=shell"

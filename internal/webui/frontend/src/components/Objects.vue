@@ -5,6 +5,8 @@
       <b-nav-form>
         <b-form-input class="mr-sm-2" type="number" v-model.number="replicas" placeholder="Replicas" />
         <b-button size="sm" class="my-2 my-sm-0" type="button" v-on:click="showScaleDialog">Scale now</b-button>
+        &nbsp;
+        <b-button size="sm" class="my-2 my-sm-0" type="button" v-on:click="showRestoreDialog">Restore state</b-button>
       </b-nav-form>
     </b-navbar>
 
@@ -34,6 +36,13 @@
     <b-modal @ok="scale" title="Scale selected resources" id="scaling">
       <div class="d-block">
           The selection will be scaled to {{ replicas }} replicas.
+          Are you sure?
+      </div>
+    </b-modal>
+
+    <b-modal @ok="restore" title="Restore selected resources" id="restoring">
+      <div class="d-block">
+          The selection will be restored to the previously known number of replicas.
           Are you sure?
       </div>
     </b-modal>
@@ -106,6 +115,21 @@ export default class Objects extends Vue {
 
   private scale(evt: object) {
       axios.post(`/api/objects/scale/${this.replicas}`, this.selected)
+          .then( (response) => {
+              this.$root.$emit('bv::show::modal', 'success', '#btnShow');
+          })
+          .catch( (e) => {
+              this.error = e;
+              this.$root.$emit('bv::show::modal', 'failed', '#btnShow');
+          });
+  }
+
+  private showRestoreDialog() {
+      this.$root.$emit('bv::show::modal', 'restoring', '#btnShow');
+  }
+
+  private restore(evt: object) {
+      axios.post(`/api/objects/restore`, this.selected)
           .then( (response) => {
               this.$root.$emit('bv::show::modal', 'success', '#btnShow');
           })
