@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/golang/glog"
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/joyrex2001/nightshift/internal/agent"
@@ -64,13 +65,52 @@ func (f *handler) PostObjectsScale(w http.ResponseWriter, r *http.Request, ps ht
 	return
 }
 
+// PostObjectsRestore will restore the provided pods to the previous known
+// state of the given objects.
+func (f *handler) PostObjectsRestore(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	in := []*scanner.Object{}
+	if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+		f.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+	if err := restoreObjects(in); err != nil {
+		f.Error(w, r, http.StatusInternalServerError, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+	return
+}
+
 // scaleObjects will scale the array of objects to given amount of replicas.
 func scaleObjects(objects []*scanner.Object, replicas int) error {
+	var err error
 	for _, obj := range objects {
-		if err := obj.Scale(replicas); err != nil {
-			return err
+		if _err := obj.Scale(replicas); _err != nil {
+			glog.Errorf("HTTP %s", _err)
+			err = _err // continue, even on error (do as much as possible)
 		}
 	}
 	agent.New().UpdateSchedule()
-	return nil
+	return err
+}
+
+// restoreObjects will scale the array of objects to the previous known state.
+func restoreObjects(objects []*scanner.Object) error {
+	var err error
+	for _, obj := range objects {
+		if _err := obj.LoadState(); _err != nil {
+			glog.Errorf("HTTP %s", _err)
+			err = _err // continue, even on errors (do as much as possible)
+			continue
+		}
+		if obj.State != nil {
+			if _err := obj.Scale(obj.State.Replicas); _err != nil {
+				glog.Errorf("HTTP %s", _err)
+				err = _err // continue, even on errors (do as much as possible)
+			}
+		}
+	}
+	agent.New().UpdateSchedule()
+	return err
 }

@@ -11,9 +11,10 @@ import (
 )
 
 type event struct {
-	at    time.Time
-	obj   *scanner.Object
-	sched *schedule.Schedule
+	at      time.Time
+	obj     *scanner.Object
+	sched   *schedule.Schedule
+	restore bool
 }
 
 // Scale will process all scanned objects and scale them accordingly.
@@ -46,7 +47,7 @@ func (a *worker) getEvents(obj *scanner.Object) []*event {
 				continue
 			}
 			if a.now.After(next) || a.now == next {
-				ev = append(ev, &event{next, obj, s})
+				ev = append(ev, &event{next, obj, s, false})
 			}
 		}
 	}
@@ -76,23 +77,30 @@ func (a *worker) handleState(e *event) {
 			glog.Errorf("Error loading state: %s", err)
 			return
 		}
+		e.restore = true
 	}
 	return
 }
 
 // scale will scale according to the event details.
 func (a *worker) scale(e *event) {
-	var repl int
-	var err error
-	if e.obj.State != nil {
-		repl = e.obj.State.Replicas
-	} else {
-		repl, err = e.sched.GetReplicas()
+	// restore state
+	if e.restore {
+		if e.obj.State != nil {
+			repl := e.obj.State.Replicas
+			if err := e.obj.Scale(repl); err != nil {
+				glog.Errorf("Error scaling deployment: %s", err)
+			}
+		}
+		return
 	}
+	// regular scaling
+	repl, err := e.sched.GetReplicas()
 	if err == nil {
 		err = e.obj.Scale(repl)
 	}
 	if err != nil {
 		glog.Errorf("Error scaling deployment: %s", err)
 	}
+	return
 }

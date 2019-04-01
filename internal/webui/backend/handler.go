@@ -36,6 +36,7 @@ func (f *handler) init() {
 	f.mux.GET("/public/*filepath", f.Authenticate(f.ServeFiles("")))
 	f.mux.GET("/api/objects", f.Authenticate(f.GetObjects))
 	f.mux.POST("/api/objects/scale/:replicas", f.Authenticate(f.PostObjectsScale))
+	f.mux.POST("/api/objects/restore", f.Authenticate(f.PostObjectsRestore))
 	f.mux.GET("/api/scanners", f.Authenticate(f.GetScanners))
 	f.mux.GET("/healthz", f.Healthz)
 	f.mux.GET("/", f.Redirect(307, "/public"))

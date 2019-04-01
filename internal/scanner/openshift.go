@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -20,6 +21,12 @@ type OpenShiftScanner struct {
 	config     Config
 	kubernetes *rest.Config
 }
+
+const (
+	ScheduleAnnotation  string = "joyrex2001.com/nightshift.schedule"
+	IgnoreAnnotation    string = "joyrex2001.com/nightshift.ignore"
+	SaveStateAnnotation string = "joyrex2001.com/nightshift.savestate"
+)
 
 // NewOpenShiftScanner will instantiate a new OpenShiftScanner object.
 func NewOpenShiftScanner() *OpenShiftScanner {
@@ -87,15 +94,47 @@ func (s *OpenShiftScanner) Scale(obj *Object, replicas int) error {
 // LoadState will load the State in an object with a the value of the State
 // annoation on the deployment config.
 func (s *OpenShiftScanner) LoadState(obj *Object) error {
-	glog.Infof("TODO: LoadState")
+	dc, err := s.getDeploymentConfig(obj)
+	if err != nil {
+		return err
+	}
+	repls, ok := dc.ObjectMeta.Annotations[SaveStateAnnotation]
+	if !ok {
+		return fmt.Errorf("no state available for %s/%s", obj.Namespace, obj.Name)
+	}
+	repl, err := strconv.Atoi(repls)
+	if err != nil {
+		return err
+	}
+	obj.State = &State{Replicas: repl}
 	return nil
 }
 
 // SaveState will save the current number of replicas as an annotation on the
 // deployment config.
 func (s *OpenShiftScanner) SaveState(obj *Object) error {
-	glog.Infof("TODO: SaveState")
-	return nil
+	dc, err := s.getDeploymentConfig(obj)
+	if err != nil {
+		return err
+	}
+	repl := dc.Spec.Replicas
+	dc.ObjectMeta.Annotations[SaveStateAnnotation] = strconv.Itoa(int(repl))
+	obj.State = &State{Replicas: int(repl)}
+	apps, _ := appsv1.NewForConfig(s.kubernetes)
+	_, err = apps.DeploymentConfigs(obj.Namespace).Update(dc)
+	return err
+}
+
+// getDeploymentConfig will return an DeploymentConfig object.
+func (s *OpenShiftScanner) getDeploymentConfig(obj *Object) (*v1.DeploymentConfig, error) {
+	if s.kubernetes == nil {
+		return nil, fmt.Errorf("unable to connect to kubernetes")
+	}
+	apps, err := appsv1.NewForConfig(s.kubernetes)
+	if err != nil {
+		return nil, err
+	}
+	return apps.DeploymentConfigs(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
 }
 
 // getDeploymentConfigs will return all deploymentconfigs in the namespace that
@@ -139,13 +178,13 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, 
 // getSchedule will return a list of schedules, taken the annotations and
 // defaults into account.
 func (s *OpenShiftScanner) getSchedule(annotations map[string]string) ([]*schedule.Schedule, error) {
-	dis := strings.ToLower(annotations["joyrex2001.com/nightshift.ignore"])
+	dis := strings.ToLower(annotations[IgnoreAnnotation])
 	if dis == "true" {
 		return nil, nil
 	} else if dis != "false" && dis != "" {
-		return nil, fmt.Errorf("invalid value '%s' for nightshift.ignore", dis)
+		return nil, fmt.Errorf("invalid value '%s' for %s", dis, IgnoreAnnotation)
 	}
-	if ann := annotations["joyrex2001.com/nightshift.schedule"]; ann != "" {
+	if ann := annotations[ScheduleAnnotation]; ann != "" {
 		return s.annotationToSchedule(ann)
 	}
 	return s.config.Schedule, nil

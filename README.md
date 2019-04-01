@@ -66,6 +66,16 @@ this point only the number of replicas can bet specified.
 
 An example of a schedule configuration is: ```Mon-Wed,Fri 9:00 replicas=1```.
 
+#### Saving and restoring states
+
+Next to specifying the exact number of replicas, it is also possible to save
+and restore states. In order to do this, the ```state=save``` or ```state=restore```
+can be added to the schedule. When the state should be saved, it will be saved
+before actual scaling to the number of replicas. When restoring the state, if
+no state is available, it will take the number of replicas that has been
+(optionally) specified in the schedule. The saved state will take precedence
+on the number that is set in replicas if both are configured.
+
 ### Annotations
 
 Nightshift can be configured by both a configuration file, as well as
@@ -104,6 +114,9 @@ scanner:
         schedule:
           - ""
 ```
+
+The scanner configuration will be handled top down. If a pod is found in
+multiple scanner configurations, only the last one will be applied.
 
 See the examples folder for another example, which also includes basic
 nightshift configuration.
