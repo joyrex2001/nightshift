@@ -93,7 +93,10 @@ func scaleObjects(objects []*scanner.Object, replicas int) error {
 		}
 	}
 	agent.New().UpdateSchedule()
-	return fmt.Errorf("%s", strings.Join(errs, ","))
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", strings.Join(errs, ","))
+	}
+	return nil
 }
 
 // restoreObjects will scale the array of objects to the previous known state.
@@ -113,5 +116,8 @@ func restoreObjects(objects []*scanner.Object) error {
 		}
 	}
 	agent.New().UpdateSchedule()
-	return fmt.Errorf("%s", strings.Join(errs, ","))
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", strings.Join(errs, ","))
+	}
+	return nil
 }
