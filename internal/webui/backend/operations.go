@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/julienschmidt/httprouter"
@@ -84,33 +85,33 @@ func (f *handler) PostObjectsRestore(w http.ResponseWriter, r *http.Request, ps 
 
 // scaleObjects will scale the array of objects to given amount of replicas.
 func scaleObjects(objects []*scanner.Object, replicas int) error {
-	var err error
+	errs := []string{}
 	for _, obj := range objects {
 		if _err := obj.Scale(replicas); _err != nil {
 			glog.Errorf("HTTP %s", _err)
-			err = _err // continue, even on error (do as much as possible)
+			errs = append(errs, _err.Error())
 		}
 	}
 	agent.New().UpdateSchedule()
-	return err
+	return fmt.Errorf("%s", strings.Join(errs, ","))
 }
 
 // restoreObjects will scale the array of objects to the previous known state.
 func restoreObjects(objects []*scanner.Object) error {
-	var err error
+	errs := []string{}
 	for _, obj := range objects {
 		if _err := obj.LoadState(); _err != nil {
 			glog.Errorf("HTTP %s", _err)
-			err = _err // continue, even on errors (do as much as possible)
+			errs = append(errs, _err.Error())
 			continue
 		}
 		if obj.State != nil {
 			if _err := obj.Scale(obj.State.Replicas); _err != nil {
 				glog.Errorf("HTTP %s", _err)
-				err = _err // continue, even on errors (do as much as possible)
+				errs = append(errs, _err.Error())
 			}
 		}
 	}
 	agent.New().UpdateSchedule()
-	return err
+	return fmt.Errorf("%s", strings.Join(errs, ","))
 }

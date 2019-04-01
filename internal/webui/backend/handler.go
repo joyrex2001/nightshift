@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -82,7 +83,10 @@ func (f *handler) Healthz(w http.ResponseWriter, r *http.Request, ps httprouter.
 func (f *handler) Error(w http.ResponseWriter, r *http.Request, code int, cerr error) {
 	w.WriteHeader(code)
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, "{ status: %d, error: %s }", code, cerr)
+	json.NewEncoder(w).Encode(struct {
+		Status int    `json:"status"`
+		Error  string `json:"error"`
+	}{code, cerr.Error()})
 	glog.Errorf("HTTP %d: %s", code, cerr)
 	return
 }

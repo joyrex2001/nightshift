@@ -67,7 +67,7 @@ import Schedule from '@/components/Schedule.vue';
 export default class Objects extends Vue {
   @Prop() private fields!: object;
   @Prop() private objects!: object[];
-  @Prop() private error!: object;
+  @Prop() private error!: string;
   @Prop() private replicas!: number;
 
   @Prop() private selected!: object[];
@@ -118,9 +118,8 @@ export default class Objects extends Vue {
           .then( (response) => {
               this.$root.$emit('bv::show::modal', 'success', '#btnShow');
           })
-          .catch( (e) => {
-              this.error = e;
-              this.$root.$emit('bv::show::modal', 'failed', '#btnShow');
+          .catch( (err) => {
+              this.showErrorDialog(err);
           });
   }
 
@@ -133,10 +132,21 @@ export default class Objects extends Vue {
           .then( (response) => {
               this.$root.$emit('bv::show::modal', 'success', '#btnShow');
           })
-          .catch( (e) => {
-              this.error = e;
-              this.$root.$emit('bv::show::modal', 'failed', '#btnShow');
+          .catch( (err) => {
+              this.showErrorDialog(err);
           });
+  }
+
+  private showErrorDialog(err: any) {
+      try {
+          this.error = err.response.data.error;
+      } catch (e) {
+          this.error = err.response.data;
+      }
+      if (this.error === '') {
+          this.error = err.statusText;
+      }
+      this.$root.$emit('bv::show::modal', 'failed', '#btnShow');
   }
 
   private reload(evt: object) {
@@ -152,15 +162,6 @@ tr:focus {
 }
 th:focus {
     outline: none;
-}
-.noselect {
-  -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome and Opera */
 }
 .b-row-selected:focus  {
     border: 1px solid black;

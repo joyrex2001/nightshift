@@ -100,7 +100,7 @@ func (s *OpenShiftScanner) LoadState(obj *Object) error {
 	}
 	repls, ok := dc.ObjectMeta.Annotations[SaveStateAnnotation]
 	if !ok {
-		return fmt.Errorf("no state available for %s/%s", obj.Namespace, obj.Name)
+		return fmt.Errorf("no previous state available for %s/%s", obj.Namespace, obj.Name)
 	}
 	repl, err := strconv.Atoi(repls)
 	if err != nil {
