@@ -96,25 +96,6 @@ func (s *OpenShiftScanner) Scale(obj *Object, replicas int) error {
 	return err
 }
 
-// LoadState will load the State in an object with a the value of the State
-// annoation on the deployment config.
-func (s *OpenShiftScanner) LoadState(obj *Object) error {
-	dc, err := s.getDeploymentConfig(obj)
-	if err != nil {
-		return err
-	}
-	repls, ok := dc.ObjectMeta.Annotations[SaveStateAnnotation]
-	if !ok {
-		return fmt.Errorf("no previous state available for %s/%s", obj.Namespace, obj.Name)
-	}
-	repl, err := strconv.Atoi(repls)
-	if err != nil {
-		return err
-	}
-	obj.State = &State{Replicas: repl}
-	return nil
-}
-
 // SaveState will save the current number of replicas as an annotation on the
 // deployment config.
 func (s *OpenShiftScanner) SaveState(obj *Object) error {
@@ -123,6 +104,9 @@ func (s *OpenShiftScanner) SaveState(obj *Object) error {
 		return err
 	}
 	repl := dc.Spec.Replicas
+	if dc.ObjectMeta.Annotations == nil {
+		dc.ObjectMeta.Annotations = map[string]string{}
+	}
 	dc.ObjectMeta.Annotations[SaveStateAnnotation] = strconv.Itoa(int(repl))
 	obj.State = &State{Replicas: int(repl)}
 	apps, _ := appsv1.NewForConfig(s.kubernetes)
@@ -166,6 +150,10 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, 
 		if err != nil {
 			glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
 		}
+		state, err := s.getState(rc.ObjectMeta.Annotations)
+		if err != nil {
+			glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
+		}
 		if sched != nil {
 			objs = append(objs, &Object{
 				Name:      rc.ObjectMeta.Name,
@@ -173,11 +161,28 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, 
 				UID:       string(rc.ObjectMeta.UID),
 				Type:      OpenShift,
 				Schedule:  sched,
+				State:     state,
 				Replicas:  int(rc.Spec.Replicas),
 			})
 		}
 	}
 	return objs, nil
+}
+
+// getState will return a State object based on the value of the State
+// annotation on the deployment config. If no annotation exist, it will return
+// nil.
+func (s *OpenShiftScanner) getState(annotations map[string]string) (*State, error) {
+	repls, ok := annotations[SaveStateAnnotation]
+	if !ok {
+		glog.V(5).Info("no previous state available")
+		return nil, nil
+	}
+	repl, err := strconv.Atoi(repls)
+	if err != nil {
+		return nil, err
+	}
+	return &State{Replicas: repl}, nil
 }
 
 // getSchedule will return a list of schedules, taken the annotations and

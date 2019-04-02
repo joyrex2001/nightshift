@@ -73,8 +73,8 @@ func (a *worker) handleState(e *event) {
 	// Restore the number of pods previously saved, and update object with the
 	// State that should be applied.
 	if state == schedule.RestoreState {
-		if err := e.obj.LoadState(); err != nil {
-			glog.Errorf("Error loading state: %s", err)
+		if e.obj.State == nil {
+			glog.Errorf("No state available on %s/%s", e.obj.Namespace, e.obj.Name)
 			return
 		}
 		e.restore = true
@@ -86,11 +86,9 @@ func (a *worker) handleState(e *event) {
 func (a *worker) scale(e *event) {
 	// restore state
 	if e.restore {
-		if e.obj.State != nil {
-			repl := e.obj.State.Replicas
-			if err := e.obj.Scale(repl); err != nil {
-				glog.Errorf("Error scaling deployment: %s", err)
-			}
+		repl := e.obj.State.Replicas
+		if err := e.obj.Scale(repl); err != nil {
+			glog.Errorf("Error scaling deployment: %s", err)
 		}
 		return
 	}

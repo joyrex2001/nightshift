@@ -88,7 +88,6 @@ func scaleObjects(objects []*scanner.Object, replicas int) error {
 	errs := []string{}
 	for _, obj := range objects {
 		if _err := obj.Scale(replicas); _err != nil {
-			glog.Errorf("HTTP %s", _err)
 			errs = append(errs, _err.Error())
 		}
 	}
@@ -103,14 +102,13 @@ func scaleObjects(objects []*scanner.Object, replicas int) error {
 func restoreObjects(objects []*scanner.Object) error {
 	errs := []string{}
 	for _, obj := range objects {
-		if _err := obj.LoadState(); _err != nil {
-			glog.Errorf("HTTP %s", _err)
-			errs = append(errs, _err.Error())
+		if obj.State == nil {
+			_err := fmt.Sprintf("no state available on %s/%s", obj.Namespace, obj.Name)
+			errs = append(errs, _err)
 			continue
 		}
 		if obj.State != nil {
 			if _err := obj.Scale(obj.State.Replicas); _err != nil {
-				glog.Errorf("HTTP %s", _err)
 				errs = append(errs, _err.Error())
 			}
 		}
