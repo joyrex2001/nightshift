@@ -2,19 +2,29 @@ package scanner
 
 import (
 	"fmt"
+	"strings"
 )
 
-type ScannerType string
+var modules map[string]Factory
 
-const (
-	OpenShift ScannerType = "OpenShift"
-)
+func init() {
+	modules = map[string]Factory{}
+}
+
+// RegisterModule will add the provided module, with given factory method to
+// the list of available modules in order to support dependency injection, as
+// well as easing up modular development for scanners.
+func RegisterModule(typ string, factory Factory) {
+	typ = strings.ToLower(typ)
+	modules[typ] = factory
+}
 
 // New will return a Scanner object for given ScannerType.
-func New(typ ScannerType) (Scanner, error) {
-	switch typ {
-	case OpenShift:
-		scnr := NewOpenShiftScanner()
+func New(typ string) (Scanner, error) {
+	typ = strings.ToLower(typ)
+	factory, ok := modules[typ]
+	if ok {
+		scnr := factory()
 		return scnr, nil
 	}
 	return nil, fmt.Errorf("invalid scannertype: %s", typ)

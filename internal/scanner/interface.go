@@ -9,3 +9,6 @@ type Scanner interface {
 	LoadState(*Object) error
 	Scale(*Object, int) error
 }
+
+// Factory is the factory method for a scanner implementation module.
+type Factory func() Scanner

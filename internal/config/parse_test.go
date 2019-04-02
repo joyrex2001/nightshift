@@ -69,6 +69,7 @@ func TestParse(t *testing.T) {
 								Schedule: []string{""},
 							},
 						},
+						Type: "openshift",
 					},
 					Scanner{
 						Namespace: []string{"batch"},

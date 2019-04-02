@@ -10,7 +10,7 @@ type Config struct {
 	Namespace string               `json:"namespace"`
 	Label     string               `json:"label"`
 	Schedule  []*schedule.Schedule `json:"schedule"`
-	Type      ScannerType          `json:"type"`
+	Type      string               `json:"type"`
 }
 
 // Object is an object found by the scanner.
@@ -18,14 +18,14 @@ type Object struct {
 	Namespace string               `json:"namespace"`
 	UID       string               `json:"uid"`
 	Name      string               `json:"name"`
-	Type      ScannerType          `json:"type"`
+	Type      string               `json:"type"`
 	Schedule  []*schedule.Schedule `json:"schedule"`
 	State     *State               `json:"state"`
 	Replicas  int                  `json:"replicas"`
-	scanner   Scanner              `json:"-"`
+	scanner   Scanner
 }
 
 // State defines a state of the object.
 type State struct {
-	Replicas int
+	Replicas int `json:"replicas"`
 }

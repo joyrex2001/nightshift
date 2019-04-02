@@ -59,23 +59,13 @@ func loadConfig() *config.Config {
 // addScanners will add configured scanners to the provided agent. The scanners
 // are added in the order of priority, lowest priority is added first.
 func addScanners(agent agent.Agent, cfg *config.Config) {
-	// add main config
-	ns := viper.GetString("openshift.namespace")
-	sel := viper.GetString("openshift.label")
-	if ns != "" || sel != "" {
-		addScanner(agent, scanner.Config{
-			Type:      scanner.OpenShift,
-			Namespace: ns,
-			Label:     sel,
-		})
-	}
 	// go through configured scanners
 	for _, scan := range cfg.Scanner {
 		def, _ := scan.Default.GetSchedule()
 		// add namespace scanner
-		for _, ns = range scan.Namespace {
+		for _, ns := range scan.Namespace {
 			addScanner(agent, scanner.Config{
-				Type:      scanner.OpenShift,
+				Type:      scan.Type,
 				Namespace: ns,
 				Schedule:  def,
 			})
@@ -83,10 +73,10 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 		// add exceptions specified in deployments
 		for _, depl := range scan.Deployment {
 			sched, _ := depl.GetSchedule()
-			for _, ns = range scan.Namespace {
+			for _, ns := range scan.Namespace {
 				for _, sel := range depl.Selector {
 					addScanner(agent, scanner.Config{
-						Type:      scanner.OpenShift,
+						Type:      scan.Type,
 						Namespace: ns,
 						Schedule:  sched,
 						Label:     sel,

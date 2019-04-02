@@ -37,8 +37,6 @@ func init() {
 	rootCmd.PersistentFlags().String("cert-file", "", "TLS certificate file")
 	rootCmd.PersistentFlags().String("timezone", "Local", "Timezone in which schedules are defined")
 	rootCmd.PersistentFlags().Duration("interval", 5*time.Minute, "Agent scanning and scheduling interval")
-	rootCmd.PersistentFlags().String("namespace", "", "OpenShift namespace to scan")
-	rootCmd.PersistentFlags().String("label", "", "Optional label selector for scan")
 	viper.BindPFlag("generic.timezone", rootCmd.PersistentFlags().Lookup("timezone"))
 	viper.BindPFlag("generic.interval", rootCmd.PersistentFlags().Lookup("interval"))
 	viper.BindPFlag("web.listen-addr", rootCmd.PersistentFlags().Lookup("listen-addr"))
@@ -46,8 +44,6 @@ func init() {
 	viper.BindPFlag("web.enable-tls", rootCmd.PersistentFlags().Lookup("enable-tls"))
 	viper.BindPFlag("web.cert-file", rootCmd.PersistentFlags().Lookup("cert-file"))
 	viper.BindPFlag("web.key-file", rootCmd.PersistentFlags().Lookup("key-file"))
-	viper.BindPFlag("openshift.namespace", rootCmd.PersistentFlags().Lookup("namespace"))
-	viper.BindPFlag("openshift.label", rootCmd.PersistentFlags().Lookup("label"))
 	viper.BindPFlag("logging.threshold", pflag.CommandLine.Lookup("stderrthreshold"))
 	viper.BindPFlag("logging.level", pflag.CommandLine.Lookup("v"))
 	viper.BindEnv("web.listen-addr", "WEB_LISTEN_ADDR")
@@ -55,8 +51,6 @@ func init() {
 	viper.BindEnv("web.enable-tls", "WEB_ENABLE_TLS")
 	viper.BindEnv("web.cert-file", "WEB_CERT_FILE")
 	viper.BindEnv("web.key-file", "WEB_KEY_FILE")
-	viper.BindEnv("openshift.namespace", "SCAN_NAMESPACE")
-	viper.BindEnv("openshift.label", "SCAN_LABEL")
 	// kubeconfig
 	if home := homeDir(); home != "" {
 		rootCmd.PersistentFlags().String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")

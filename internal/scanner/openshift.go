@@ -26,10 +26,15 @@ const (
 	ScheduleAnnotation  string = "joyrex2001.com/nightshift.schedule"
 	IgnoreAnnotation    string = "joyrex2001.com/nightshift.ignore"
 	SaveStateAnnotation string = "joyrex2001.com/nightshift.savestate"
+	OpenShift           string = "OpenShift"
 )
 
+func init() {
+	RegisterModule(OpenShift, NewOpenShiftScanner)
+}
+
 // NewOpenShiftScanner will instantiate a new OpenShiftScanner object.
-func NewOpenShiftScanner() *OpenShiftScanner {
+func NewOpenShiftScanner() Scanner {
 	kubernetes, err := getKubernetes()
 	if err != nil {
 		glog.Warningf("failed instantiating k8s client: %s", err)

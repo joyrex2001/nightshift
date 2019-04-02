@@ -12,6 +12,7 @@ type Scanner struct {
 	Namespace  []string      `yaml:"namespace"`
 	Default    *Default      `yaml:"default"`
 	Deployment []*Deployment `yaml:"deployment"`
+	Type       string        `yaml:"type"`
 }
 
 type Default struct {

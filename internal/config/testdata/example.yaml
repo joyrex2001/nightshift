@@ -1,6 +1,7 @@
 scanner:
     - namespace:
         - "development"
+      type: "openshift"
       default:
         schedule:
           - "Mon-Fri  9:00 replicas=1"

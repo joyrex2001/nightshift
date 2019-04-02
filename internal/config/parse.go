@@ -21,6 +21,7 @@ func New(file string) (*Config, error) {
 	if err = m.processSchedule(); err != nil {
 		return nil, err
 	}
+	m.processDefaults()
 	return m, nil
 }
 
@@ -32,6 +33,15 @@ func loadConfig(y []byte) (*Config, error) {
 		return nil, err
 	}
 	return cfg, nil
+}
+
+// processDefaults will set default values for the configuration.
+func (c *Config) processDefaults() {
+	for _, scan := range c.Scanner {
+		if scan.Type == "" {
+			scan.Type = "openshift"
+		}
+	}
 }
 
 // processSchedule will itterate through the config and process all schedule
