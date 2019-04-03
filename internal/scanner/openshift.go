@@ -3,18 +3,12 @@ package scanner
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/golang/glog"
 	v1 "github.com/openshift/api/apps/v1"
 	appsv1 "github.com/openshift/client-go/apps/clientset/versioned/typed/apps/v1"
-	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-
-	"github.com/joyrex2001/nightshift/internal/schedule"
 )
 
 type OpenShiftScanner struct {
@@ -23,10 +17,7 @@ type OpenShiftScanner struct {
 }
 
 const (
-	ScheduleAnnotation  string = "joyrex2001.com/nightshift.schedule"
-	IgnoreAnnotation    string = "joyrex2001.com/nightshift.ignore"
-	SaveStateAnnotation string = "joyrex2001.com/nightshift.savestate"
-	OpenShift           string = "OpenShift"
+	OpenShift string = "OpenShift"
 )
 
 func init() {
@@ -42,18 +33,6 @@ func NewOpenShiftScanner() Scanner {
 	return &OpenShiftScanner{
 		kubernetes: kubernetes,
 	}
-}
-
-// getKubernetes will return a kubernetes config object.
-func getKubernetes() (*rest.Config, error) {
-	kubeconfig := viper.GetString("openshift.kubeconfig")
-	if kubeconfig != "" {
-		config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err == nil {
-			return config, nil
-		}
-	}
-	return rest.InClusterConfig()
 }
 
 // SetConfig will set the generic configuration for this scanner.
@@ -146,11 +125,11 @@ func (s *OpenShiftScanner) getDeploymentConfigs() (*v1.DeploymentConfigList, err
 func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, error) {
 	objs := []*Object{}
 	for _, rc := range rcs.Items {
-		sched, err := s.getSchedule(rc.ObjectMeta.Annotations)
+		sched, err := getSchedule(s.config.Schedule, rc.ObjectMeta.Annotations)
 		if err != nil {
 			glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
 		}
-		state, err := s.getState(rc.ObjectMeta.Annotations)
+		state, err := getState(rc.ObjectMeta.Annotations)
 		if err != nil {
 			glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
 		}
@@ -167,53 +146,4 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, 
 		}
 	}
 	return objs, nil
-}
-
-// getState will return a State object based on the value of the State
-// annotation on the deployment config. If no annotation exist, it will return
-// nil.
-func (s *OpenShiftScanner) getState(annotations map[string]string) (*State, error) {
-	repls, ok := annotations[SaveStateAnnotation]
-	if !ok {
-		glog.V(5).Info("no previous state available")
-		return nil, nil
-	}
-	repl, err := strconv.Atoi(repls)
-	if err != nil {
-		return nil, err
-	}
-	return &State{Replicas: repl}, nil
-}
-
-// getSchedule will return a list of schedules, taken the annotations and
-// defaults into account.
-func (s *OpenShiftScanner) getSchedule(annotations map[string]string) ([]*schedule.Schedule, error) {
-	dis := strings.ToLower(annotations[IgnoreAnnotation])
-	if dis == "true" {
-		return nil, nil
-	} else if dis != "false" && dis != "" {
-		return nil, fmt.Errorf("invalid value '%s' for %s", dis, IgnoreAnnotation)
-	}
-	if ann := annotations[ScheduleAnnotation]; ann != "" {
-		return s.annotationToSchedule(ann)
-	}
-	return s.config.Schedule, nil
-}
-
-// annotationToSchedule will convert the contents of the schedule annotation
-// to an array of Schedule objects. It will produce an error if the provided
-// annotation value is invalid.
-func (s *OpenShiftScanner) annotationToSchedule(annotation string) ([]*schedule.Schedule, error) {
-	sched := []*schedule.Schedule{}
-	for _, ann := range strings.Split(annotation, ";") {
-		if ann == "" {
-			continue
-		}
-		s, err := schedule.New(ann)
-		if err != nil {
-			return nil, err
-		}
-		sched = append(sched, s)
-	}
-	return sched, nil
 }

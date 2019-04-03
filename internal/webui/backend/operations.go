@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/joyrex2001/nightshift/internal/agent"

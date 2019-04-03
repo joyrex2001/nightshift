@@ -99,13 +99,7 @@ func TestGetSchedule(t *testing.T) {
 		},
 	}
 	for i, tst := range tests {
-		config := Config{
-			Schedule: tst.sched,
-		}
-		os := &OpenShiftScanner{
-			config: config,
-		}
-		res, err := os.getSchedule(tst.data)
+		res, err := getSchedule(tst.sched, tst.data)
 		if err != nil && !tst.err {
 			t.Errorf("failed test %d - unexpected err: %s", i, err)
 		}
