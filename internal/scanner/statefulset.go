@@ -16,12 +16,8 @@ type StatefulSetScanner struct {
 	kubernetes *rest.Config
 }
 
-const (
-	StatefulSet string = "StatefulSet"
-)
-
 func init() {
-	RegisterModule(StatefulSet, NewStatefulSetScanner)
+	RegisterModule("statefulset", NewStatefulSetScanner)
 }
 
 // NewStatefulSetScanner will instantiate a new StatefulSetScanner object.
@@ -37,7 +33,6 @@ func NewStatefulSetScanner() Scanner {
 
 // SetConfig will set the generic configuration for this scanner.
 func (s *StatefulSetScanner) SetConfig(cfg Config) {
-	cfg.Type = OpenShift
 	s.config = cfg
 }
 
@@ -133,7 +128,7 @@ func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object,
 				Name:      rc.ObjectMeta.Name,
 				Namespace: s.config.Namespace,
 				UID:       string(rc.ObjectMeta.UID),
-				Type:      StatefulSet,
+				Type:      "statefulset",
 				Schedule:  sched,
 				State:     state,
 				Replicas:  int(*rc.Spec.Replicas),

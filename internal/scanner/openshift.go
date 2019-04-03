@@ -16,12 +16,8 @@ type OpenShiftScanner struct {
 	kubernetes *rest.Config
 }
 
-const (
-	OpenShift string = "OpenShift"
-)
-
 func init() {
-	RegisterModule(OpenShift, NewOpenShiftScanner)
+	RegisterModule("openshift", NewOpenShiftScanner)
 }
 
 // NewOpenShiftScanner will instantiate a new OpenShiftScanner object.
@@ -37,7 +33,6 @@ func NewOpenShiftScanner() Scanner {
 
 // SetConfig will set the generic configuration for this scanner.
 func (s *OpenShiftScanner) SetConfig(cfg Config) {
-	cfg.Type = OpenShift
 	s.config = cfg
 }
 
@@ -138,7 +133,7 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, 
 				Name:      rc.ObjectMeta.Name,
 				Namespace: s.config.Namespace,
 				UID:       string(rc.ObjectMeta.UID),
-				Type:      OpenShift,
+				Type:      "openshift",
 				Schedule:  sched,
 				State:     state,
 				Replicas:  int(rc.Spec.Replicas),

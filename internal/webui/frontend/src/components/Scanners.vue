@@ -34,6 +34,10 @@ export default class Scanners extends Vue {
             label: 'Namespace',
             sortable: true,
         },
+        type: {
+            label: 'Type',
+            sortable: true,
+        },
         label: {
             label: 'Label selector',
             sortable: true,

@@ -61,6 +61,7 @@ func loadConfig() *config.Config {
 func addScanners(agent agent.Agent, cfg *config.Config) {
 	// go through configured scanners
 	for _, scan := range cfg.Scanner {
+		glog.V(5).Infof("Adding scanner: %v", scan)
 		def, _ := scan.Default.GetSchedule()
 		// add namespace scanner
 		for _, ns := range scan.Namespace {
