@@ -54,8 +54,8 @@ func TestParse(t *testing.T) {
 		{
 			file: "testdata/example.yaml",
 			result: &Config{
-				Scanner: []Scanner{
-					Scanner{
+				Scanner: []*Scanner{
+					&Scanner{
 						Namespace: []string{"development"},
 						Default: &Default{
 							Schedule: []string{
@@ -71,7 +71,7 @@ func TestParse(t *testing.T) {
 						},
 						Type: "openshift",
 					},
-					Scanner{
+					&Scanner{
 						Namespace: []string{"batch"},
 						Default: &Default{
 							Schedule: []string{
@@ -107,5 +107,60 @@ func TestParse(t *testing.T) {
 			t.Errorf("failed test %d - expected: %# v, got %# v", i, pretty.Formatter(tst.result), pretty.Formatter(res))
 		}
 	}
+}
 
+func TestProcessDefaults(t *testing.T) {
+	tests := []struct {
+		in  *Config
+		out *Config
+		err bool
+	}{
+		{
+			in: &Config{
+				Scanner: []*Scanner{
+					&Scanner{
+						Namespace: []string{"batch"},
+						Default: &Default{
+							Schedule: []string{
+								"Mon-Fri  9:00 replicas=0",
+								"Mon-Fri 18:00 replicas=1",
+							},
+						},
+						Deployment: []*Deployment{
+							&Deployment{
+								Selector: []string{"app=shell", "app=nightshift"},
+								Schedule: nil,
+							},
+						},
+					},
+				},
+			},
+			out: &Config{
+				Scanner: []*Scanner{
+					&Scanner{
+						Namespace: []string{"batch"},
+						Default: &Default{
+							Schedule: []string{
+								"Mon-Fri  9:00 replicas=0",
+								"Mon-Fri 18:00 replicas=1",
+							},
+						},
+						Deployment: []*Deployment{
+							&Deployment{
+								Selector: []string{"app=shell", "app=nightshift"},
+								Schedule: nil,
+							},
+						},
+						Type: "openshift",
+					},
+				},
+			},
+		},
+	}
+	for i, tst := range tests {
+		tst.in.processDefaults()
+		if !reflect.DeepEqual(tst.out, tst.in) {
+			t.Errorf("failed test %d - expected: %# v, got %# v", i, pretty.Formatter(tst.out), pretty.Formatter(tst.in))
+		}
+	}
 }

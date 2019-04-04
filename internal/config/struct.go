@@ -5,7 +5,7 @@ import (
 )
 
 type Config struct {
-	Scanner []Scanner `yaml:"scanner"`
+	Scanner []*Scanner `yaml:"scanner"`
 }
 
 type Scanner struct {
