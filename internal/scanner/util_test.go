@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/joyrex2001/nightshift/internal/schedule"
@@ -108,6 +109,54 @@ func TestGetSchedule(t *testing.T) {
 		}
 		if len(res) != tst.count {
 			t.Errorf("failed test %d - invalid number of results %d, instead of %d", i, len(res), tst.count)
+		}
+	}
+}
+
+func TestGetState(t *testing.T) {
+	tests := []struct {
+		data  map[string]string
+		state *State
+		err   bool
+	}{
+		{
+			data: map[string]string{
+				"joyrex2001.com/nightshift.savestate": `5`,
+			},
+			err:   false,
+			state: &State{Replicas: 5},
+		},
+		{
+			data: map[string]string{
+				"joyrex2001.com/nightshift.savestate": `a`,
+			},
+			err:   true,
+			state: nil,
+		},
+		{
+			data: map[string]string{
+				"joyrex2001.com/nightshift.savestate": `a`,
+				"joyrex2001.com/nightshift.ignore":    `false`,
+			},
+			err:   true,
+			state: nil,
+		},
+		{
+			data:  map[string]string{},
+			err:   false,
+			state: nil,
+		},
+	}
+	for i, tst := range tests {
+		res, err := getState(tst.data)
+		if err != nil && !tst.err {
+			t.Errorf("failed test %d - unexpected err: %s", i, err)
+		}
+		if err == nil && tst.err {
+			t.Errorf("failed test %d - expected err, but got none", i)
+		}
+		if !tst.err && !reflect.DeepEqual(res, tst.state) {
+			t.Errorf("failed test %d - expected: %v, got %v", i, tst.state, res)
 		}
 	}
 }

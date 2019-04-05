@@ -144,6 +144,26 @@ func TestParse(t *testing.T) {
 			err:   true,
 			sched: &Schedule{},
 		},
+		{
+			data:  `Mon 18:00 replicas=10=12`,
+			err:   true,
+			sched: &Schedule{},
+		},
+		{
+			data:  `Mon-Tue-Fri 18:00 replicas=10`,
+			err:   true,
+			sched: &Schedule{},
+		},
+		{
+			data:  `Man-Tue 18:00 replicas=10`,
+			err:   true,
+			sched: &Schedule{},
+		},
+		{
+			data:  `Mon-Tre 18:00 replicas=10`,
+			err:   true,
+			sched: &Schedule{},
+		},
 	}
 	for i, tst := range tests {
 		s := &Schedule{

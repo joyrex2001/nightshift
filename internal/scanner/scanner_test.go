@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -10,6 +11,7 @@ type mock struct {
 	state    *Object
 	scale    *Object
 	replicas int
+	err      error
 }
 
 func (m *mock) SetConfig(c Config) {
@@ -32,7 +34,7 @@ func (m *mock) SaveState(obj *Object) error {
 func (m *mock) Scale(obj *Object, r int) error {
 	m.scale = obj
 	m.replicas = r
-	return nil
+	return m.err
 }
 
 func getFactory(typ string, m *mock) Factory {
@@ -113,12 +115,17 @@ func TestScale(t *testing.T) {
 	} else {
 		for i := 0; i < 10; i++ {
 			obj := &Object{Type: "mock"}
+			state.err = nil
 			err := obj.Scale(i)
 			if err != nil {
 				t.Errorf("failed test scaling to %d - unexpected err: %s", i, err)
 			}
 			if state.replicas != i {
 				t.Errorf("failed test - expected %d replicas, got %d", i, state.replicas)
+			}
+			state.err = errors.New("some error")
+			if err := obj.Scale(i); err == nil {
+				t.Errorf("failed test scaling to %d - expcted an error, but got none", i)
 			}
 		}
 	}

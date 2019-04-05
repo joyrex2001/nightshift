@@ -108,6 +108,7 @@ func (m *mockScanner) SetConfig(c scanner.Config) {
 func (m *mockScanner) GetConfig() scanner.Config {
 	return scanner.Config{}
 }
+
 func (m *mockScanner) GetObjects() ([]*scanner.Object, error) {
 	return nil, nil
 }
@@ -174,8 +175,8 @@ func TestHandleStateScale(t *testing.T) {
 			sched:   sc,
 			restore: false,
 		}
-		agent.handleState(evt)
 
+		agent.handleState(evt)
 		if evt.restore != tst.restore {
 			t.Errorf("failed test %d - invalid state handling restore, expected: %v, got %v", i, tst.restore, evt.restore)
 		}

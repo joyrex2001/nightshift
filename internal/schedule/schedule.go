@@ -39,7 +39,7 @@ func SetTimeZone(tz string) error {
 func (s *Schedule) GetNextTrigger(now time.Time) (time.Time, error) {
 	next := s.getTodayTrigger(now)
 	found := 8
-	for ; now.After(next) || !s.hasDayOfWeek(next.Weekday()); found-- {
+	for ; (now.After(next) || !s.hasDayOfWeek(next.Weekday())) && found > 0; found-- {
 		next = next.AddDate(0, 0, 1)
 	}
 	if found == 0 {
