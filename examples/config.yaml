@@ -11,6 +11,7 @@ logging:
     verbose: 3
 
 scanner:
+
     - namespace:
         - "development-1"
         - "development-2"
@@ -25,6 +26,17 @@ scanner:
             - "app=nightshift"
           schedule:
             - ""
+
+    - namespace:
+        - "development-1"
+        - "development-2"
+        - "development-3"
+      type: "statefulset"
+      default:
+        schedule:
+          - "Mon-Fri  8:00 replicas=3 state=restore"
+          - "Mon-Fri 18:00 replicas=0 state=save"
+
     - namespace:
         - "staging"
       default:

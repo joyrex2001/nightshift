@@ -76,6 +76,13 @@ no state is available, it will take the number of replicas that has been
 (optionally) specified in the schedule. The saved state will take precedence
 on the number that is set in replicas if both are configured.
 
+#### Statefulsets
+
+By default the scanner will only scan deploymentconfigs. Statefulsets are
+supported as well by use of the ```statefulset``` scanner. This can be configured
+by specifying the ```type``` of the scanner in the scanner configuration
+section. The default is ```openshift``` which scans for deploymentconfigs.
+
 ### Annotations
 
 Nightshift can be configured by both a configuration file, as well as
