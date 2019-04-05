@@ -97,7 +97,11 @@ func (obj *Object) Scale(replicas int) error {
 	if err != nil {
 		return err
 	}
-	return scanner.Scale(obj, replicas)
+	if err := scanner.Scale(obj, replicas); err != nil {
+		return err
+	}
+	obj.Replicas = replicas
+	return nil
 }
 
 // SaveState will save the current number of replicas.

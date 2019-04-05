@@ -112,7 +112,6 @@ func restoreObjects(objects []*scanner.Object) error {
 			}
 		}
 	}
-	agent.New().UpdateSchedule()
 	if len(errs) > 0 {
 		return fmt.Errorf("%s", strings.Join(errs, ","))
 	}
