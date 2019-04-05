@@ -135,7 +135,7 @@ func TestSaveState(t *testing.T) {
 			obj := &Object{Type: "mock", Replicas: i}
 			err := obj.SaveState()
 			if err != nil {
-				t.Errorf("failed test scaling to %d - unexpected err: %s", i, err)
+				t.Errorf("failed test %d - save state unexpected err: %s", i, err)
 			}
 			if state.state != obj {
 				t.Error("failed test - object for save state differs")

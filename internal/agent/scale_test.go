@@ -95,5 +95,98 @@ func TestGetEvents(t *testing.T) {
 			}
 		}
 	}
+}
+
+type mockScanner struct {
+	scale int
+	save  bool
+}
+
+func (m *mockScanner) SetConfig(c scanner.Config) {
+}
+
+func (m *mockScanner) GetConfig() scanner.Config {
+	return scanner.Config{}
+}
+func (m *mockScanner) GetObjects() ([]*scanner.Object, error) {
+	return nil, nil
+}
+
+func (m *mockScanner) SaveState(obj *scanner.Object) error {
+	m.save = true
+	return nil
+}
+
+func (m *mockScanner) Scale(obj *scanner.Object, r int) error {
+	m.scale = r
+	return nil
+}
+
+func getFactory(typ string, m *mockScanner) scanner.Factory {
+	return func() scanner.Scanner {
+		return m
+	}
+}
+
+func TestHandleStateScale(t *testing.T) {
+	mock := &mockScanner{}
+	scanner.RegisterModule("scanner", getFactory("scanner", mock))
+
+	tests := []struct {
+		sched   string
+		obj     *scanner.Object
+		restore bool
+		save    bool
+		scale   int
+	}{
+		{
+			sched:   "Mon-Fri 8:00 replicas=3 state=restore",
+			obj:     &scanner.Object{State: &scanner.State{Replicas: 1}},
+			restore: true,
+			save:    false,
+			scale:   1,
+		},
+		{
+			sched:   "Mon-Fri 8:00 replicas=3 state=restore",
+			obj:     &scanner.Object{},
+			restore: false,
+			save:    false,
+			scale:   3,
+		},
+		{
+			sched:   "Mon-Fri 8:00 replicas=2 state=save",
+			obj:     &scanner.Object{},
+			restore: false,
+			save:    true,
+			scale:   2,
+		},
+	}
+
+	for i, tst := range tests {
+		agent := &worker{}
+		tst.obj.Type = "scanner"
+		sc, _ := schedule.New(tst.sched)
+		tst.obj.Schedule = []*schedule.Schedule{sc}
+		mock.save = false
+
+		evt := &event{
+			obj:     tst.obj,
+			sched:   sc,
+			restore: false,
+		}
+		agent.handleState(evt)
+
+		if evt.restore != tst.restore {
+			t.Errorf("failed test %d - invalid state handling restore, expected: %v, got %v", i, tst.restore, evt.restore)
+		}
+		if mock.save != tst.save {
+			t.Errorf("failed test %d - invalid state handling save, expected: %v, got %v", i, tst.save, mock.save)
+		}
+
+		agent.scale(evt)
+		if mock.scale != tst.scale {
+			t.Errorf("failed test %d - invalid scaling, expected: %d replicas, got %d replicas", i, tst.scale, mock.scale)
+		}
+	}
 
 }
