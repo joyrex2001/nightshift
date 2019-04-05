@@ -39,7 +39,7 @@ func startAgent() {
 	}
 	interval := viper.GetDuration("generic.interval")
 	agt.SetInterval(interval)
-	glog.Infof("Refresh interval: %s", interval)
+	glog.Infof("UpdateSchedule refresh interval: %s", interval)
 	agt.Start()
 }
 

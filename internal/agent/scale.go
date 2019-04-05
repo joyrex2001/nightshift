@@ -21,7 +21,7 @@ type event struct {
 func (a *worker) Scale() {
 	a.m.Lock()
 	defer a.m.Unlock()
-	glog.Info("Scaling resources start...")
+	glog.V(4).Info("Scaling resources start...")
 	a.now = time.Now()
 	for _, obj := range a.objects {
 		for _, e := range a.getEvents(obj) {

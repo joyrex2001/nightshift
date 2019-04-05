@@ -22,6 +22,8 @@ type worker struct {
 var instance *worker
 var once sync.Once
 
+const scaleInterval = 30 * time.Second
+
 // New will instantiate a new Agent object.
 func New() Agent {
 	once.Do(func() {
@@ -77,25 +79,25 @@ func (a *worker) Stop() {
 	a.done <- true
 }
 
-// loop will loop endlessly untile Stop has been called, calling the method
-// tick at the specified interval.
+// loop will loop endlessly untile Stop has been called, calling the Scale and
+// UpdateSchedule methods at a specified interval.
 func (a *worker) loop() {
-	a.tick()
+	// Make sure everything is updated when starting the tick loop.
+	a.UpdateSchedule()
+	a.Scale()
+
+	sched := time.NewTimer(a.interval)
+	scale := time.NewTimer(scaleInterval)
 	for {
-		tmr := time.NewTimer(a.interval)
 		select {
 		case <-a.done:
 			return
-		case <-tmr.C:
-			a.tick()
+		case <-sched.C:
+			a.UpdateSchedule()
+			sched.Reset(a.interval)
+		case <-scale.C:
+			a.Scale()
+			scale.Reset(scaleInterval)
 		}
 	}
-}
-
-// tick is called at the specified interval and will update the currentl
-// configuration as specified with the given annotations, as well as Updating
-// the number of replicas for deployments and statefulsets.
-func (a *worker) tick() {
-	a.UpdateSchedule()
-	a.Scale()
 }
