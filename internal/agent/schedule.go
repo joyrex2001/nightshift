@@ -17,11 +17,15 @@ type objectspq []*scanner.Object
 
 // Len returns the length of the priority queue, as required by the heap
 // interface.
-func (pq objectspq) Len() int { return len(pq) }
+func (pq objectspq) Len() int {
+	return len(pq)
+}
 
 // Less compares the scanner.Objects, and determines the order of the priority
 // queue, as required by the heap interface.
-func (pq objectspq) Less(i, j int) bool { return pq[i].Priority > pq[j].Priority }
+func (pq objectspq) Less(i, j int) bool {
+	return pq[i].Priority > pq[j].Priority
+}
 
 // Swap will swap two scanner.Objects on the priority queue, as required by
 // the heap interface.
@@ -65,9 +69,46 @@ func (pq objectspq) Index(obj *scanner.Object) int {
 func (a *worker) GetObjects() map[string]*scanner.Object {
 	objs := map[string]*scanner.Object{}
 	for _, opq := range a.objects {
-		objs[(*opq)[0].UID] = (*opq)[0]
+		if len(*opq) > 0 {
+			objs[(*opq)[0].UID] = (*opq)[0]
+		}
 	}
 	return objs
+}
+
+// addObject will add (or replace!) an object to the collection of objects.
+// Each object is stored in its own priority queue, and if an object with the
+// same priority is to be added, it will replace the object instead.
+func (a *worker) addObject(obj *scanner.Object) {
+	opq, ok := a.objects[obj.UID]
+	if !ok {
+		// no entries yet, init the heap!
+		opq := &objectspq{obj}
+		a.objects[obj.UID] = opq
+		heap.Init(opq)
+		return
+	}
+	if idx := opq.Index(obj); idx >= 0 {
+		// existing entry found for this priority; replace the item in the
+		// priority queue
+		(*opq)[idx] = obj
+		return
+	}
+	// add the object to the priority queue
+	heap.Push(opq, obj)
+}
+
+// removeObject will remove an Object from the priority queue.
+func (a *worker) removeObject(obj *scanner.Object) {
+	opq, ok := a.objects[obj.UID]
+	if !ok {
+		return
+	}
+	if idx := opq.Index(obj); idx >= 0 {
+		heap.Remove(opq, idx)
+		return
+	}
+	return
 }
 
 // UpdateSchedule is the periodically called schedule update method. This
@@ -94,26 +135,4 @@ func (a *worker) initWatch() {
 		// TODO: init watcher!
 	}
 	// TODO: listen watcher channels
-}
-
-// addObject will add (or replace!) an object to the collection of objects.
-// Each object is stored in its own priority queue, and if an object with the
-// same priority is to be added, it will replace the object instead.
-func (a *worker) addObject(obj *scanner.Object) {
-	opq, ok := a.objects[obj.UID]
-	if !ok {
-		// no entries yet, init the heap!
-		opq := &objectspq{obj}
-		a.objects[obj.UID] = opq
-		heap.Init(opq)
-		return
-	}
-	if idx := opq.Index(obj); idx >= 0 {
-		// existing entry found for this priority; replace the item in the
-		// priority queue
-		(*opq)[idx] = obj
-		return
-	}
-	// add the object to the priority queue
-	heap.Push(opq, obj)
 }
