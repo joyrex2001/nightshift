@@ -14,7 +14,7 @@ type worker struct {
 	m        sync.Mutex
 	done     chan bool
 	scanners []scanner.Scanner
-	objects  map[string]*scanner.Object
+	objects  map[string]*objectspq
 	now      time.Time
 	past     time.Time
 }
@@ -47,13 +47,6 @@ func (a *worker) AddScanner(scanner scanner.Scanner) {
 	a.m.Lock()
 	defer a.m.Unlock()
 	a.scanners = append(a.scanners, scanner)
-}
-
-// GetObjects will return the gathered objects.
-func (a *worker) GetObjects() map[string]*scanner.Object {
-	a.m.Lock()
-	defer a.m.Unlock()
-	return a.objects
 }
 
 // GetScanners will return the configured scanners.

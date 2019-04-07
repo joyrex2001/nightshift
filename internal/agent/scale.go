@@ -23,7 +23,7 @@ func (a *worker) Scale() {
 	defer a.m.Unlock()
 	glog.V(4).Info("Scaling resources start...")
 	a.now = time.Now()
-	for _, obj := range a.objects {
+	for _, obj := range a.GetObjects() {
 		for _, e := range a.getEvents(obj) {
 			glog.V(4).Infof("Scale event: %v", e)
 			a.handleState(e)

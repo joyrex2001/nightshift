@@ -30,6 +30,10 @@ export default class Scanners extends Vue {
 
   private created() {
     this.fields = {
+        priority: {
+            label: 'Priority',
+            sortable: true,
+        },
         namespace: {
             label: 'Namespace',
             sortable: true,

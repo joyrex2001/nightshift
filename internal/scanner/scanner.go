@@ -26,6 +26,7 @@ type Config struct {
 	Label     string               `json:"label"`
 	Schedule  []*schedule.Schedule `json:"schedule"`
 	Type      string               `json:"type"`
+	Priority  int                  `json:"priority"`
 }
 
 // Object is an object found by the scanner.
@@ -37,6 +38,7 @@ type Object struct {
 	Schedule  []*schedule.Schedule `json:"schedule"`
 	State     *State               `json:"state"`
 	Replicas  int                  `json:"replicas"`
+	Priority  int                  `json:"priority"`
 	scanner   Scanner
 }
 
