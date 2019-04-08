@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -36,9 +35,7 @@ func init() {
 	rootCmd.PersistentFlags().String("key-file", "", "TLS keyfile")
 	rootCmd.PersistentFlags().String("cert-file", "", "TLS certificate file")
 	rootCmd.PersistentFlags().String("timezone", "Local", "Timezone in which schedules are defined")
-	rootCmd.PersistentFlags().Duration("interval", 5*time.Minute, "Agent scanning interval")
 	viper.BindPFlag("generic.timezone", rootCmd.PersistentFlags().Lookup("timezone"))
-	viper.BindPFlag("generic.interval", rootCmd.PersistentFlags().Lookup("interval"))
 	viper.BindPFlag("web.listen-addr", rootCmd.PersistentFlags().Lookup("listen-addr"))
 	viper.BindPFlag("web.enable", rootCmd.PersistentFlags().Lookup("enable-web"))
 	viper.BindPFlag("web.enable-tls", rootCmd.PersistentFlags().Lookup("enable-tls"))

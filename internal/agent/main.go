@@ -9,11 +9,21 @@ import (
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
+type Agent interface {
+	AddScanner(scanner.Scanner)
+	GetObjects() map[string]*scanner.Object
+	GetScanners() []scanner.Scanner
+	UpdateSchedule()
+	Start()
+	Stop()
+}
+
 type worker struct {
 	interval time.Duration
 	m        sync.Mutex
 	done     chan bool
 	scanners []scanner.Scanner
+	watchers []watch
 	objects  map[string]*objectspq
 	now      time.Time
 	past     time.Time
@@ -28,18 +38,14 @@ const scaleInterval = 30 * time.Second
 func New() Agent {
 	once.Do(func() {
 		instance = &worker{
+			objects:  map[string]*objectspq{},
+			watchers: []watch{},
 			done:     make(chan bool),
-			interval: 5 * time.Minute,
 			past:     time.Now().Add(-60 * time.Minute),
 			scanners: []scanner.Scanner{},
 		}
 	})
 	return instance
-}
-
-// SetInterval will set the agent refresh interval.
-func (a *worker) SetInterval(interval time.Duration) {
-	a.interval = interval
 }
 
 // AddScanner will add a scanner to the agent.
@@ -60,37 +66,13 @@ func (a *worker) GetScanners() []scanner.Scanner {
 // Start will start the agent.
 func (a *worker) Start() {
 	glog.Info("Starting agent...")
-	go func() {
-		a.loop()
-	}()
+	a.UpdateSchedule()
+	go a.StartWatch()
+	go a.StartScale()
 }
 
 // Stop will stop the agent.
 func (a *worker) Stop() {
-	a.m.Lock()
-	defer a.m.Unlock()
-	a.done <- true
-}
-
-// loop will loop endlessly untile Stop has been called, calling the Scale and
-// UpdateSchedule methods at a specified interval.
-func (a *worker) loop() {
-	// Make sure everything is updated when starting the tick loop.
-	a.UpdateSchedule()
-	a.Scale()
-
-	sched := time.NewTimer(a.interval)
-	scale := time.NewTimer(scaleInterval)
-	for {
-		select {
-		case <-a.done:
-			return
-		case <-sched.C:
-			a.UpdateSchedule()
-			sched.Reset(a.interval)
-		case <-scale.C:
-			a.Scale()
-			scale.Reset(scaleInterval)
-		}
-	}
+	a.StopWatch()
+	a.StopScale()
 }

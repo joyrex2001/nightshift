@@ -37,9 +37,6 @@ func startAgent() {
 	if cfg := loadConfig(); cfg != nil {
 		addScanners(agt, cfg)
 	}
-	interval := viper.GetDuration("generic.interval")
-	agt.SetInterval(interval)
-	glog.Infof("UpdateSchedule refresh interval: %s", interval)
 	agt.Start()
 }
 

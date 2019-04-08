@@ -17,10 +17,26 @@ type event struct {
 	restore bool
 }
 
+// StartScale will call the scale method on a predefined interval.
+func (a *worker) StartScale() {
+	for {
+		tmr := time.NewTimer(scaleInterval)
+		select {
+		case <-a.done:
+			return
+		case <-tmr.C:
+			a.scaleObjects()
+		}
+	}
+}
+
+// StopScale will stop the scaling loop.
+func (a *worker) StopScale() {
+	a.done <- true
+}
+
 // Scale will process all scanned objects and scale them accordingly.
-func (a *worker) Scale() {
-	a.m.Lock()
-	defer a.m.Unlock()
+func (a *worker) scaleObjects() {
 	glog.V(4).Info("Scaling resources start...")
 	a.now = time.Now()
 	for _, obj := range a.GetObjects() {

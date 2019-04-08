@@ -37,6 +37,10 @@ func (m *mock) Scale(obj *Object, r int) error {
 	return m.err
 }
 
+func (m *mock) Watch() (chan Event, error) {
+	return make(chan Event), nil
+}
+
 func getFactory(typ string, m *mock) Factory {
 	return func() Scanner {
 		m.typ = typ

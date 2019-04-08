@@ -3,8 +3,6 @@ package agent
 import (
 	"container/heap"
 
-	"github.com/golang/glog"
-
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
@@ -67,6 +65,8 @@ func (pq objectspq) Index(obj *scanner.Object) int {
 // found, it will append the result with the highest priority to the Objects
 // result map.
 func (a *worker) GetObjects() map[string]*scanner.Object {
+	a.m.Lock()
+	defer a.m.Unlock()
 	objs := map[string]*scanner.Object{}
 	for _, opq := range a.objects {
 		if len(*opq) > 0 {
@@ -80,6 +80,8 @@ func (a *worker) GetObjects() map[string]*scanner.Object {
 // Each object is stored in its own priority queue, and if an object with the
 // same priority is to be added, it will replace the object instead.
 func (a *worker) addObject(obj *scanner.Object) {
+	a.m.Lock()
+	defer a.m.Unlock()
 	opq, ok := a.objects[obj.UID]
 	if !ok {
 		// no entries yet, init the heap!
@@ -100,39 +102,14 @@ func (a *worker) addObject(obj *scanner.Object) {
 
 // removeObject will remove an Object from the priority queue.
 func (a *worker) removeObject(obj *scanner.Object) {
+	a.m.Lock()
+	defer a.m.Unlock()
 	opq, ok := a.objects[obj.UID]
 	if !ok {
 		return
 	}
 	if idx := opq.Index(obj); idx >= 0 {
 		heap.Remove(opq, idx)
-		return
 	}
 	return
-}
-
-// UpdateSchedule is the periodically called schedule update method. This
-// method will be obsolete once the watchers are implemented and the updates
-// can be handled in real time.
-func (a *worker) UpdateSchedule() {
-	// TODO: replace with realtime watcher implemetation
-	a.initWatch()
-}
-
-func (a *worker) initWatch() {
-	a.m.Lock()
-	defer a.m.Unlock()
-	a.objects = map[string]*objectspq{}
-	for _, scnr := range a.scanners {
-		objs, err := scnr.GetObjects()
-		if err != nil {
-			glog.Errorf("Error scanning pods: %s", err)
-		}
-		glog.V(5).Infof("Scan result: %#v", objs)
-		for _, obj := range objs {
-			a.addObject(obj)
-		}
-		// TODO: init watcher!
-	}
-	// TODO: listen watcher channels
 }

@@ -90,7 +90,6 @@ func scaleObjects(objects []*scanner.Object, replicas int) error {
 			errs = append(errs, _err.Error())
 		}
 	}
-	agent.New().UpdateSchedule()
 	if len(errs) > 0 {
 		return fmt.Errorf("%s", strings.Join(errs, ","))
 	}

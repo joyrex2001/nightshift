@@ -69,6 +69,19 @@ func TestGetAddRemoveObjects(t *testing.T) {
 		},
 		{
 			add: []*scanner.Object{
+				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner"},
+				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner2"},
+				&scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+			},
+			remove: []*scanner.Object{
+				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner2"},
+			},
+			result: map[string]*scanner.Object{
+				"def": &scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+			},
+		},
+		{
+			add: []*scanner.Object{
 				&scanner.Object{UID: "abc", Priority: 1, Type: "myscanner1"},
 				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner2"},
 				&scanner.Object{UID: "abc", Priority: 2, Type: "myscanner3"},

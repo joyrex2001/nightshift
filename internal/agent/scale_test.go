@@ -123,6 +123,10 @@ func (m *mockScanner) Scale(obj *scanner.Object, r int) error {
 	return nil
 }
 
+func (m *mockScanner) Watch() (chan scanner.Event, error) {
+	return nil, nil
+}
+
 func getFactory(typ string, m *mockScanner) scanner.Factory {
 	return func() scanner.Scanner {
 		return m

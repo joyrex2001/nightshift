@@ -8,6 +8,7 @@ import (
 	v1 "github.com/openshift/api/apps/v1"
 	appsv1 "github.com/openshift/client-go/apps/clientset/versioned/typed/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 )
 
@@ -120,26 +121,70 @@ func (s *OpenShiftScanner) getDeploymentConfigs() (*v1.DeploymentConfigList, err
 func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, error) {
 	objs := []*Object{}
 	for _, rc := range rcs.Items {
-		sched, err := getSchedule(s.config.Schedule, rc.ObjectMeta.Annotations)
-		if err != nil {
-			glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-		}
-		state, err := getState(rc.ObjectMeta.Annotations)
-		if err != nil {
-			glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-		}
-		if sched != nil {
-			objs = append(objs, &Object{
-				Name:      rc.ObjectMeta.Name,
-				Namespace: s.config.Namespace,
-				UID:       string(rc.ObjectMeta.UID),
-				Priority:  s.config.Priority,
-				Type:      "openshift",
-				Schedule:  sched,
-				State:     state,
-				Replicas:  int(rc.Spec.Replicas),
-			})
+		if obj := s.toObject(&rc); obj.Schedule != nil {
+			objs = append(objs, obj)
 		}
 	}
 	return objs, nil
+}
+
+// Watch will return a channel on which Event objects will be published that
+// describe change events in the cluster.
+func (s *OpenShiftScanner) Watch() (chan Event, error) {
+	if s.kubernetes == nil {
+		return nil, fmt.Errorf("unable to connect to kubernetes")
+	}
+	apps, err := appsv1.NewForConfig(s.kubernetes)
+	if err != nil {
+		return nil, err
+	}
+	watcher, err := apps.DeploymentConfigs(s.config.Namespace).Watch(metav1.ListOptions{
+		LabelSelector: s.config.Label,
+	})
+
+	outch := make(chan Event)
+	go func() {
+		inch := watcher.ResultChan()
+		for event := range inch {
+			glog.V(5).Infof("Received event: %v", event)
+
+			dc, ok := event.Object.(*v1.DeploymentConfig)
+			if !ok {
+				glog.Errorf("Unexpected type; %v", dc)
+			}
+
+			obj := s.toObject(dc)
+			switch event.Type {
+			case watch.Added:
+				outch <- Event{Object: obj, Type: EventAdd}
+			case watch.Deleted:
+				outch <- Event{Object: obj, Type: EventRemove}
+			}
+		}
+	}()
+
+	return outch, nil
+}
+
+// toObject will convert a deploymentconfig object to a scanner.Object.
+func (s *OpenShiftScanner) toObject(rc *v1.DeploymentConfig) *Object {
+	sched, err := getSchedule(s.config.Schedule, rc.ObjectMeta.Annotations)
+	if err != nil {
+		glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
+	}
+	state, err := getState(rc.ObjectMeta.Annotations)
+	if err != nil {
+		glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
+	}
+	return &Object{
+		Name:      rc.ObjectMeta.Name,
+		Namespace: s.config.Namespace,
+		UID:       string(rc.ObjectMeta.UID),
+		Priority:  s.config.Priority,
+		Type:      "openshift",
+		Schedule:  sched,
+		State:     state,
+		Replicas:  int(rc.Spec.Replicas),
+	}
+	return nil
 }

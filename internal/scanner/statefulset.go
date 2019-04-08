@@ -138,3 +138,9 @@ func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object,
 	}
 	return objs, nil
 }
+
+// Watch will return a channel on which Event objects will be published that
+// describe change events in the cluster.
+func (s *StatefulSetScanner) Watch() (chan Event, error) {
+	return make(chan Event), nil
+}

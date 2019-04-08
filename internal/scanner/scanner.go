@@ -14,6 +14,7 @@ type Scanner interface {
 	GetObjects() ([]*Object, error)
 	SaveState(*Object) error
 	Scale(*Object, int) error
+	Watch() (chan Event, error)
 }
 
 // Factory is the factory method for a scanner implementation module.
@@ -46,6 +47,18 @@ type Object struct {
 type State struct {
 	Replicas int `json:"replicas"`
 }
+
+// Event is the structure that is send by the watch method over the channel.
+type Event struct {
+	Object *Object
+	Type   string
+}
+
+const (
+	EventAdd    string = "add"
+	EventRemove string = "remove"
+	EventUpdate string = "update"
+)
 
 var modules map[string]Factory
 
