@@ -186,5 +186,4 @@ func (s *OpenShiftScanner) toObject(rc *v1.DeploymentConfig) *Object {
 		State:     state,
 		Replicas:  int(rc.Spec.Replicas),
 	}
-	return nil
 }

@@ -25,7 +25,8 @@ func (a *worker) StartWatch() {
 		}
 	}
 	var wg sync.WaitGroup
-	for _, wtc := range a.watchers {
+	for _, _wtc := range a.watchers {
+		wtc := _wtc
 		go func() {
 			wg.Add(1)
 			a.watchScanner(wtc)
