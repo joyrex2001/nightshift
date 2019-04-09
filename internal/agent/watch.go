@@ -37,6 +37,7 @@ func (a *worker) StopWatch() {
 // makes the agent resilient against missed watch events due to e.g. network
 // connectivity problems.
 func (a *worker) UpdateSchedule() {
+	a.InitObjects()
 	for _, scnr := range a.GetScanners() {
 		objs, err := scnr.GetObjects()
 		if err != nil {

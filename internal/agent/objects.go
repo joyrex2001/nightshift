@@ -61,6 +61,14 @@ func (pq objectspq) Index(obj *scanner.Object) int {
 	return -1
 }
 
+// InitObjects will initialize the objects. If objects were stored, this method
+// will remove these and the objects are re-initialized.
+func (a *worker) InitObjects() {
+	a.m.Lock()
+	defer a.m.Unlock()
+	a.objects = map[string]*objectspq{}
+}
+
 // GetObjects will go through all object priority queues, and for each object
 // found, it will append the result with the highest priority to the Objects
 // result map.

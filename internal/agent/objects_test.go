@@ -100,6 +100,7 @@ func TestGetAddRemoveObjects(t *testing.T) {
 	}
 	for i, tst := range tests {
 		agt := &worker{}
+		agt.InitObjects()
 		agt.objects = map[string]*objectspq{}
 		for _, add := range tst.add {
 			agt.addObject(add)
