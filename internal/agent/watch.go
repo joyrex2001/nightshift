@@ -18,8 +18,8 @@ type watch struct {
 // StartWatch will start watching all configured scanners.
 func (a *worker) StartWatch() {
 	quit := make(chan bool)
+	go a.resyncScanner(quit)
 	a.initWatchers()
-	a.resyncScanner(quit)
 	a.runWatchers()
 	quit <- true
 }
@@ -28,6 +28,24 @@ func (a *worker) StartWatch() {
 func (a *worker) StopWatch() {
 	for _, wtc := range a.watchers {
 		wtc.quit <- true
+	}
+}
+
+// UpdateSchedule will call all scanners and get the current list of matched
+// objects. This method is called periodicaly by the resyncScanner method to
+// make sure the known state reflects the actual state of the platform, and
+// makes the agent resilient against missed watch events due to e.g. network
+// connectivity problems.
+func (a *worker) UpdateSchedule() {
+	for _, scnr := range a.GetScanners() {
+		objs, err := scnr.GetObjects()
+		if err != nil {
+			glog.Errorf("Error scanning pods: %s", err)
+		}
+		glog.V(5).Infof("Scan result: %#v", objs)
+		for _, obj := range objs {
+			a.addObject(obj)
+		}
 	}
 }
 
@@ -60,25 +78,6 @@ func (a *worker) runWatchers() {
 	wg.Wait()
 }
 
-// resyncScanner will call the UpdateSchedule method at a specified interval,
-// in order to cope with missing watch events. This method will run in the
-// background until the given channel will contain data.
-func (a *worker) resyncScanner(quit chan bool) {
-	go func() {
-		for {
-			tmr := time.NewTimer(a.interval)
-			select {
-			case <-quit:
-				return
-			case <-tmr.C:
-				glog.V(5).Infof("Resync start...")
-				a.UpdateSchedule()
-				glog.V(5).Infof("Resync finisheded...")
-			}
-		}
-	}()
-}
-
 // watchScanner will read the watch channel as provided by the scanners Watch
 // method, and will update the objects according to the events received on the
 // channel. This method blocks until the it receives a quit message on the
@@ -100,18 +99,19 @@ func (a *worker) watchScanner(wtc watch) {
 	}
 }
 
-// UpdateSchedule is the periodically called schedule update method. This
-// method will be obsolete once the watchers are implemented and the updates
-// can be handled in real time.
-func (a *worker) UpdateSchedule() {
-	for _, scnr := range a.GetScanners() {
-		objs, err := scnr.GetObjects()
-		if err != nil {
-			glog.Errorf("Error scanning pods: %s", err)
-		}
-		glog.V(5).Infof("Scan result: %#v", objs)
-		for _, obj := range objs {
-			a.addObject(obj)
+// resyncScanner will call the UpdateSchedule method at a specified interval,
+// in order to cope with missing watch events. This method will run until the
+// given channel will contain data.
+func (a *worker) resyncScanner(quit chan bool) {
+	for {
+		tmr := time.NewTimer(a.interval)
+		select {
+		case <-quit:
+			return
+		case <-tmr.C:
+			glog.V(5).Infof("Resync start...")
+			a.UpdateSchedule()
+			glog.V(5).Infof("Resync finisheded...")
 		}
 	}
 }

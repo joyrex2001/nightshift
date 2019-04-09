@@ -10,6 +10,8 @@ import (
 	"github.com/joyrex2001/nightshift/internal/schedule"
 )
 
+const scaleInterval = 30 * time.Second
+
 type event struct {
 	at      time.Time
 	obj     *scanner.Object

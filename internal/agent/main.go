@@ -33,8 +33,6 @@ type worker struct {
 var instance *worker
 var once sync.Once
 
-const scaleInterval = 30 * time.Second
-
 // New will instantiate a new Agent object.
 func New() Agent {
 	once.Do(func() {
