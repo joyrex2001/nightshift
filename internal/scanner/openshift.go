@@ -130,7 +130,7 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, 
 
 // Watch will return a channel on which Event objects will be published that
 // describe change events in the cluster.
-func (s *OpenShiftScanner) Watch() (chan Event, error) {
+func (s *OpenShiftScanner) Watch(_stop chan bool) (chan Event, error) {
 	if s.kubernetes == nil {
 		return nil, fmt.Errorf("unable to connect to kubernetes")
 	}
@@ -142,28 +142,50 @@ func (s *OpenShiftScanner) Watch() (chan Event, error) {
 		LabelSelector: s.config.Label,
 	})
 
-	outch := make(chan Event)
+	out := make(chan Event)
 	go func() {
 		inch := watcher.ResultChan()
-		for event := range inch {
-			glog.V(5).Infof("Received event: %v", event)
-
-			dc, ok := event.Object.(*v1.DeploymentConfig)
-			if !ok {
-				glog.Errorf("Unexpected type; %v", dc)
-			}
-
-			obj := s.toObject(dc)
-			switch event.Type {
-			case watch.Added:
-				outch <- Event{Object: obj, Type: EventAdd}
-			case watch.Deleted:
-				outch <- Event{Object: obj, Type: EventRemove}
+		for {
+			select {
+			case evt := <-inch:
+				glog.V(5).Infof("Received event: %v", evt)
+				s.handleEvent(out, evt)
+			case <-_stop:
+				return
 			}
 		}
 	}()
 
-	return outch, nil
+	return out, nil
+}
+
+// handleEvent will take a watch event and transform it to a scanner watch
+// event, and publish it to the out channel.
+func (s *OpenShiftScanner) handleEvent(out chan Event, evt watch.Event) {
+	if evt.Type == watch.Error {
+		glog.Errorf("Error watching: %v", evt)
+		return
+	}
+
+	dc, ok := evt.Object.(*v1.DeploymentConfig)
+	if !ok {
+		glog.Errorf("Unexpected type; %v", dc)
+		return
+	}
+
+	obj := s.toObject(dc)
+	if evt.Type == watch.Deleted {
+		out <- Event{Object: obj, Type: EventRemove}
+		return
+	}
+
+	if evt.Type == watch.Added || evt.Type == watch.Modified {
+		if obj.Schedule != nil {
+			out <- Event{Object: obj, Type: EventAdd}
+		} else {
+			out <- Event{Object: obj, Type: EventRemove}
+		}
+	}
 }
 
 // toObject will convert a deploymentconfig object to a scanner.Object.

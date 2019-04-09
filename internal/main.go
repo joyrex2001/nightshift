@@ -37,6 +37,8 @@ func startAgent() {
 	if cfg := loadConfig(); cfg != nil {
 		addScanners(agt, cfg)
 	}
+	interval := viper.GetDuration("generic.interval")
+	agt.SetResyncInterval(interval)
 	agt.Start()
 }
 

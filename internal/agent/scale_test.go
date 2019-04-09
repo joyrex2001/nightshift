@@ -123,7 +123,7 @@ func (m *mockScanner) Scale(obj *scanner.Object, r int) error {
 	return nil
 }
 
-func (m *mockScanner) Watch() (chan scanner.Event, error) {
+func (m *mockScanner) Watch(_stop chan bool) (chan scanner.Event, error) {
 	return nil, nil
 }
 

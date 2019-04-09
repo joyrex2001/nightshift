@@ -7,6 +7,7 @@ import (
 	"github.com/golang/glog"
 	v1beta "k8s.io/api/apps/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	appsv1beta "k8s.io/client-go/kubernetes/typed/apps/v1beta1"
 	"k8s.io/client-go/rest"
 )
@@ -115,25 +116,8 @@ func (s *StatefulSetScanner) getStatefulSets() (*v1beta.StatefulSetList, error) 
 func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object, error) {
 	objs := []*Object{}
 	for _, rc := range rcs.Items {
-		sched, err := getSchedule(s.config.Schedule, rc.ObjectMeta.Annotations)
-		if err != nil {
-			glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-		}
-		state, err := getState(rc.ObjectMeta.Annotations)
-		if err != nil {
-			glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-		}
-		if sched != nil {
-			objs = append(objs, &Object{
-				Name:      rc.ObjectMeta.Name,
-				Namespace: s.config.Namespace,
-				UID:       string(rc.ObjectMeta.UID),
-				Priority:  s.config.Priority,
-				Type:      "statefulset",
-				Schedule:  sched,
-				State:     state,
-				Replicas:  int(*rc.Spec.Replicas),
-			})
+		if obj := s.toObject(&rc); obj.Schedule != nil {
+			objs = append(objs, obj)
 		}
 	}
 	return objs, nil
@@ -141,6 +125,82 @@ func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object,
 
 // Watch will return a channel on which Event objects will be published that
 // describe change events in the cluster.
-func (s *StatefulSetScanner) Watch() (chan Event, error) {
-	return make(chan Event), nil
+func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
+	if s.kubernetes == nil {
+		return nil, fmt.Errorf("unable to connect to kubernetes")
+	}
+	apps, err := appsv1beta.NewForConfig(s.kubernetes)
+	if err != nil {
+		return nil, err
+	}
+	watcher, err := apps.StatefulSets(s.config.Namespace).Watch(metav1.ListOptions{
+		LabelSelector: s.config.Label,
+	})
+
+	out := make(chan Event)
+	go func() {
+		inch := watcher.ResultChan()
+		for {
+			select {
+			case evt := <-inch:
+				glog.V(5).Infof("Received event: %v", evt)
+				s.handleEvent(out, evt)
+			case <-_stop:
+				return
+			}
+		}
+	}()
+
+	return out, nil
+}
+
+// handleEvent will take a watch event and transform it to a scanner watch
+// event, and publish it to the out channel.
+func (s *StatefulSetScanner) handleEvent(out chan Event, evt watch.Event) {
+	if evt.Type == watch.Error {
+		glog.Errorf("Error watching: %v", evt)
+		return
+	}
+
+	ss, ok := evt.Object.(*v1beta.StatefulSet)
+	if !ok {
+		glog.Errorf("Unexpected type; %v", ss)
+		return
+	}
+
+	obj := s.toObject(ss)
+	if evt.Type == watch.Deleted {
+		out <- Event{Object: obj, Type: EventRemove}
+		return
+	}
+
+	if evt.Type == watch.Added || evt.Type == watch.Modified {
+		if obj.Schedule != nil {
+			out <- Event{Object: obj, Type: EventAdd}
+		} else {
+			out <- Event{Object: obj, Type: EventRemove}
+		}
+	}
+}
+
+// toObject will convert a deploymentconfig object to a scanner.Object.
+func (s *StatefulSetScanner) toObject(rc *v1beta.StatefulSet) *Object {
+	sched, err := getSchedule(s.config.Schedule, rc.ObjectMeta.Annotations)
+	if err != nil {
+		glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
+	}
+	state, err := getState(rc.ObjectMeta.Annotations)
+	if err != nil {
+		glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
+	}
+	return &Object{
+		Name:      rc.ObjectMeta.Name,
+		Namespace: s.config.Namespace,
+		UID:       string(rc.ObjectMeta.UID),
+		Priority:  s.config.Priority,
+		Type:      "statefulset",
+		Schedule:  sched,
+		State:     state,
+		Replicas:  int(*rc.Spec.Replicas),
+	}
 }

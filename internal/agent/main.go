@@ -11,6 +11,7 @@ import (
 
 type Agent interface {
 	AddScanner(scanner.Scanner)
+	SetResyncInterval(time.Duration)
 	GetObjects() map[string]*scanner.Object
 	GetScanners() []scanner.Scanner
 	UpdateSchedule()
@@ -39,6 +40,7 @@ func New() Agent {
 	once.Do(func() {
 		instance = &worker{
 			objects:  map[string]*objectspq{},
+			interval: 15 * time.Minute,
 			watchers: []watch{},
 			done:     make(chan bool),
 			past:     time.Now().Add(-60 * time.Minute),
@@ -46,6 +48,12 @@ func New() Agent {
 		}
 	})
 	return instance
+}
+
+// SetResyncInterval will set the agent resync interval to make sure that
+// missing watch events are restored.
+func (a *worker) SetResyncInterval(interval time.Duration) {
+	a.interval = interval
 }
 
 // AddScanner will add a scanner to the agent.

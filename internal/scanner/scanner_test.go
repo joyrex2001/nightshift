@@ -37,7 +37,7 @@ func (m *mock) Scale(obj *Object, r int) error {
 	return m.err
 }
 
-func (m *mock) Watch() (chan Event, error) {
+func (m *mock) Watch(_stop chan bool) (chan Event, error) {
 	return make(chan Event), nil
 }
 

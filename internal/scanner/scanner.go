@@ -14,7 +14,7 @@ type Scanner interface {
 	GetObjects() ([]*Object, error)
 	SaveState(*Object) error
 	Scale(*Object, int) error
-	Watch() (chan Event, error)
+	Watch(chan bool) (chan Event, error)
 }
 
 // Factory is the factory method for a scanner implementation module.
