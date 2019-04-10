@@ -110,9 +110,9 @@ func (a *worker) resyncScanner(quit chan bool) {
 		case <-quit:
 			return
 		case <-tmr.C:
-			glog.V(5).Infof("Resync start...")
+			glog.V(4).Infof("Resync start...")
 			a.UpdateSchedule()
-			glog.V(5).Infof("Resync finisheded...")
+			glog.V(4).Infof("Resync finisheded...")
 		}
 	}
 }

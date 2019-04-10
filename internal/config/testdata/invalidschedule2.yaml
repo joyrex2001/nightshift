@@ -1,0 +1,9 @@
+scanner:
+    - namespace:
+        - "development"
+      deployment:
+        - selector:
+            - "app=shell"
+          schedule:
+            - "Mon-Fri  x:00 replicas=0"
+            - "Mon-Fi  18:00 replicas=1"
