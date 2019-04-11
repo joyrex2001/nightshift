@@ -160,7 +160,6 @@ func TestSaveState(t *testing.T) {
 }
 
 func TestNewObjectForScanner(t *testing.T) {
-	// TODO: implement
 	scnr := &mock{typ: "mock"}
 	sched := []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}}
 	cfg := Config{
