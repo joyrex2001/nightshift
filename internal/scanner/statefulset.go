@@ -131,6 +131,9 @@ func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
 	watcher, err := apps.StatefulSets(s.config.Namespace).Watch(metav1.ListOptions{
 		LabelSelector: s.config.Label,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	out := make(chan Event)
 	go func() {
