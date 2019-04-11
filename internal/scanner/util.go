@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -91,4 +92,26 @@ func annotationToSchedule(annotation string) ([]*schedule.Schedule, error) {
 		sched = append(sched, s)
 	}
 	return sched, nil
+}
+
+// publishWatchEvent will take a watch event, and scanner object. It will
+// transform it to a scanner watch event, and publish it to the out channel.
+func publishWatchEvent(out chan Event, obj *Object, evt watch.Event) {
+	if evt.Type == watch.Error {
+		glog.Errorf("Error watching: %v", evt)
+		return
+	}
+
+	if evt.Type == watch.Deleted {
+		out <- Event{Object: obj, Type: EventRemove}
+		return
+	}
+
+	if evt.Type == watch.Added || evt.Type == watch.Modified {
+		if obj.Schedule != nil {
+			out <- Event{Object: obj, Type: EventAdd}
+		} else {
+			out <- Event{Object: obj, Type: EventRemove}
+		}
+	}
 }

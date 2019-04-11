@@ -41,7 +41,7 @@ func (m *mockScanner) Watch(_stop chan bool) (chan scanner.Event, error) {
 }
 
 func getFactory(typ string, m *mockScanner) scanner.Factory {
-	return func() scanner.Scanner {
-		return m
+	return func() (scanner.Scanner, error) {
+		return m, nil
 	}
 }

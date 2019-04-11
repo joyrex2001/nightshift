@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 
 	"github.com/joyrex2001/nightshift/internal/schedule"
 )
@@ -174,5 +175,56 @@ func TestUpdateState(t *testing.T) {
 	st = meta.Annotations["joyrex2001.com/nightshift.savestate"]
 	if st != "5" {
 		t.Errorf("failed test - expected: 5, got %s", st)
+	}
+}
+
+func TestPublishWatchEvent(t *testing.T) {
+	sched := []*schedule.Schedule{&schedule.Schedule{}}
+	tests := []struct {
+		out Event
+		obj *Object
+		evt watch.Event
+	}{
+		{
+			out: Event{},
+			obj: &Object{UID: "123"},
+			evt: watch.Event{Type: watch.Error},
+		},
+		{
+			out: Event{Object: &Object{UID: "123"}, Type: EventRemove},
+			obj: &Object{UID: "123"},
+			evt: watch.Event{Type: watch.Deleted},
+		},
+		{
+			out: Event{Object: &Object{UID: "123", Schedule: sched}, Type: EventAdd},
+			obj: &Object{UID: "123", Schedule: sched},
+			evt: watch.Event{Type: watch.Added},
+		},
+		{
+			out: Event{Object: &Object{UID: "123", Schedule: sched}, Type: EventAdd},
+			obj: &Object{UID: "123", Schedule: sched},
+			evt: watch.Event{Type: watch.Modified},
+		},
+		{
+			out: Event{Object: &Object{UID: "123"}, Type: EventRemove},
+			obj: &Object{UID: "123"},
+			evt: watch.Event{Type: watch.Added},
+		},
+		{
+			out: Event{Object: &Object{UID: "123"}, Type: EventRemove},
+			obj: &Object{UID: "123"},
+			evt: watch.Event{Type: watch.Modified},
+		},
+	}
+	for i, tst := range tests {
+		in := make(chan Event, 1)
+		publishWatchEvent(in, tst.obj, tst.evt)
+		close(in)
+		out := Event{}
+		for out = range in {
+		}
+		if !reflect.DeepEqual(out, tst.out) {
+			t.Errorf("failed test %d - expected: %v, got %v", i, tst.out, out)
+		}
 	}
 }

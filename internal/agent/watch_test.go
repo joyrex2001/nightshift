@@ -8,7 +8,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
-func TestStartStop(t *testing.T) {
+func TestStartStopWatch(t *testing.T) {
 	wrkr := &worker{}
 	scnr := &mockScanner{}
 	wrkr.AddScanner(scnr)

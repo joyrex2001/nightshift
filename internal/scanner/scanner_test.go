@@ -46,9 +46,9 @@ func (m *mock) Watch(_stop chan bool) (chan Event, error) {
 }
 
 func getFactory(typ string, m *mock) Factory {
-	return func() Scanner {
+	return func() (Scanner, error) {
 		m.typ = typ
-		return m
+		return m, nil
 	}
 }
 
@@ -181,10 +181,10 @@ func TestNewObjectForScanner(t *testing.T) {
 	}
 }
 
-func TestUpdateForMeta(t *testing.T) {
+func TestUpdateWithMeta(t *testing.T) {
 	obj := &Object{}
 	meta := metav1.ObjectMeta{UID: "abc", Name: "something"}
-	obj.updateForMeta(meta)
+	obj.updateWithMeta(meta)
 	if obj.UID != "abc" {
 		t.Errorf("failed test - expected UID 'abc', got: %s", obj.UID)
 	}

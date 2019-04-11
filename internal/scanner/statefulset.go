@@ -6,7 +6,6 @@ import (
 	"github.com/golang/glog"
 	v1beta "k8s.io/api/apps/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/watch"
 	appsv1beta "k8s.io/client-go/kubernetes/typed/apps/v1beta1"
 	"k8s.io/client-go/rest"
 )
@@ -21,14 +20,14 @@ func init() {
 }
 
 // NewStatefulSetScanner will instantiate a new StatefulSetScanner object.
-func NewStatefulSetScanner() Scanner {
+func NewStatefulSetScanner() (Scanner, error) {
 	kubernetes, err := getKubernetes()
 	if err != nil {
-		glog.Warningf("failed instantiating k8s client: %s", err)
+		return nil, fmt.Errorf("failed instantiating k8s client: %s", err)
 	}
 	return &StatefulSetScanner{
 		kubernetes: kubernetes,
-	}
+	}, nil
 }
 
 // SetConfig will set the generic configuration for this scanner.
@@ -81,9 +80,6 @@ func (s *StatefulSetScanner) SaveState(obj *Object) (int, error) {
 
 // getStatefulSet will return the statefulset for given object.
 func (s *StatefulSetScanner) getStatefulSet(obj *Object) (*v1beta.StatefulSet, error) {
-	if s.kubernetes == nil {
-		return nil, fmt.Errorf("unable to connect to kubernetes")
-	}
 	apps, err := appsv1beta.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
@@ -94,9 +90,6 @@ func (s *StatefulSetScanner) getStatefulSet(obj *Object) (*v1beta.StatefulSet, e
 // getStatefulSets will return all statefulsets in the namespace that
 // match the label selector.
 func (s *StatefulSetScanner) getStatefulSets() (*v1beta.StatefulSetList, error) {
-	if s.kubernetes == nil {
-		return nil, fmt.Errorf("unable to connect to kubernetes")
-	}
 	apps, err := appsv1beta.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
@@ -121,9 +114,6 @@ func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object,
 // Watch will return a channel on which Event objects will be published that
 // describe change events in the cluster.
 func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
-	if s.kubernetes == nil {
-		return nil, fmt.Errorf("unable to connect to kubernetes")
-	}
 	apps, err := appsv1beta.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
@@ -137,12 +127,16 @@ func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
 
 	out := make(chan Event)
 	go func() {
-		inch := watcher.ResultChan()
 		for {
 			select {
-			case evt := <-inch:
+			case evt := <-watcher.ResultChan():
 				glog.V(5).Infof("Received event: %v", evt)
-				s.handleEvent(out, evt)
+				dc, ok := evt.Object.(*v1beta.StatefulSet)
+				if ok {
+					publishWatchEvent(out, s.getObject(dc), evt)
+				} else {
+					glog.Errorf("Unexpected type; %v", dc)
+				}
 			case <-_stop:
 				return
 			}
@@ -152,39 +146,10 @@ func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
 	return out, nil
 }
 
-// handleEvent will take a watch event and transform it to a scanner watch
-// event, and publish it to the out channel.
-func (s *StatefulSetScanner) handleEvent(out chan Event, evt watch.Event) {
-	if evt.Type == watch.Error {
-		glog.Errorf("Error watching: %v", evt)
-		return
-	}
-
-	ss, ok := evt.Object.(*v1beta.StatefulSet)
-	if !ok {
-		glog.Errorf("Unexpected type; %v", ss)
-		return
-	}
-
-	obj := s.getObject(ss)
-	if evt.Type == watch.Deleted {
-		out <- Event{Object: obj, Type: EventRemove}
-		return
-	}
-
-	if evt.Type == watch.Added || evt.Type == watch.Modified {
-		if obj.Schedule != nil {
-			out <- Event{Object: obj, Type: EventAdd}
-		} else {
-			out <- Event{Object: obj, Type: EventRemove}
-		}
-	}
-}
-
-// getObject will convert a deploymentconfig object to a scanner.Object.
+// getObject will convert a statefulset object to a scanner.Object.
 func (s *StatefulSetScanner) getObject(rc *v1beta.StatefulSet) *Object {
 	obj := NewObjectForScanner(s)
-	if err := obj.updateForMeta(rc.ObjectMeta); err != nil {
+	if err := obj.updateWithMeta(rc.ObjectMeta); err != nil {
 		glog.Error(err)
 	}
 	obj.Replicas = int(*rc.Spec.Replicas)

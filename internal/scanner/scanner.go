@@ -20,7 +20,7 @@ type Scanner interface {
 }
 
 // Factory is the factory method for a scanner implementation module.
-type Factory func() Scanner
+type Factory func() (Scanner, error)
 
 // Config describes the configuration of a scanner. It includes ScannerType
 // to allow to be used by the factory NewForConfig method.
@@ -80,8 +80,7 @@ func New(typ string) (Scanner, error) {
 	typ = strings.ToLower(typ)
 	factory, ok := modules[typ]
 	if ok {
-		scnr := factory()
-		return scnr, nil
+		return factory()
 	}
 	return nil, fmt.Errorf("invalid scannertype: %s", typ)
 }
@@ -109,9 +108,9 @@ func NewObjectForScanner(scnr Scanner) *Object {
 	}
 }
 
-// updateForMeta will update the Object instance with the provided kubernetes
+// updateWithMeta will update the Object instance with the provided kubernetes
 // ObjectMeta data, and will process the supported annotations that
-func (obj *Object) updateForMeta(meta metav1.ObjectMeta) error {
+func (obj *Object) updateWithMeta(meta metav1.ObjectMeta) error {
 	var err error
 	obj.Name = meta.Name
 	obj.UID = string(meta.UID)
