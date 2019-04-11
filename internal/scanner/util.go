@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/viper"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -46,6 +47,17 @@ func getState(annotations map[string]string) (*State, error) {
 		return nil, err
 	}
 	return &State{Replicas: repl}, nil
+}
+
+// updateState will update a kubernetes ObjectMeta struct by either adding or
+// updating the savestate annotation with the given ammount of replicas. It
+// will return the updated struct.
+func updateState(meta metav1.ObjectMeta, repl int) metav1.ObjectMeta {
+	if meta.Annotations == nil {
+		meta.Annotations = map[string]string{}
+	}
+	meta.Annotations[SaveStateAnnotation] = strconv.Itoa(repl)
+	return meta
 }
 
 // getSchedule will return a list of schedules, taken the annotations and

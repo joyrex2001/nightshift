@@ -2,7 +2,6 @@ package scanner
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/golang/glog"
 	v1 "github.com/openshift/api/apps/v1"
@@ -73,20 +72,16 @@ func (s *OpenShiftScanner) Scale(obj *Object, replicas int) error {
 
 // SaveState will save the current number of replicas as an annotation on the
 // deployment config.
-func (s *OpenShiftScanner) SaveState(obj *Object) error {
+func (s *OpenShiftScanner) SaveState(obj *Object) (int, error) {
 	dc, err := s.getDeploymentConfig(obj)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	repl := dc.Spec.Replicas
-	if dc.ObjectMeta.Annotations == nil {
-		dc.ObjectMeta.Annotations = map[string]string{}
-	}
-	dc.ObjectMeta.Annotations[SaveStateAnnotation] = strconv.Itoa(int(repl))
-	obj.State = &State{Replicas: int(repl)}
+	repl := int(dc.Spec.Replicas)
+	dc.ObjectMeta = updateState(dc.ObjectMeta, repl)
 	apps, _ := appsv1.NewForConfig(s.kubernetes)
 	_, err = apps.DeploymentConfigs(obj.Namespace).Update(dc)
-	return err
+	return repl, err
 }
 
 // getDeploymentConfig will return an DeploymentConfig object.
@@ -121,7 +116,7 @@ func (s *OpenShiftScanner) getDeploymentConfigs() (*v1.DeploymentConfigList, err
 func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, error) {
 	objs := []*Object{}
 	for _, rc := range rcs.Items {
-		if obj := s.toObject(&rc); obj.Schedule != nil {
+		if obj := s.getObject(&rc); obj.Schedule != nil {
 			objs = append(objs, obj)
 		}
 	}
@@ -173,7 +168,7 @@ func (s *OpenShiftScanner) handleEvent(out chan Event, evt watch.Event) {
 		return
 	}
 
-	obj := s.toObject(dc)
+	obj := s.getObject(dc)
 	if evt.Type == watch.Deleted {
 		out <- Event{Object: obj, Type: EventRemove}
 		return
@@ -188,24 +183,12 @@ func (s *OpenShiftScanner) handleEvent(out chan Event, evt watch.Event) {
 	}
 }
 
-// toObject will convert a deploymentconfig object to a scanner.Object.
-func (s *OpenShiftScanner) toObject(rc *v1.DeploymentConfig) *Object {
-	sched, err := getSchedule(s.config.Schedule, rc.ObjectMeta.Annotations)
-	if err != nil {
-		glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
+// getObject will convert a deploymentconfig object to a scanner.Object.
+func (s *OpenShiftScanner) getObject(rc *v1.DeploymentConfig) *Object {
+	obj := NewObjectForScanner(s)
+	if err := obj.updateForMeta(rc.ObjectMeta); err != nil {
+		glog.Error(err)
 	}
-	state, err := getState(rc.ObjectMeta.Annotations)
-	if err != nil {
-		glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-	}
-	return &Object{
-		Name:      rc.ObjectMeta.Name,
-		Namespace: s.config.Namespace,
-		UID:       string(rc.ObjectMeta.UID),
-		Priority:  s.config.Priority,
-		Type:      "openshift",
-		Schedule:  sched,
-		State:     state,
-		Replicas:  int(rc.Spec.Replicas),
-	}
+	obj.Replicas = int(rc.Spec.Replicas)
+	return obj
 }

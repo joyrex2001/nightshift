@@ -24,9 +24,9 @@ func (m *mockScanner) GetObjects() ([]*scanner.Object, error) {
 	return m.objs, nil
 }
 
-func (m *mockScanner) SaveState(obj *scanner.Object) error {
+func (m *mockScanner) SaveState(obj *scanner.Object) (int, error) {
 	m.save = true
-	return nil
+	return 0, nil
 }
 
 func (m *mockScanner) Scale(obj *scanner.Object, r int) error {

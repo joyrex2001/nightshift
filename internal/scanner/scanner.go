@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/joyrex2001/nightshift/internal/schedule"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Scanner is the public interface of a scanner object.
@@ -12,7 +14,7 @@ type Scanner interface {
 	SetConfig(Config)
 	GetConfig() Config
 	GetObjects() ([]*Object, error)
-	SaveState(*Object) error
+	SaveState(*Object) (int, error)
 	Scale(*Object, int) error
 	Watch(chan bool) (chan Event, error)
 }
@@ -94,6 +96,36 @@ func NewForConfig(cfg Config) (Scanner, error) {
 	return scnr, nil
 }
 
+// NewObjectForScanner will return a new Object instance populated with the
+// scanner details.
+func NewObjectForScanner(scnr Scanner) *Object {
+	cfg := scnr.GetConfig()
+	return &Object{
+		Namespace: cfg.Namespace,
+		Priority:  cfg.Priority,
+		Type:      cfg.Type,
+		Schedule:  cfg.Schedule,
+		scanner:   scnr,
+	}
+}
+
+// updateForMeta will update the Object instance with the provided kubernetes
+// ObjectMeta data, and will process the supported annotations that
+func (obj *Object) updateForMeta(meta metav1.ObjectMeta) error {
+	var err error
+	obj.Name = meta.Name
+	obj.UID = string(meta.UID)
+	obj.Schedule, err = getSchedule(obj.Schedule, meta.Annotations)
+	if err != nil {
+		return fmt.Errorf("error parsing schedule annotation for %s (%s); %s", meta.UID, meta.Name, err)
+	}
+	obj.State, err = getState(meta.Annotations)
+	if err != nil {
+		return fmt.Errorf("error parsing state annotation for %s (%s); %s", meta.UID, meta.Name, err)
+	}
+	return nil
+}
+
 // getScanner will lazy load the appropriate scanner object for this resource.
 func (obj *Object) getScanner() (Scanner, error) {
 	var err error
@@ -125,5 +157,9 @@ func (obj *Object) SaveState() error {
 	if err != nil {
 		return err
 	}
-	return scanner.SaveState(obj)
+	repl, err := scanner.SaveState(obj)
+	if err == nil {
+		obj.State = &State{Replicas: repl}
+	}
+	return err
 }

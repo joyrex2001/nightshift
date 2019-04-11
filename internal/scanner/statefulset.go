@@ -2,7 +2,6 @@ package scanner
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/golang/glog"
 	v1beta "k8s.io/api/apps/v1beta1"
@@ -68,20 +67,16 @@ func (s *StatefulSetScanner) Scale(obj *Object, replicas int) error {
 
 // SaveState will save the current number of replicas as an annotation on the
 // statefulset config.
-func (s *StatefulSetScanner) SaveState(obj *Object) error {
+func (s *StatefulSetScanner) SaveState(obj *Object) (int, error) {
 	ss, err := s.getStatefulSet(obj)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	repl := ss.Spec.Replicas
-	if ss.ObjectMeta.Annotations == nil {
-		ss.ObjectMeta.Annotations = map[string]string{}
-	}
-	ss.ObjectMeta.Annotations[SaveStateAnnotation] = strconv.Itoa(int(*repl))
-	obj.State = &State{Replicas: int(*repl)}
+	repl := int(*ss.Spec.Replicas)
+	ss.ObjectMeta = updateState(ss.ObjectMeta, repl)
 	apps, _ := appsv1beta.NewForConfig(s.kubernetes)
 	_, err = apps.StatefulSets(obj.Namespace).Update(ss)
-	return err
+	return repl, err
 }
 
 // getStatefulSet will return the statefulset for given object.
@@ -116,7 +111,7 @@ func (s *StatefulSetScanner) getStatefulSets() (*v1beta.StatefulSetList, error) 
 func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object, error) {
 	objs := []*Object{}
 	for _, rc := range rcs.Items {
-		if obj := s.toObject(&rc); obj.Schedule != nil {
+		if obj := s.getObject(&rc); obj.Schedule != nil {
 			objs = append(objs, obj)
 		}
 	}
@@ -168,7 +163,7 @@ func (s *StatefulSetScanner) handleEvent(out chan Event, evt watch.Event) {
 		return
 	}
 
-	obj := s.toObject(ss)
+	obj := s.getObject(ss)
 	if evt.Type == watch.Deleted {
 		out <- Event{Object: obj, Type: EventRemove}
 		return
@@ -183,24 +178,12 @@ func (s *StatefulSetScanner) handleEvent(out chan Event, evt watch.Event) {
 	}
 }
 
-// toObject will convert a deploymentconfig object to a scanner.Object.
-func (s *StatefulSetScanner) toObject(rc *v1beta.StatefulSet) *Object {
-	sched, err := getSchedule(s.config.Schedule, rc.ObjectMeta.Annotations)
-	if err != nil {
-		glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
+// getObject will convert a deploymentconfig object to a scanner.Object.
+func (s *StatefulSetScanner) getObject(rc *v1beta.StatefulSet) *Object {
+	obj := NewObjectForScanner(s)
+	if err := obj.updateForMeta(rc.ObjectMeta); err != nil {
+		glog.Error(err)
 	}
-	state, err := getState(rc.ObjectMeta.Annotations)
-	if err != nil {
-		glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-	}
-	return &Object{
-		Name:      rc.ObjectMeta.Name,
-		Namespace: s.config.Namespace,
-		UID:       string(rc.ObjectMeta.UID),
-		Priority:  s.config.Priority,
-		Type:      "statefulset",
-		Schedule:  sched,
-		State:     state,
-		Replicas:  int(*rc.Spec.Replicas),
-	}
+	obj.Replicas = int(*rc.Spec.Replicas)
+	return obj
 }

@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/joyrex2001/nightshift/internal/schedule"
 )
 
@@ -158,5 +160,19 @@ func TestGetState(t *testing.T) {
 		if !tst.err && !reflect.DeepEqual(res, tst.state) {
 			t.Errorf("failed test %d - expected: %v, got %v", i, tst.state, res)
 		}
+	}
+}
+
+func TestUpdateState(t *testing.T) {
+	meta := metav1.ObjectMeta{}
+	meta = updateState(meta, 10)
+	st := meta.Annotations["joyrex2001.com/nightshift.savestate"]
+	if st != "10" {
+		t.Errorf("failed test - expected: 10, got %s", st)
+	}
+	meta = updateState(meta, 5)
+	st = meta.Annotations["joyrex2001.com/nightshift.savestate"]
+	if st != "5" {
+		t.Errorf("failed test - expected: 5, got %s", st)
 	}
 }
