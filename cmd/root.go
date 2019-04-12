@@ -89,6 +89,7 @@ func initConfig() {
 	}
 }
 
+// Execute will take you to the batmobile and shouts "Let's go!".
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
