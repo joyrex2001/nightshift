@@ -131,5 +131,5 @@ nightshift configuration.
 ## See also
 
 * Build status: [![CircleCI](https://circleci.com/gh/joyrex2001/nightshift.svg?style=svg)](https://circleci.com/gh/joyrex2001/nightshift)
-* Go Reportt Card: [![Go Report Card](https://goreportcard.com/badge/github.com/joyrex2001/nightshift)](https://goreportcard.com/report/github.com/joyrex2001/nightshift)
+* Go Report Card: [![Go Report Card](https://goreportcard.com/badge/github.com/joyrex2001/nightshift)](https://goreportcard.com/report/github.com/joyrex2001/nightshift)
 * https://hub.docker.com/r/joyrex2001/nightshift
