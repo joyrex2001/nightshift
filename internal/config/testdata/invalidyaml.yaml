@@ -1,0 +1,21 @@
+scanner:
+    - namespace:
+  - "development"
+      default:
+        schedule:
+          - "Mon-Fi  9:00 replicas=1"
+          - "Mon-Fri x:00 replicas=0"
+      deployment:
+        - selector:
+            - "app=shell"
+          schedule:
+            - ""
+    - namespace:
+        - "batch"
+      default:
+        schedule:
+          - "Mon-Fri  9:00 replicas=0"
+          - "Mon-Fri 18:00 replicas=1"
+      deployment:
+        - selector:
+          - "app=shell"

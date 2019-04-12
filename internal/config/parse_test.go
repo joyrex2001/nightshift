@@ -22,7 +22,15 @@ func TestNew(t *testing.T) {
 			err:  true,
 		},
 		{
-			file: "testdata/invalidschedule.yaml",
+			file: "testdata/invalidschedule1.yaml",
+			err:  true,
+		},
+		{
+			file: "testdata/invalidschedule2.yaml",
+			err:  true,
+		},
+		{
+			file: "testdata/invalidyaml.yaml",
 			err:  true,
 		},
 		{

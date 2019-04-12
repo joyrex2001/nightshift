@@ -3,6 +3,10 @@ package scanner
 import (
 	"errors"
 	"testing"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/joyrex2001/nightshift/internal/schedule"
 )
 
 type mock struct {
@@ -26,9 +30,9 @@ func (m *mock) GetObjects() ([]*Object, error) {
 	return nil, nil
 }
 
-func (m *mock) SaveState(obj *Object) error {
+func (m *mock) SaveState(obj *Object) (int, error) {
 	m.state = obj
-	return nil
+	return 0, nil
 }
 
 func (m *mock) Scale(obj *Object, r int) error {
@@ -37,10 +41,14 @@ func (m *mock) Scale(obj *Object, r int) error {
 	return m.err
 }
 
+func (m *mock) Watch(_stop chan bool) (chan Event, error) {
+	return make(chan Event), nil
+}
+
 func getFactory(typ string, m *mock) Factory {
-	return func() Scanner {
+	return func() (Scanner, error) {
 		m.typ = typ
-		return m
+		return m, nil
 	}
 }
 
@@ -148,5 +156,38 @@ func TestSaveState(t *testing.T) {
 				t.Error("failed test - object for save state differs")
 			}
 		}
+	}
+}
+
+func TestNewObjectForScanner(t *testing.T) {
+	scnr := &mock{typ: "mock"}
+	sched := []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}}
+	cfg := Config{
+		Namespace: "abc",
+		Priority:  303,
+		Schedule:  sched,
+	}
+	scnr.SetConfig(cfg)
+	obj := NewObjectForScanner(scnr)
+	if len(obj.Schedule) != len(sched) {
+		t.Error("failed test - schedule differs")
+	}
+	if obj.Namespace != "abc" {
+		t.Errorf("failed test - expected Namespace 'abc', got: %s", obj.Namespace)
+	}
+	if obj.Priority != 303 {
+		t.Errorf("failed test - expected Priority '303', got: %d", obj.Priority)
+	}
+}
+
+func TestUpdateWithMeta(t *testing.T) {
+	obj := &Object{}
+	meta := metav1.ObjectMeta{UID: "abc", Name: "something"}
+	obj.updateWithMeta(meta)
+	if obj.UID != "abc" {
+		t.Errorf("failed test - expected UID 'abc', got: %s", obj.UID)
+	}
+	if obj.Name != "something" {
+		t.Errorf("failed test - expected UID 'something', got: %s", obj.Name)
 	}
 }

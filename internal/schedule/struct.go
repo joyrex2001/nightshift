@@ -15,11 +15,6 @@ type Schedule struct {
 	settings    map[string]string
 }
 
-// String will return the Schedule struct in human readable form.
-func (s *Schedule) String() string {
-	return s.Description
-}
-
 // State describes the possible values of the 'state' attribute.
 type State string
 

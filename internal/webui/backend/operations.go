@@ -17,7 +17,9 @@ import (
 func (f *handler) GetObjects(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	res := []*scanner.Object{}
 	for _, obj := range agent.New().GetObjects() {
-		res = append(res, obj)
+		if len(obj.Schedule) > 0 {
+			res = append(res, obj)
+		}
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(res); err != nil {
@@ -90,7 +92,6 @@ func scaleObjects(objects []*scanner.Object, replicas int) error {
 			errs = append(errs, _err.Error())
 		}
 	}
-	agent.New().UpdateSchedule()
 	if len(errs) > 0 {
 		return fmt.Errorf("%s", strings.Join(errs, ","))
 	}

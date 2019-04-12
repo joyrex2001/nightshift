@@ -8,6 +8,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/viper"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
@@ -48,6 +50,17 @@ func getState(annotations map[string]string) (*State, error) {
 	return &State{Replicas: repl}, nil
 }
 
+// updateState will update a kubernetes ObjectMeta struct by either adding or
+// updating the savestate annotation with the given ammount of replicas. It
+// will return the updated struct.
+func updateState(meta metav1.ObjectMeta, repl int) metav1.ObjectMeta {
+	if meta.Annotations == nil {
+		meta.Annotations = map[string]string{}
+	}
+	meta.Annotations[SaveStateAnnotation] = strconv.Itoa(repl)
+	return meta
+}
+
 // getSchedule will return a list of schedules, taken the annotations and
 // defaults into account.
 func getSchedule(cfgsched []*schedule.Schedule, annotations map[string]string) ([]*schedule.Schedule, error) {
@@ -79,4 +92,26 @@ func annotationToSchedule(annotation string) ([]*schedule.Schedule, error) {
 		sched = append(sched, s)
 	}
 	return sched, nil
+}
+
+// publishWatchEvent will take a watch event, and scanner object. It will
+// transform it to a scanner watch event, and publish it to the out channel.
+func publishWatchEvent(out chan Event, obj *Object, evt watch.Event) {
+	if evt.Type == watch.Error {
+		glog.Errorf("Error watching: %v", evt)
+		return
+	}
+
+	if evt.Type == watch.Deleted {
+		out <- Event{Object: obj, Type: EventRemove}
+		return
+	}
+
+	if evt.Type == watch.Added || evt.Type == watch.Modified {
+		if obj.Schedule != nil {
+			out <- Event{Object: obj, Type: EventAdd}
+		} else {
+			out <- Event{Object: obj, Type: EventRemove}
+		}
+	}
 }

@@ -4,7 +4,6 @@ web:
 
 generic:
     timezone: "Europe/Amsterdam"
-    interval: "15m"
 
 logging:
     threshold: "info"

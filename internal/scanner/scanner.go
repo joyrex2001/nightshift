@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/joyrex2001/nightshift/internal/schedule"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Scanner is the public interface of a scanner object.
@@ -12,12 +14,13 @@ type Scanner interface {
 	SetConfig(Config)
 	GetConfig() Config
 	GetObjects() ([]*Object, error)
-	SaveState(*Object) error
+	SaveState(*Object) (int, error)
 	Scale(*Object, int) error
+	Watch(chan bool) (chan Event, error)
 }
 
 // Factory is the factory method for a scanner implementation module.
-type Factory func() Scanner
+type Factory func() (Scanner, error)
 
 // Config describes the configuration of a scanner. It includes ScannerType
 // to allow to be used by the factory NewForConfig method.
@@ -26,6 +29,7 @@ type Config struct {
 	Label     string               `json:"label"`
 	Schedule  []*schedule.Schedule `json:"schedule"`
 	Type      string               `json:"type"`
+	Priority  int                  `json:"priority"`
 }
 
 // Object is an object found by the scanner.
@@ -37,6 +41,7 @@ type Object struct {
 	Schedule  []*schedule.Schedule `json:"schedule"`
 	State     *State               `json:"state"`
 	Replicas  int                  `json:"replicas"`
+	Priority  int                  `json:"priority"`
 	scanner   Scanner
 }
 
@@ -44,6 +49,18 @@ type Object struct {
 type State struct {
 	Replicas int `json:"replicas"`
 }
+
+// Event is the structure that is send by the watch method over the channel.
+type Event struct {
+	Object *Object
+	Type   string
+}
+
+const (
+	EventAdd    string = "add"
+	EventRemove string = "remove"
+	EventUpdate string = "update"
+)
 
 var modules map[string]Factory
 
@@ -63,8 +80,7 @@ func New(typ string) (Scanner, error) {
 	typ = strings.ToLower(typ)
 	factory, ok := modules[typ]
 	if ok {
-		scnr := factory()
-		return scnr, nil
+		return factory()
 	}
 	return nil, fmt.Errorf("invalid scannertype: %s", typ)
 }
@@ -77,6 +93,36 @@ func NewForConfig(cfg Config) (Scanner, error) {
 	}
 	scnr.SetConfig(cfg)
 	return scnr, nil
+}
+
+// NewObjectForScanner will return a new Object instance populated with the
+// scanner details.
+func NewObjectForScanner(scnr Scanner) *Object {
+	cfg := scnr.GetConfig()
+	return &Object{
+		Namespace: cfg.Namespace,
+		Priority:  cfg.Priority,
+		Type:      cfg.Type,
+		Schedule:  cfg.Schedule,
+		scanner:   scnr,
+	}
+}
+
+// updateWithMeta will update the Object instance with the provided kubernetes
+// ObjectMeta data, and will process the supported annotations that
+func (obj *Object) updateWithMeta(meta metav1.ObjectMeta) error {
+	var err error
+	obj.Name = meta.Name
+	obj.UID = string(meta.UID)
+	obj.Schedule, err = getSchedule(obj.Schedule, meta.Annotations)
+	if err != nil {
+		return fmt.Errorf("error parsing schedule annotation for %s (%s); %s", meta.UID, meta.Name, err)
+	}
+	obj.State, err = getState(meta.Annotations)
+	if err != nil {
+		return fmt.Errorf("error parsing state annotation for %s (%s); %s", meta.UID, meta.Name, err)
+	}
+	return nil
 }
 
 // getScanner will lazy load the appropriate scanner object for this resource.
@@ -110,5 +156,9 @@ func (obj *Object) SaveState() error {
 	if err != nil {
 		return err
 	}
-	return scanner.SaveState(obj)
+	repl, err := scanner.SaveState(obj)
+	if err == nil {
+		obj.State = &State{Replicas: repl}
+	}
+	return err
 }

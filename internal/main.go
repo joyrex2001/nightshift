@@ -38,8 +38,7 @@ func startAgent() {
 		addScanners(agt, cfg)
 	}
 	interval := viper.GetDuration("generic.interval")
-	agt.SetInterval(interval)
-	glog.Infof("UpdateSchedule refresh interval: %s", interval)
+	agt.SetResyncInterval(interval)
 	agt.Start()
 }
 
@@ -60,6 +59,7 @@ func loadConfig() *config.Config {
 // are added in the order of priority, lowest priority is added first.
 func addScanners(agent agent.Agent, cfg *config.Config) {
 	// go through configured scanners
+	prio := 0
 	for _, scan := range cfg.Scanner {
 		glog.V(5).Infof("Adding scanner: %v", scan)
 		def, _ := scan.Default.GetSchedule()
@@ -69,7 +69,9 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 				Type:      scan.Type,
 				Namespace: ns,
 				Schedule:  def,
+				Priority:  prio,
 			})
+			prio++
 		}
 		// add exceptions specified in deployments
 		for _, depl := range scan.Deployment {
@@ -81,7 +83,9 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 						Namespace: ns,
 						Schedule:  sched,
 						Label:     sel,
+						Priority:  prio,
 					})
+					prio++
 				}
 			}
 		}

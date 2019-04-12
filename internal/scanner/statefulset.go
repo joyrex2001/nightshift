@@ -2,7 +2,6 @@ package scanner
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/golang/glog"
 	v1beta "k8s.io/api/apps/v1beta1"
@@ -21,14 +20,14 @@ func init() {
 }
 
 // NewStatefulSetScanner will instantiate a new StatefulSetScanner object.
-func NewStatefulSetScanner() Scanner {
+func NewStatefulSetScanner() (Scanner, error) {
 	kubernetes, err := getKubernetes()
 	if err != nil {
-		glog.Warningf("failed instantiating k8s client: %s", err)
+		return nil, fmt.Errorf("failed instantiating k8s client: %s", err)
 	}
 	return &StatefulSetScanner{
 		kubernetes: kubernetes,
-	}
+	}, nil
 }
 
 // SetConfig will set the generic configuration for this scanner.
@@ -67,27 +66,20 @@ func (s *StatefulSetScanner) Scale(obj *Object, replicas int) error {
 
 // SaveState will save the current number of replicas as an annotation on the
 // statefulset config.
-func (s *StatefulSetScanner) SaveState(obj *Object) error {
+func (s *StatefulSetScanner) SaveState(obj *Object) (int, error) {
 	ss, err := s.getStatefulSet(obj)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	repl := ss.Spec.Replicas
-	if ss.ObjectMeta.Annotations == nil {
-		ss.ObjectMeta.Annotations = map[string]string{}
-	}
-	ss.ObjectMeta.Annotations[SaveStateAnnotation] = strconv.Itoa(int(*repl))
-	obj.State = &State{Replicas: int(*repl)}
+	repl := int(*ss.Spec.Replicas)
+	ss.ObjectMeta = updateState(ss.ObjectMeta, repl)
 	apps, _ := appsv1beta.NewForConfig(s.kubernetes)
 	_, err = apps.StatefulSets(obj.Namespace).Update(ss)
-	return err
+	return repl, err
 }
 
 // getStatefulSet will return the statefulset for given object.
 func (s *StatefulSetScanner) getStatefulSet(obj *Object) (*v1beta.StatefulSet, error) {
-	if s.kubernetes == nil {
-		return nil, fmt.Errorf("unable to connect to kubernetes")
-	}
 	apps, err := appsv1beta.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
@@ -98,9 +90,6 @@ func (s *StatefulSetScanner) getStatefulSet(obj *Object) (*v1beta.StatefulSet, e
 // getStatefulSets will return all statefulsets in the namespace that
 // match the label selector.
 func (s *StatefulSetScanner) getStatefulSets() (*v1beta.StatefulSetList, error) {
-	if s.kubernetes == nil {
-		return nil, fmt.Errorf("unable to connect to kubernetes")
-	}
 	apps, err := appsv1beta.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
@@ -115,25 +104,54 @@ func (s *StatefulSetScanner) getStatefulSets() (*v1beta.StatefulSetList, error) 
 func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object, error) {
 	objs := []*Object{}
 	for _, rc := range rcs.Items {
-		sched, err := getSchedule(s.config.Schedule, rc.ObjectMeta.Annotations)
-		if err != nil {
-			glog.Errorf("error parsing schedule annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-		}
-		state, err := getState(rc.ObjectMeta.Annotations)
-		if err != nil {
-			glog.Errorf("error parsing state annotation for %s (%s); %s", rc.ObjectMeta.UID, rc.ObjectMeta.Name, err)
-		}
-		if sched != nil {
-			objs = append(objs, &Object{
-				Name:      rc.ObjectMeta.Name,
-				Namespace: s.config.Namespace,
-				UID:       string(rc.ObjectMeta.UID),
-				Type:      "statefulset",
-				Schedule:  sched,
-				State:     state,
-				Replicas:  int(*rc.Spec.Replicas),
-			})
+		if obj := s.getObject(&rc); obj.Schedule != nil {
+			objs = append(objs, obj)
 		}
 	}
 	return objs, nil
+}
+
+// Watch will return a channel on which Event objects will be published that
+// describe change events in the cluster.
+func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
+	apps, err := appsv1beta.NewForConfig(s.kubernetes)
+	if err != nil {
+		return nil, err
+	}
+	watcher, err := apps.StatefulSets(s.config.Namespace).Watch(metav1.ListOptions{
+		LabelSelector: s.config.Label,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	out := make(chan Event)
+	go func() {
+		for {
+			select {
+			case evt := <-watcher.ResultChan():
+				glog.V(5).Infof("Received event: %v", evt)
+				dc, ok := evt.Object.(*v1beta.StatefulSet)
+				if ok {
+					publishWatchEvent(out, s.getObject(dc), evt)
+				} else {
+					glog.Errorf("Unexpected type; %v", dc)
+				}
+			case <-_stop:
+				return
+			}
+		}
+	}()
+
+	return out, nil
+}
+
+// getObject will convert a statefulset object to a scanner.Object.
+func (s *StatefulSetScanner) getObject(rc *v1beta.StatefulSet) *Object {
+	obj := NewObjectForScanner(s)
+	if err := obj.updateWithMeta(rc.ObjectMeta); err != nil {
+		glog.Error(err)
+	}
+	obj.Replicas = int(*rc.Spec.Replicas)
+	return obj
 }
