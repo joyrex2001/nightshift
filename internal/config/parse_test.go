@@ -63,7 +63,7 @@ func TestParse(t *testing.T) {
 			file: "testdata/example.yaml",
 			result: &Config{
 				Scanner: []*Scanner{
-					&Scanner{
+					{
 						Namespace: []string{"development"},
 						Default: &Default{
 							Schedule: []string{
@@ -72,14 +72,14 @@ func TestParse(t *testing.T) {
 							},
 						},
 						Deployment: []*Deployment{
-							&Deployment{
+							{
 								Selector: []string{"app=shell"},
 								Schedule: []string{""},
 							},
 						},
 						Type: "openshift",
 					},
-					&Scanner{
+					{
 						Namespace: []string{"batch"},
 						Default: &Default{
 							Schedule: []string{
@@ -88,7 +88,7 @@ func TestParse(t *testing.T) {
 							},
 						},
 						Deployment: []*Deployment{
-							&Deployment{
+							{
 								Selector: []string{"app=shell", "app=nightshift"},
 								Schedule: nil,
 							},
@@ -126,7 +126,7 @@ func TestProcessDefaults(t *testing.T) {
 		{
 			in: &Config{
 				Scanner: []*Scanner{
-					&Scanner{
+					{
 						Namespace: []string{"batch"},
 						Default: &Default{
 							Schedule: []string{
@@ -135,7 +135,7 @@ func TestProcessDefaults(t *testing.T) {
 							},
 						},
 						Deployment: []*Deployment{
-							&Deployment{
+							{
 								Selector: []string{"app=shell", "app=nightshift"},
 								Schedule: nil,
 							},
@@ -145,7 +145,7 @@ func TestProcessDefaults(t *testing.T) {
 			},
 			out: &Config{
 				Scanner: []*Scanner{
-					&Scanner{
+					{
 						Namespace: []string{"batch"},
 						Default: &Default{
 							Schedule: []string{
@@ -154,7 +154,7 @@ func TestProcessDefaults(t *testing.T) {
 							},
 						},
 						Deployment: []*Deployment{
-							&Deployment{
+							{
 								Selector: []string{"app=shell", "app=nightshift"},
 								Schedule: nil,
 							},

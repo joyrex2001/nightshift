@@ -57,8 +57,11 @@ type Event struct {
 }
 
 const (
-	EventAdd    string = "add"
+	// EventAdd is used to indicate a resource was added in a Event
+	EventAdd string = "add"
+	// EventRemove is used to indicate a resource was removed in a Event
 	EventRemove string = "remove"
+	// EventUpdate is used to indicate a resource was updated in a Event
 	EventUpdate string = "update"
 )
 

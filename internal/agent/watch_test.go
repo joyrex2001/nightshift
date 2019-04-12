@@ -27,8 +27,8 @@ func TestUpdateSchedule(t *testing.T) {
 	wrkr.AddScanner(scnr)
 
 	scnr.objs = []*scanner.Object{
-		&scanner.Object{UID: "abc", State: &scanner.State{Replicas: 1}},
-		&scanner.Object{UID: "123", State: &scanner.State{Replicas: 2}},
+		{UID: "abc", State: &scanner.State{Replicas: 1}},
+		{UID: "123", State: &scanner.State{Replicas: 2}},
 	}
 
 	wrkr.UpdateSchedule()
@@ -49,38 +49,38 @@ func TestWatchScanner(t *testing.T) {
 		},
 		{
 			event: []scanner.Event{
-				scanner.Event{
+				{
 					Object: &scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
 					Type:   scanner.EventAdd,
 				},
 			},
 			result: map[string]*scanner.Object{
-				"abc": &scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
+				"abc": {UID: "abc", Priority: 1, Type: "myscanner"},
 			},
 		},
 		{
 			event: []scanner.Event{
-				scanner.Event{
+				{
 					Object: &scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
 					Type:   scanner.EventAdd,
 				},
-				scanner.Event{
+				{
 					Object: &scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
 					Type:   scanner.EventAdd,
 				},
 			},
 			result: map[string]*scanner.Object{
-				"abc": &scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
-				"def": &scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+				"abc": {UID: "abc", Priority: 1, Type: "myscanner"},
+				"def": {UID: "def", Priority: 1, Type: "myscanner"},
 			},
 		},
 		{
 			event: []scanner.Event{
-				scanner.Event{
+				{
 					Object: &scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
 					Type:   scanner.EventAdd,
 				},
-				scanner.Event{
+				{
 					Object: &scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
 					Type:   scanner.EventRemove,
 				},
@@ -89,17 +89,17 @@ func TestWatchScanner(t *testing.T) {
 		},
 		{
 			event: []scanner.Event{
-				scanner.Event{
+				{
 					Object: &scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
 					Type:   scanner.EventAdd,
 				},
-				scanner.Event{
+				{
 					Object: &scanner.Object{UID: "abc", Priority: 2, Type: "myscanner"},
 					Type:   scanner.EventUpdate,
 				},
 			},
 			result: map[string]*scanner.Object{
-				"abc": &scanner.Object{UID: "abc", Priority: 2, Type: "myscanner"},
+				"abc": {UID: "abc", Priority: 2, Type: "myscanner"},
 			},
 		},
 	}

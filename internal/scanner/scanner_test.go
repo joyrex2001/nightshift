@@ -161,7 +161,7 @@ func TestSaveState(t *testing.T) {
 
 func TestNewObjectForScanner(t *testing.T) {
 	scnr := &mock{typ: "mock"}
-	sched := []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}}
+	sched := []*schedule.Schedule{{}, {}}
 	cfg := Config{
 		Namespace: "abc",
 		Priority:  303,

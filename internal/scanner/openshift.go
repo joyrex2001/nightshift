@@ -10,6 +10,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+// OpenShiftScanner is the object that implements scanning of OpenShift
+// DeploymentConfigs.
 type OpenShiftScanner struct {
 	config     Config
 	kubernetes *rest.Config
@@ -35,7 +37,7 @@ func (s *OpenShiftScanner) SetConfig(cfg Config) {
 	s.config = cfg
 }
 
-// SetConfig will set the generic configuration for this scanner.
+// GetConfig will return the config applied for this scanner.
 func (s *OpenShiftScanner) GetConfig() Config {
 	return s.config
 }

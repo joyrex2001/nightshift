@@ -10,6 +10,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+// StatefulSetScanner is the object that implements scanning of OpenShift/k8s
+// statefulsets.
 type StatefulSetScanner struct {
 	config     Config
 	kubernetes *rest.Config
@@ -35,7 +37,7 @@ func (s *StatefulSetScanner) SetConfig(cfg Config) {
 	s.config = cfg
 }
 
-// SetConfig will set the generic configuration for this scanner.
+// GetConfig will return the config applied for this scanner.
 func (s *StatefulSetScanner) GetConfig() Config {
 	return s.config
 }
@@ -61,7 +63,7 @@ func (s *StatefulSetScanner) Scale(obj *Object, replicas int) error {
 	ss.Spec.Replicas = &repl
 	apps, _ := appsv1beta.NewForConfig(s.kubernetes)
 	_, err = apps.StatefulSets(obj.Namespace).Update(ss)
-	return nil
+	return err
 }
 
 // SaveState will save the current number of replicas as an annotation on the

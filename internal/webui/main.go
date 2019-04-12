@@ -11,7 +11,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/webui/backend"
 )
 
-type WebUI struct {
+type webui struct {
 	Addr string
 	TLS  bool
 	Cert string
@@ -22,13 +22,13 @@ type WebUI struct {
 	done chan bool
 }
 
-var instance *WebUI
+var instance *webui
 var once sync.Once
 
-// New will instantiate a new WebUI object.
-func New() *WebUI {
+// New will instantiate a new webui object.
+func New() *webui {
 	once.Do(func() {
-		instance = &WebUI{
+		instance = &webui{
 			done: make(chan bool),
 		}
 	})
@@ -36,7 +36,7 @@ func New() *WebUI {
 }
 
 // Start will start the webserver.
-func (a *WebUI) Start() {
+func (a *webui) Start() {
 	go func() {
 		hndlr := backend.NewHandler()
 		a.srv = &http.Server{
@@ -56,7 +56,7 @@ func (a *WebUI) Start() {
 }
 
 // Stop will stop the webserver.
-func (a *WebUI) Stop() error {
+func (a *webui) Stop() error {
 	a.m.Lock()
 	defer a.m.Unlock()
 

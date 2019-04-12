@@ -40,6 +40,8 @@ func (w *stResponseWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
+// HTTPLogger middleware will log incoming http requests, unless the request
+// path is in the given ignore map.
 func HTTPLogger(handler http.Handler, ignore []string) http.Handler {
 	skip := map[string]bool{}
 	for _, s := range ignore {

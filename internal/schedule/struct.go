@@ -19,7 +19,10 @@ type Schedule struct {
 type State string
 
 var (
+	// RestoreState is used by GetState to specify the state "restore"
 	RestoreState State = "restore"
-	SaveState    State = "save"
-	NoState      State = ""
+	// SaveState is used by GetState to specify the state "save"
+	SaveState State = "save"
+	// NoState is used by GetState to indicate no state was configured
+	NoState State
 )

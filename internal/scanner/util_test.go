@@ -63,19 +63,19 @@ func TestGetSchedule(t *testing.T) {
 			count: 0,
 		},
 		{
-			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{{}, {}},
 			data:  map[string]string{},
 			err:   false,
 			count: 2,
 		},
 		{
-			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{{}, {}, {}},
 			data:  map[string]string{},
 			err:   false,
 			count: 3,
 		},
 		{
-			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{{}, {}, {}},
 			data: map[string]string{
 				"joyrex2001.com/nightshift.schedule": `Mon 18:00 replicas=0; Mon 9:00 replicas=1;`,
 				"joyrex2001.com/nightshift.ignore":   `true`,
@@ -84,7 +84,7 @@ func TestGetSchedule(t *testing.T) {
 			count: 0,
 		},
 		{
-			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{{}, {}, {}},
 			data: map[string]string{
 				"joyrex2001.com/nightshift.schedule": `Mon 18:00 replicas=0;`,
 				"joyrex2001.com/nightshift.ignore":   `false`,
@@ -93,7 +93,7 @@ func TestGetSchedule(t *testing.T) {
 			count: 1,
 		},
 		{
-			sched: []*schedule.Schedule{&schedule.Schedule{}, &schedule.Schedule{}},
+			sched: []*schedule.Schedule{{}, {}},
 			data: map[string]string{
 				"joyrex2001.com/nightshift.schedule": `Mon 18:00 replicas=0;`,
 				"joyrex2001.com/nightshift.ignore":   `false`,
@@ -179,7 +179,7 @@ func TestUpdateState(t *testing.T) {
 }
 
 func TestPublishWatchEvent(t *testing.T) {
-	sched := []*schedule.Schedule{&schedule.Schedule{}}
+	sched := []*schedule.Schedule{{}}
 	tests := []struct {
 		out Event
 		obj *Object

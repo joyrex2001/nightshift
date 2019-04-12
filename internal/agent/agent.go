@@ -9,6 +9,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
+// Agent is the public interface that is implemented by the agent.
 type Agent interface {
 	AddScanner(scanner.Scanner)
 	SetResyncInterval(time.Duration)

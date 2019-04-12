@@ -32,7 +32,7 @@ func (a *worker) StopWatch() {
 }
 
 // UpdateSchedule will call all scanners and get the current list of matched
-// objects. This method is called periodicaly by the resyncScanner method to
+// objects. This method is called periodically by the resyncScanner method to
 // make sure the known state reflects the actual state of the platform, and
 // makes the agent resilient against missed watch events due to e.g. network
 // connectivity problems.

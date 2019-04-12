@@ -14,6 +14,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/webui/backend/internalfs"
 )
 
+// NewHandler will instantiate a http handler for serving the webui backend.
 func NewHandler() *handler {
 	return &handler{}
 }

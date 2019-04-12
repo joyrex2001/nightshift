@@ -20,81 +20,81 @@ func TestGetAddRemoveObjects(t *testing.T) {
 		},
 		{
 			add: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
+				{UID: "abc", Priority: 1, Type: "myscanner"},
 			},
 			remove: []*scanner.Object{},
 			result: map[string]*scanner.Object{
-				"abc": &scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
+				"abc": {UID: "abc", Priority: 1, Type: "myscanner"},
 			},
 		},
 		{
 			add: []*scanner.Object{},
 			remove: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
+				{UID: "abc", Priority: 1, Type: "myscanner"},
 			},
 			result: map[string]*scanner.Object{},
 		},
 		{
 			add: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
+				{UID: "abc", Priority: 1, Type: "myscanner"},
 			},
 			remove: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
+				{UID: "abc", Priority: 1, Type: "myscanner"},
 			},
 			result: map[string]*scanner.Object{},
 		},
 		{
 			add: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner"},
-				&scanner.Object{UID: "abc", Priority: 1, Type: "myscanner"},
-				&scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+				{UID: "abc", Priority: 3, Type: "myscanner"},
+				{UID: "abc", Priority: 1, Type: "myscanner"},
+				{UID: "def", Priority: 1, Type: "myscanner"},
 			},
 			remove: []*scanner.Object{},
 			result: map[string]*scanner.Object{
-				"abc": &scanner.Object{UID: "abc", Priority: 3, Type: "myscanner"},
-				"def": &scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+				"abc": {UID: "abc", Priority: 3, Type: "myscanner"},
+				"def": {UID: "def", Priority: 1, Type: "myscanner"},
 			},
 		},
 		{
 			add: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner"},
-				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner2"},
-				&scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+				{UID: "abc", Priority: 3, Type: "myscanner"},
+				{UID: "abc", Priority: 3, Type: "myscanner2"},
+				{UID: "def", Priority: 1, Type: "myscanner"},
 			},
 			remove: []*scanner.Object{},
 			result: map[string]*scanner.Object{
-				"abc": &scanner.Object{UID: "abc", Priority: 3, Type: "myscanner2"},
-				"def": &scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+				"abc": {UID: "abc", Priority: 3, Type: "myscanner2"},
+				"def": {UID: "def", Priority: 1, Type: "myscanner"},
 			},
 		},
 		{
 			add: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner"},
-				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner2"},
-				&scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+				{UID: "abc", Priority: 3, Type: "myscanner"},
+				{UID: "abc", Priority: 3, Type: "myscanner2"},
+				{UID: "def", Priority: 1, Type: "myscanner"},
 			},
 			remove: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner2"},
+				{UID: "abc", Priority: 3, Type: "myscanner2"},
 			},
 			result: map[string]*scanner.Object{
-				"def": &scanner.Object{UID: "def", Priority: 1, Type: "myscanner"},
+				"def": {UID: "def", Priority: 1, Type: "myscanner"},
 			},
 		},
 		{
 			add: []*scanner.Object{
-				&scanner.Object{UID: "abc", Priority: 1, Type: "myscanner1"},
-				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner2"},
-				&scanner.Object{UID: "abc", Priority: 2, Type: "myscanner3"},
-				&scanner.Object{UID: "abc", Priority: 1, Type: "myscanner4"},
-				&scanner.Object{UID: "abc", Priority: 3, Type: "myscanner5"},
-				&scanner.Object{UID: "def", Priority: 1, Type: "myscanner6"},
-				&scanner.Object{UID: "def", Priority: 2, Type: "myscanner7"},
-				&scanner.Object{UID: "def", Priority: 1, Type: "myscanner8"},
+				{UID: "abc", Priority: 1, Type: "myscanner1"},
+				{UID: "abc", Priority: 3, Type: "myscanner2"},
+				{UID: "abc", Priority: 2, Type: "myscanner3"},
+				{UID: "abc", Priority: 1, Type: "myscanner4"},
+				{UID: "abc", Priority: 3, Type: "myscanner5"},
+				{UID: "def", Priority: 1, Type: "myscanner6"},
+				{UID: "def", Priority: 2, Type: "myscanner7"},
+				{UID: "def", Priority: 1, Type: "myscanner8"},
 			},
 			remove: []*scanner.Object{},
 			result: map[string]*scanner.Object{
-				"abc": &scanner.Object{UID: "abc", Priority: 3, Type: "myscanner5"},
-				"def": &scanner.Object{UID: "def", Priority: 2, Type: "myscanner7"},
+				"abc": {UID: "abc", Priority: 3, Type: "myscanner5"},
+				"def": {UID: "def", Priority: 2, Type: "myscanner7"},
 			},
 		},
 	}

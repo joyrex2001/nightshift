@@ -382,19 +382,19 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"css": &bintree{nil, map[string]*bintree{
-		"about.adb7e6df.css":         &bintree{cssAboutAdb7e6dfCss, map[string]*bintree{}},
-		"app.808afb56.css":           &bintree{cssApp808afb56Css, map[string]*bintree{}},
-		"chunk-vendors.84e22b27.css": &bintree{cssChunkVendors84e22b27Css, map[string]*bintree{}},
+	"css": {nil, map[string]*bintree{
+		"about.adb7e6df.css":         {cssAboutAdb7e6dfCss, map[string]*bintree{}},
+		"app.808afb56.css":           {cssApp808afb56Css, map[string]*bintree{}},
+		"chunk-vendors.84e22b27.css": {cssChunkVendors84e22b27Css, map[string]*bintree{}},
 	}},
-	"index.html": &bintree{indexHtml, map[string]*bintree{}},
-	"js": &bintree{nil, map[string]*bintree{
-		"about.f4012e3b.js":             &bintree{jsAboutF4012e3bJs, map[string]*bintree{}},
-		"about.f4012e3b.js.map":         &bintree{jsAboutF4012e3bJsMap, map[string]*bintree{}},
-		"app.35c4fc3b.js":               &bintree{jsApp35c4fc3bJs, map[string]*bintree{}},
-		"app.35c4fc3b.js.map":           &bintree{jsApp35c4fc3bJsMap, map[string]*bintree{}},
-		"chunk-vendors.45389be6.js":     &bintree{jsChunkVendors45389be6Js, map[string]*bintree{}},
-		"chunk-vendors.45389be6.js.map": &bintree{jsChunkVendors45389be6JsMap, map[string]*bintree{}},
+	"index.html": {indexHtml, map[string]*bintree{}},
+	"js": {nil, map[string]*bintree{
+		"about.f4012e3b.js":             {jsAboutF4012e3bJs, map[string]*bintree{}},
+		"about.f4012e3b.js.map":         {jsAboutF4012e3bJsMap, map[string]*bintree{}},
+		"app.35c4fc3b.js":               {jsApp35c4fc3bJs, map[string]*bintree{}},
+		"app.35c4fc3b.js.map":           {jsApp35c4fc3bJsMap, map[string]*bintree{}},
+		"chunk-vendors.45389be6.js":     {jsChunkVendors45389be6Js, map[string]*bintree{}},
+		"chunk-vendors.45389be6.js.map": {jsChunkVendors45389be6JsMap, map[string]*bintree{}},
 	}},
 }}
 

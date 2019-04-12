@@ -17,8 +17,11 @@ import (
 )
 
 const (
-	ScheduleAnnotation  string = "joyrex2001.com/nightshift.schedule"
-	IgnoreAnnotation    string = "joyrex2001.com/nightshift.ignore"
+	// ScheduleAnnotation is the annotation used to define schedules on resources.
+	ScheduleAnnotation string = "joyrex2001.com/nightshift.schedule"
+	// IgnoreAnnotation is the annotation used to define a resource should be ignored.
+	IgnoreAnnotation string = "joyrex2001.com/nightshift.ignore"
+	// SaveStateAnnotation is the annotation used to store the state.
 	SaveStateAnnotation string = "joyrex2001.com/nightshift.savestate"
 )
 
@@ -51,7 +54,7 @@ func getState(annotations map[string]string) (*State, error) {
 }
 
 // updateState will update a kubernetes ObjectMeta struct by either adding or
-// updating the savestate annotation with the given ammount of replicas. It
+// updating the savestate annotation with the given amount of replicas. It
 // will return the updated struct.
 func updateState(meta metav1.ObjectMeta, repl int) metav1.ObjectMeta {
 	if meta.Annotations == nil {
