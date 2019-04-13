@@ -138,8 +138,6 @@ func (s *OpenShiftScanner) Watch(_stop chan bool) (chan Event, error) {
 				dc, ok := evt.Object.(*v1.DeploymentConfig)
 				if ok {
 					publishWatchEvent(out, s.getObject(dc), evt)
-				} else {
-					glog.Errorf("Unexpected type; %v", dc)
 				}
 			case <-_stop:
 				return

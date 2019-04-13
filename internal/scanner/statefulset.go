@@ -136,8 +136,6 @@ func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
 				dc, ok := evt.Object.(*v1beta.StatefulSet)
 				if ok {
 					publishWatchEvent(out, s.getObject(dc), evt)
-				} else {
-					glog.Errorf("Unexpected type; %v", dc)
 				}
 			case <-_stop:
 				return
