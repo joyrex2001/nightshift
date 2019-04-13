@@ -2,11 +2,13 @@ package scanner
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/golang/glog"
 	v1 "github.com/openshift/api/apps/v1"
 	appsv1 "github.com/openshift/client-go/apps/clientset/versioned/typed/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 )
 
@@ -118,13 +120,7 @@ func (s *OpenShiftScanner) getObjects(rcs *v1.DeploymentConfigList) ([]*Object, 
 // Watch will return a channel on which Event objects will be published that
 // describe change events in the cluster.
 func (s *OpenShiftScanner) Watch(_stop chan bool) (chan Event, error) {
-	apps, err := appsv1.NewForConfig(s.kubernetes)
-	if err != nil {
-		return nil, err
-	}
-	watcher, err := apps.DeploymentConfigs(s.config.Namespace).Watch(metav1.ListOptions{
-		LabelSelector: s.config.Label,
-	})
+	watcher, err := s.getWatcher()
 	if err != nil {
 		return nil, err
 	}
@@ -139,6 +135,9 @@ func (s *OpenShiftScanner) Watch(_stop chan bool) (chan Event, error) {
 				if ok {
 					publishWatchEvent(out, s.getObject(dc), evt)
 				}
+				if evt.Object == nil {
+					watcher = s.reconnect()
+				}
 			case <-_stop:
 				return
 			}
@@ -146,6 +145,34 @@ func (s *OpenShiftScanner) Watch(_stop chan bool) (chan Event, error) {
 	}()
 
 	return out, nil
+}
+
+// getWatcher will return a watcher for DeploymentConfigs
+func (s *OpenShiftScanner) getWatcher() (watch.Interface, error) {
+	apps, err := appsv1.NewForConfig(s.kubernetes)
+	if err != nil {
+		return nil, err
+	}
+	return apps.DeploymentConfigs(s.config.Namespace).Watch(metav1.ListOptions{
+		LabelSelector: s.config.Label,
+	})
+}
+
+// reconnect will reconnect a disconnected watcher, and will retry with an
+// exponential backoff if it fails.
+func (s *OpenShiftScanner) reconnect() watch.Interface {
+	backoff := time.Second
+	for {
+		glog.V(4).Infof("Reconnecting scanner")
+		watcher, err := s.getWatcher()
+		if err == nil {
+			return watcher
+		}
+		time.Sleep(backoff)
+		if backoff <= 300*time.Second {
+			backoff += backoff
+		}
+	}
 }
 
 // getObject will convert a deploymentconfig object to a scanner.Object.
