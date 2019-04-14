@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/spf13/viper"
@@ -24,6 +25,9 @@ const (
 	// SaveStateAnnotation is the annotation used to store the state.
 	SaveStateAnnotation string = "joyrex2001.com/nightshift.savestate"
 )
+
+type connector func() (watch.Interface, error)
+type unmarshaller func(interface{}) (*Object, error)
 
 // getKubernetes will return a kubernetes config object.
 func getKubernetes() (*rest.Config, error) {
@@ -97,24 +101,77 @@ func annotationToSchedule(annotation string) ([]*schedule.Schedule, error) {
 	return sched, nil
 }
 
+// watcher will start watching given watcher and unmarhall the received objects
+// with the provided unmarshall function. If an error occurs it will reconnect
+// with the provided connect function. If the initial connection fails it will
+// return an error, otherwise it will return a channel on which the scanner
+// events will be published. It will stop watching when the given _stop channel
+// will contain a message.
+func watcher(_stop chan bool, connect connector, unmarshall unmarshaller) (chan Event, error) {
+	watcher, err := connect()
+	if err != nil {
+		return nil, err
+	}
+
+	out := make(chan Event)
+	go func() {
+		for {
+			select {
+			case evt := <-watcher.ResultChan():
+				glog.V(5).Infof("Received event: %v", evt)
+				if evt.Type == watch.Error {
+					glog.Errorf("Error watching: %v", evt)
+				}
+				if evt.Object == nil {
+					watcher = reconnectWatcher(connect)
+				} else {
+					obj, err := unmarshall(evt.Object)
+					if err != nil {
+						glog.Errorf("Error watching: %v", evt)
+					} else {
+						publishWatchEvent(out, obj, evt)
+					}
+				}
+			case <-_stop:
+				return
+			}
+		}
+	}()
+
+	return out, nil
+}
+
 // publishWatchEvent will take a watch event, and scanner object. It will
 // transform it to a scanner watch event, and publish it to the out channel.
 func publishWatchEvent(out chan Event, obj *Object, evt watch.Event) {
-	if evt.Type == watch.Error {
-		glog.Errorf("Error watching: %v", evt)
-		return
-	}
-
 	if evt.Type == watch.Deleted {
 		out <- Event{Object: obj, Type: EventRemove}
 		return
 	}
-
 	if evt.Type == watch.Added || evt.Type == watch.Modified {
 		if obj.Schedule != nil {
 			out <- Event{Object: obj, Type: EventAdd}
 		} else {
 			out <- Event{Object: obj, Type: EventRemove}
+		}
+	}
+}
+
+// reconnectWatcher will reconnect a disconnected watcher, and will retry
+// connecting with given connect method. It will apply an exponential backoff
+// if it fails.
+func reconnectWatcher(connect connector) watch.Interface {
+	backoff := time.Second
+	for {
+		glog.V(4).Infof("Attempting to reconnect scanner...")
+		watcher, err := connect()
+		if err == nil {
+			glog.V(4).Infof("Reconnected scanner...")
+			return watcher
+		}
+		time.Sleep(backoff)
+		if backoff <= 300*time.Second {
+			backoff += backoff
 		}
 	}
 }

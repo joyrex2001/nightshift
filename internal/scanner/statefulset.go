@@ -2,7 +2,6 @@ package scanner
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/golang/glog"
 	v1beta "k8s.io/api/apps/v1beta1"
@@ -108,7 +107,11 @@ func (s *StatefulSetScanner) getStatefulSets() (*v1beta.StatefulSetList, error) 
 func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object, error) {
 	objs := []*Object{}
 	for _, rc := range rcs.Items {
-		if obj := s.getObject(&rc); obj.Schedule != nil {
+		obj, err := s.unmarshall(&rc)
+		if err != nil {
+			return nil, err
+		}
+		if obj.Schedule != nil {
 			objs = append(objs, obj)
 		}
 	}
@@ -118,31 +121,7 @@ func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object,
 // Watch will return a channel on which Event objects will be published that
 // describe change events in the cluster.
 func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
-	watcher, err := s.getWatcher()
-	if err != nil {
-		return nil, err
-	}
-
-	out := make(chan Event)
-	go func() {
-		for {
-			select {
-			case evt := <-watcher.ResultChan():
-				glog.V(5).Infof("Received event: %v", evt)
-				dc, ok := evt.Object.(*v1beta.StatefulSet)
-				if ok {
-					publishWatchEvent(out, s.getObject(dc), evt)
-				}
-				if evt.Object == nil {
-					watcher = s.reconnect()
-				}
-			case <-_stop:
-				return
-			}
-		}
-	}()
-
-	return out, nil
+	return watcher(_stop, s.getWatcher, s.unmarshall)
 }
 
 // getWatcher will return a watcher for DeploymentConfigs
@@ -156,29 +135,16 @@ func (s *StatefulSetScanner) getWatcher() (watch.Interface, error) {
 	})
 }
 
-// reconnect will reconnect a disconnected watcher, and will retry with an
-// exponential backoff if it fails.
-func (s *StatefulSetScanner) reconnect() watch.Interface {
-	backoff := time.Second
-	for {
-		glog.V(4).Infof("Reconnecting scanner")
-		watcher, err := s.getWatcher()
-		if err == nil {
-			return watcher
-		}
-		time.Sleep(backoff)
-		if backoff <= 300*time.Second {
-			backoff += backoff
-		}
+// unmarshall will convert a statefulset object to a scanner.Object.
+func (s *StatefulSetScanner) unmarshall(kobj interface{}) (*Object, error) {
+	m, ok := kobj.(*v1beta.StatefulSet)
+	if !ok {
+		return nil, fmt.Errorf("can't unmarshall %v to Statefulset", m)
 	}
-}
-
-// getObject will convert a statefulset object to a scanner.Object.
-func (s *StatefulSetScanner) getObject(rc *v1beta.StatefulSet) *Object {
 	obj := NewObjectForScanner(s)
-	if err := obj.updateWithMeta(rc.ObjectMeta); err != nil {
+	if err := obj.updateWithMeta(m.ObjectMeta); err != nil {
 		glog.Error(err)
 	}
-	obj.Replicas = int(*rc.Spec.Replicas)
-	return obj
+	obj.Replicas = int(*m.Spec.Replicas)
+	return obj, nil
 }
