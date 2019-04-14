@@ -31,7 +31,7 @@ func (s *Schedule) parse(text string) error {
 
 	s.min, err = strconv.Atoi(flds[2])
 	if err != nil || s.min < 0 || s.min > 59 {
-		return fmt.Errorf("invalid hour %s", flds[2])
+		return fmt.Errorf("invalid minute %s", flds[2])
 	}
 
 	for _, kv := range flds[3:] {

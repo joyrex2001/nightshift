@@ -1,5 +1,7 @@
 # Nightshift
 
+[![CircleCI](https://circleci.com/gh/joyrex2001/nightshift.svg?style=svg)](https://circleci.com/gh/joyrex2001/nightshift) [![Go Report Card](https://goreportcard.com/badge/github.com/joyrex2001/nightshift)](https://goreportcard.com/report/github.com/joyrex2001/nightshift)
+
 Nightshift is a service that will enable automatic down and upscaling of
 deployments within an OpenShift project to save resource usage (or use
 resources for something else). Typically this service will run in a container
@@ -62,7 +64,7 @@ has been configured in the configuration file (default is Local, which usually
 equals to UTC in most deployments).
 
 The last part defines the action that needs to be taken in this time event. At
-this point only the number of replicas can bet specified.
+this point only the number of replicas can be specified.
 
 An example of a schedule configuration is: ```Mon-Wed,Fri 9:00 replicas=1```.
 
@@ -130,6 +132,4 @@ nightshift configuration.
 
 ## See also
 
-* Build status: [![CircleCI](https://circleci.com/gh/joyrex2001/nightshift.svg?style=svg)](https://circleci.com/gh/joyrex2001/nightshift)
-* Go Report Card: [![Go Report Card](https://goreportcard.com/badge/github.com/joyrex2001/nightshift)](https://goreportcard.com/report/github.com/joyrex2001/nightshift)
 * https://hub.docker.com/r/joyrex2001/nightshift
