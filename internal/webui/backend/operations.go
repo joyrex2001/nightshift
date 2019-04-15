@@ -10,8 +10,27 @@ import (
 	"github.com/julienschmidt/httprouter"
 
 	"github.com/joyrex2001/nightshift/internal/agent"
+	"github.com/joyrex2001/nightshift/internal/config"
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
+
+// GetVersion will version details of nightshift.
+func (f *handler) GetVersion(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	res := struct {
+		Version string `json:"version"`
+		Build   string `json:"build"`
+		Date    string `json:"date"`
+	}{
+		Version: config.Version,
+		Build:   config.Build,
+		Date:    config.Date,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		f.Error(w, r, http.StatusInternalServerError, err)
+	}
+	return
+}
 
 // GetObjects will return the list of currently scanned objects.
 func (f *handler) GetObjects(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

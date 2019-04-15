@@ -22,7 +22,11 @@ RUN cd /go/src/${CODE} \
  && go get -u github.com/jteeuwen/go-bindata/... \
  && go generate ./internal/... \
  && go test ./... \
- && CGO_ENABLED=0 go build -o /app/nightshift
+ && CGO_ENABLED=0 go build -ldflags \
+    "-X github.com/joyrex2001/nightshift/internal/config.Date=`date -u +%Y%m%d-%H%M%S` \
+     -X github.com/joyrex2001/nightshift/internal/config.Build=`git rev-list -1 HEAD`   \
+     -X github.com/joyrex2001/nightshift/internal/config.Version=`git describe --tags`" \
+    -o /app/nightshift
 
 #################
 ## Final image ## ------------------------------------------------------------
