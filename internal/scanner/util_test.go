@@ -1,8 +1,10 @@
 package scanner
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
@@ -227,4 +229,51 @@ func TestPublishWatchEvent(t *testing.T) {
 			t.Errorf("failed test %d - expected: %v, got %v", i, tst.out, out)
 		}
 	}
+}
+
+func TestWatcher(t *testing.T) {
+	var conns int
+	var doerr error
+
+	stop := make(chan bool)
+	w := watch.NewFake()
+
+	connect := func() (watch.Interface, error) {
+		conns++
+		return w, doerr
+	}
+
+	unmarsh := func(interface{}) (*Object, error) {
+		return &Object{}, nil
+	}
+
+	// test error connecting
+	doerr = fmt.Errorf("oops")
+	out, err := watcher(stop, connect, unmarsh)
+	if err == nil {
+		t.Errorf("failed test watcher - expected error but got none")
+	}
+
+	// check successful connect
+	doerr = nil
+	out, err = watcher(stop, connect, unmarsh)
+	if err != nil {
+		t.Errorf("failed test watcher - unexpected error: %s", err)
+	}
+	if conns != 2 {
+		t.Errorf("failed test watcher - expected: 2 connection attemps, got %d", conns)
+	}
+
+	// test error evt
+	w.Action(watch.Error, nil)
+	time.Sleep(time.Second)
+	if conns != 3 {
+		t.Errorf("failed test watcher - expected: 3 connection attemps, got %d", conns)
+	}
+
+	// done testing
+	close(out)
+	for range out {
+	}
+	stop <- true
 }

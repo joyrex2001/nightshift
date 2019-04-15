@@ -26,9 +26,6 @@ const (
 	SaveStateAnnotation string = "joyrex2001.com/nightshift.savestate"
 )
 
-type connector func() (watch.Interface, error)
-type unmarshaller func(interface{}) (*Object, error)
-
 // getKubernetes will return a kubernetes config object.
 func getKubernetes() (*rest.Config, error) {
 	kubeconfig := viper.GetString("openshift.kubeconfig")
@@ -100,6 +97,9 @@ func annotationToSchedule(annotation string) ([]*schedule.Schedule, error) {
 	}
 	return sched, nil
 }
+
+type connector func() (watch.Interface, error)
+type unmarshaller func(interface{}) (*Object, error)
 
 // watcher will start watching given watcher and unmarhall the received objects
 // with the provided unmarshall function. If an error occurs it will reconnect
