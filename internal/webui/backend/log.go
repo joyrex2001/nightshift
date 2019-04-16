@@ -27,11 +27,6 @@ func (w *stResponseWriter) Flush() {
 	}
 }
 
-func (w *stResponseWriter) CloseNotify() <-chan bool {
-	z := w.ResponseWriter
-	return z.(http.CloseNotifier).CloseNotify()
-}
-
 func (w *stResponseWriter) Write(b []byte) (int, error) {
 	if w.HTTPStatus == 0 {
 		w.HTTPStatus = 200
@@ -51,7 +46,7 @@ func HTTPLogger(handler http.Handler, ignore []string) http.Handler {
 		t := time.Now()
 		interceptWriter := stResponseWriter{w, 0, 0}
 		handler.ServeHTTP(&interceptWriter, r)
-		if nolog, _ := skip[r.URL.Path]; nolog {
+		if skip[r.URL.Path] {
 			return
 		}
 		glog.Infof("HTTP - %s - - - \"%s %s %s\" %d %d %s %dus\n",

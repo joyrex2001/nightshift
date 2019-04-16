@@ -120,5 +120,4 @@ func (a *worker) removeObject(obj *scanner.Object) {
 	if idx := opq.Index(obj); idx >= 0 {
 		heap.Remove(opq, idx)
 	}
-	return
 }

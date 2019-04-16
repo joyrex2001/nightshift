@@ -249,14 +249,14 @@ func TestWatcher(t *testing.T) {
 
 	// test error connecting
 	doerr = fmt.Errorf("oops")
-	out, err := watcher(stop, connect, unmarsh)
+	_, err := watcher(stop, connect, unmarsh)
 	if err == nil {
 		t.Errorf("failed test watcher - expected error but got none")
 	}
 
 	// check successful connect
 	doerr = nil
-	out, err = watcher(stop, connect, unmarsh)
+	out, err := watcher(stop, connect, unmarsh)
 	if err != nil {
 		t.Errorf("failed test watcher - unexpected error: %s", err)
 	}

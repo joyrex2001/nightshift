@@ -121,7 +121,6 @@ func TestProcessDefaults(t *testing.T) {
 	tests := []struct {
 		in  *Config
 		out *Config
-		err bool
 	}{
 		{
 			in: &Config{

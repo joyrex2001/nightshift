@@ -97,7 +97,6 @@ func (a *worker) handleState(e *event) {
 		}
 		e.restore = true
 	}
-	return
 }
 
 // scale will scale according to the event details.
@@ -118,5 +117,4 @@ func (a *worker) scale(e *event) {
 	if err != nil {
 		glog.Errorf("Error scaling deployment: %s", err)
 	}
-	return
 }

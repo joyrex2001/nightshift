@@ -58,8 +58,7 @@ func (s *Schedule) GetNextTrigger(now time.Time) (time.Time, error) {
 // hasDayOfWeek checks if the given weekday is a valid configured weekday for
 // this schedule.
 func (s *Schedule) hasDayOfWeek(day time.Weekday) bool {
-	ex, _ := s.dayOfWeek[day]
-	return ex
+	return s.dayOfWeek[day]
 }
 
 // getTodayTrigger will get the trigger time if the trigger would run today.
