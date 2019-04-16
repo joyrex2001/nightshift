@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/joyrex2001/nightshift/internal/scanner"
@@ -109,8 +108,19 @@ func TestGetAddRemoveObjects(t *testing.T) {
 			agt.removeObject(rem)
 		}
 		objs := agt.GetObjects()
-		if !reflect.DeepEqual(objs, tst.result) {
-			t.Errorf("failed test %d - expected: %v, got %v", i, tst.result, objs)
+		for j, obj := range objs {
+			if obj == tst.result[j] {
+				t.Errorf("failed test %d - expected a copy, but got identical object instance", i)
+			}
+			if obj.UID != tst.result[j].UID {
+				t.Errorf("failed test %d - expected: %v, got %v", i, tst.result[j], obj)
+			}
+			if obj.Priority != tst.result[j].Priority {
+				t.Errorf("failed test %d - expected: %v, got %v", i, tst.result[j], obj)
+			}
+			if obj.Type != tst.result[j].Type {
+				t.Errorf("failed test %d - expected: %v, got %v", i, tst.result[j], obj)
+			}
 		}
 	}
 

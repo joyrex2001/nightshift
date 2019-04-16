@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -189,5 +190,39 @@ func TestUpdateWithMeta(t *testing.T) {
 	}
 	if obj.Name != "something" {
 		t.Errorf("failed test - expected UID 'something', got: %s", obj.Name)
+	}
+}
+
+func TestCopy(t *testing.T) {
+	sched1, _ := schedule.New("Mon-Fri 10:00 replicas=2")
+	sched2, _ := schedule.New("Thu 10:00 state=save replicas=0")
+	tests := []*Object{
+		{UID: "123", Name: "Something"},
+		{UID: "123", Name: "Something", State: &State{Replicas: 1}},
+		{UID: "123", Name: "Something", Schedule: []*schedule.Schedule{sched1, sched2}},
+	}
+	for i, obj := range tests {
+		new := obj.Copy()
+		if new == obj {
+			t.Errorf("failed test %d - objects are identical", i)
+		}
+		obj.UID = "changed"
+		if new.UID == obj.UID {
+			t.Errorf("failed test %d - change to UID is copied to new object as well", i)
+		}
+		if new.State != nil && new.State == obj.State {
+			t.Errorf("failed test %d - object State attribute is identical (%p,%p)", i, new.State, obj.State)
+		}
+		if len(obj.Schedule) != len(new.Schedule) {
+			t.Errorf("failed test %d - failed copying schedule length is not identical", i)
+		}
+		for j, sched := range obj.Schedule {
+			if sched == new.Schedule[j] {
+				t.Errorf("failed test %d - object Schedule attribute is identical (%p,%p)", i, sched, new.Schedule[j])
+			}
+			if !reflect.DeepEqual(sched, new.Schedule[j]) {
+				t.Errorf("failed test %d - failed copying schedule, objects are not identical (%v vs %v)", i, sched, new.Schedule[j])
+			}
+		}
 	}
 }

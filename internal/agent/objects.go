@@ -3,8 +3,6 @@ package agent
 import (
 	"container/heap"
 
-	"github.com/jinzhu/copier"
-
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
@@ -80,8 +78,7 @@ func (a *worker) GetObjects() map[string]*scanner.Object {
 	objs := map[string]*scanner.Object{}
 	for _, opq := range a.objects {
 		if len(*opq) > 0 {
-			obj := &scanner.Object{}
-			copier.Copy(&obj, (*opq)[0])
+			obj := (*opq)[0].Copy()
 			objs[obj.UID] = obj
 		}
 	}

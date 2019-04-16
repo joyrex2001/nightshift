@@ -34,6 +34,13 @@ func SetTimeZone(tz string) error {
 	return err
 }
 
+// Copy will return a fresh copy of the Schedule object.
+func (s *Schedule) Copy() *Schedule {
+	new := &Schedule{}
+	*new = *s
+	return new
+}
+
 // GetNextTrigger will return the time the next trigger that occurs after
 // given time (now) should occur according to this schedule.
 func (s *Schedule) GetNextTrigger(now time.Time) (time.Time, error) {

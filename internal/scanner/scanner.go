@@ -111,6 +111,21 @@ func NewObjectForScanner(scnr Scanner) *Object {
 	}
 }
 
+// Copy will return a fresh copy of the Object object.
+func (obj *Object) Copy() *Object {
+	new := &Object{}
+	*new = *obj
+	if new.State != nil {
+		new.State = &State{}
+		*(new.State) = *(obj.State)
+	}
+	new.Schedule = []*schedule.Schedule{}
+	for _, sched := range obj.Schedule {
+		new.Schedule = append(new.Schedule, sched.Copy())
+	}
+	return new
+}
+
 // updateWithMeta will update the Object instance with the provided kubernetes
 // ObjectMeta data, and will process the supported annotations that
 func (obj *Object) updateWithMeta(meta metav1.ObjectMeta) error {

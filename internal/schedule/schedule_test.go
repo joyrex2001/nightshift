@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -189,6 +190,29 @@ func TestGetNextTrigger(t *testing.T) {
 		}
 		if !tst.err && !trig.Equal(tst.trigger) {
 			t.Errorf("failed test %d - expected time equal to %s, but got %s", i, tst.trigger, trig)
+		}
+	}
+}
+
+func TestCopy(t *testing.T) {
+	tests := []string{
+		"Mon-Fri 10:00 replicas=2",
+		"Thu 10:00 state=save replicas=0",
+		"Thu-Sun 3:03 state=restore replicas=8",
+		"Fri 8:08 replicas=6",
+		"Sat,Sun 9:09 replicas=2",
+	}
+	for i, sc := range tests {
+		obj, err := New(sc)
+		if err != nil {
+			t.Errorf("failed test %d - unexpected err: %s", i, err)
+		}
+		new := obj.Copy()
+		if new == obj {
+			t.Errorf("failed test %d - objects are identical", i)
+		}
+		if !reflect.DeepEqual(new, obj) {
+			t.Errorf("failed test %d - failed copying schedule, objects are not identical (%v vs %v)", i, obj, new)
 		}
 	}
 }
