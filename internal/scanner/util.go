@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/joyrex2001/nightshift/internal/metrics"
 	"github.com/joyrex2001/nightshift/internal/schedule"
 )
 
@@ -121,6 +122,7 @@ func watcher(_stop chan bool, connect connector, unmarshall unmarshaller) (chan 
 				glog.V(5).Infof("Received event: %v", evt)
 				if evt.Type == watch.Error {
 					glog.Errorf("Error watching: %v", evt)
+					metrics.Increase("watch_event_error")
 				}
 				if evt.Object == nil {
 					watcher = reconnectWatcher(connect)
@@ -164,6 +166,7 @@ func reconnectWatcher(connect connector) watch.Interface {
 	backoff := time.Second
 	for {
 		glog.V(4).Infof("Attempting to reconnect scanner...")
+		metrics.Increase("watch_retries")
 		watcher, err := connect()
 		if err == nil {
 			glog.V(4).Infof("Reconnected scanner...")

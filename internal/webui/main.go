@@ -41,7 +41,7 @@ func (a *webui) Start() {
 		hndlr := backend.NewHandler()
 		a.srv = &http.Server{
 			Addr:         a.Addr,
-			Handler:      backend.HTTPLogger(hndlr, []string{"/healthz"}),
+			Handler:      backend.HTTPLogger(hndlr, []string{"/healthz", "/metrics"}),
 			ReadTimeout:  30 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  30 * time.Second,

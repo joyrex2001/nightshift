@@ -10,6 +10,7 @@ import (
 	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/golang/glog"
 	"github.com/julienschmidt/httprouter"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/joyrex2001/nightshift/internal/webui/backend/internalfs"
 )
@@ -41,6 +42,7 @@ func (f *handler) init() {
 	f.mux.POST("/api/objects/restore", f.Authenticate(f.PostObjectsRestore))
 	f.mux.GET("/api/scanners", f.Authenticate(f.GetScanners))
 	f.mux.GET("/api/version", f.Authenticate(f.GetVersion))
+	f.mux.GET("/metrics", f.Metrics())
 	f.mux.GET("/healthz", f.Healthz)
 	f.mux.GET("/", f.Redirect(307, "/public"))
 }
@@ -71,6 +73,14 @@ func (f *handler) Redirect(status int, location string) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		http.Redirect(w, r, location, status)
 		return
+	}
+}
+
+// Metrics will handle the prometheus metrics endpoint.
+func (f *handler) Metrics() httprouter.Handle {
+	prom := promhttp.Handler()
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		prom.ServeHTTP(w, r)
 	}
 }
 

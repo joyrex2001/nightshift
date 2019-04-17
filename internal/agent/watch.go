@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 
+	"github.com/joyrex2001/nightshift/internal/metrics"
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
@@ -42,6 +43,7 @@ func (a *worker) UpdateSchedule() {
 		objs, err := scnr.GetObjects()
 		if err != nil {
 			glog.Errorf("Error scanning pods: %s", err)
+			metrics.Increase("resync_error")
 		}
 		glog.V(5).Infof("Scan result: %#v", objs)
 		for _, obj := range objs {
