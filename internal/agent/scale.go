@@ -115,7 +115,7 @@ func (a *worker) scale(e *event) {
 	repl, err := e.sched.GetReplicas()
 	if err == nil {
 		err = e.obj.Scale(repl)
-		metrics.Increase("scale_event")
+		metrics.Increase("scale")
 	}
 	if err != nil {
 		glog.Errorf("Error scaling deployment: %s", err)

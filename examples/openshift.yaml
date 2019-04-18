@@ -29,6 +29,7 @@ objects:
     name: "${NAME}"
     annotations:
       service.alpha.openshift.io/serving-cert-secret-name: "${NAME}-proxy-tls"
+      prometheus.io/scrape: "true"
   spec:
     ports:
     - name: auth-proxy

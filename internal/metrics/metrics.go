@@ -12,11 +12,23 @@ var (
 		Help string
 		prom prometheus.Counter
 	}{
-		"scale_event": {
+		"scale": {
 			Help: "The total number of processed scale events",
 		},
 		"scale_error": {
 			Help: "The total number errors while scaling",
+		},
+		"manual_scale": {
+			Help: "The total number of processed manual scale events",
+		},
+		"manual_scale_error": {
+			Help: "The total number of errors while manual scaling",
+		},
+		"manual_restore": {
+			Help: "The total number of processed manual restore events",
+		},
+		"manual_restore_error": {
+			Help: "The total number of errors while manual restoring",
 		},
 		"resync_error": {
 			Help: "The total number errors while resyncing objects",

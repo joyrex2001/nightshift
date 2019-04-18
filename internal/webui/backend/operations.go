@@ -11,6 +11,7 @@ import (
 
 	"github.com/joyrex2001/nightshift/internal/agent"
 	"github.com/joyrex2001/nightshift/internal/config"
+	"github.com/joyrex2001/nightshift/internal/metrics"
 	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
@@ -106,12 +107,14 @@ func (f *handler) PostObjectsRestore(w http.ResponseWriter, r *http.Request, ps 
 // scaleObjects will scale the array of objects to given amount of replicas.
 func scaleObjects(objects []*scanner.Object, replicas int) error {
 	errs := []string{}
+	metrics.Increase("manual_scale")
 	for _, obj := range objects {
 		if _err := obj.Scale(replicas); _err != nil {
 			errs = append(errs, _err.Error())
 		}
 	}
 	if len(errs) > 0 {
+		metrics.Increase("manual_scale_error")
 		return fmt.Errorf("%s", strings.Join(errs, ","))
 	}
 	return nil
@@ -120,6 +123,7 @@ func scaleObjects(objects []*scanner.Object, replicas int) error {
 // restoreObjects will scale the array of objects to the previous known state.
 func restoreObjects(objects []*scanner.Object) error {
 	errs := []string{}
+	metrics.Increase("manual_restore")
 	for _, obj := range objects {
 		if obj.State == nil {
 			_err := fmt.Sprintf("no state available on %s/%s", obj.Namespace, obj.Name)
@@ -133,6 +137,7 @@ func restoreObjects(objects []*scanner.Object) error {
 		}
 	}
 	if len(errs) > 0 {
+		metrics.Increase("manual_restore_error")
 		return fmt.Errorf("%s", strings.Join(errs, ","))
 	}
 	return nil
