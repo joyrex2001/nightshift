@@ -130,6 +130,11 @@ multiple scanner configurations, only the last one will be applied.
 See the examples folder for another example, which also includes basic
 nightshift configuration.
 
+### Prometheus metrics
+
+When the web interface is enabled, prometheus metrics will be available as well.
+The endpoint of the metrics is ```/metrics```.
+
 ## See also
 
 * https://hub.docker.com/r/joyrex2001/nightshift
