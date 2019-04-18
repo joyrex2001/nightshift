@@ -90,7 +90,6 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 			}
 		}
 	}
-	return
 }
 
 // addScanner will add a scanner specified with the scanner.Config object to
@@ -102,7 +101,6 @@ func addScanner(agent agent.Agent, cfg scanner.Config) {
 		return
 	}
 	agent.AddScanner(scanr)
-	return
 }
 
 // startWebUI will start the management webserver.

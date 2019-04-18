@@ -13,7 +13,6 @@ func (f *handler) Authenticate(okhandler httprouter.Handle) httprouter.Handle {
 			return
 		}
 		okhandler(w, r, ps)
-		return
 	}
 }
 
