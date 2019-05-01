@@ -164,6 +164,70 @@ func TestParse(t *testing.T) {
 			err:   true,
 			sched: &Schedule{},
 		},
+		{
+			data: `Mon 18:00 replicas=0 trigger=refreshdb`,
+			err:  false,
+			sched: &Schedule{
+				hour: 18,
+				min:  00,
+				dayOfWeek: map[time.Weekday]bool{
+					1: true,
+				},
+				settings: map[string]string{
+					"replicas": "0",
+					"trigger":  "refreshdb",
+				},
+				Description: "mon 18:00 replicas=0 trigger=refreshdb",
+			},
+		},
+		{
+			data: `Mon 18:00 replicas=0 trigger=refreshdb, build`,
+			err:  false,
+			sched: &Schedule{
+				hour: 18,
+				min:  00,
+				dayOfWeek: map[time.Weekday]bool{
+					1: true,
+				},
+				settings: map[string]string{
+					"replicas": "0",
+					"trigger":  "refreshdb,build",
+				},
+				Description: "mon 18:00 replicas=0 trigger=refreshdb,build",
+			},
+		},
+		{
+			data: `Mon 18:00 replicas=0 trigger=refreshdb,build`,
+			err:  false,
+			sched: &Schedule{
+				hour: 18,
+				min:  00,
+				dayOfWeek: map[time.Weekday]bool{
+					1: true,
+				},
+				settings: map[string]string{
+					"replicas": "0",
+					"trigger":  "refreshdb,build",
+				},
+				Description: "mon 18:00 replicas=0 trigger=refreshdb,build",
+			},
+		},
+		{
+			data: `Mon 18:00 replicas=0 trigger=refreshdb,,build,`,
+			err:  false,
+			sched: &Schedule{
+				hour: 18,
+				min:  00,
+				dayOfWeek: map[time.Weekday]bool{
+					1: true,
+				},
+				settings: map[string]string{
+					"replicas": "0",
+					"trigger":  "refreshdb,,build,",
+				},
+				Description: "mon 18:00 replicas=0 trigger=refreshdb,,build,",
+			},
+		},
 	}
 	for i, tst := range tests {
 		s := &Schedule{

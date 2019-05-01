@@ -1,6 +1,7 @@
 package schedule
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -117,6 +118,74 @@ func TestGetState(t *testing.T) {
 		}
 		if r != tst.state {
 			t.Errorf("failed test %d; expected %s, got %s", i, tst.state, r)
+		}
+	}
+}
+
+func TestGetTriggers(t *testing.T) {
+	tests := []struct {
+		triggers []string
+		sched    *Schedule
+	}{
+		{
+			triggers: []string{},
+			sched: &Schedule{
+				settings: map[string]string{},
+			},
+		},
+		{
+			triggers: []string{},
+			sched: &Schedule{
+				settings: map[string]string{
+					"trigger": "",
+				},
+			},
+		},
+		{
+			triggers: []string{"refreshdb"},
+			sched: &Schedule{
+				settings: map[string]string{
+					"trigger": "refreshdb",
+				},
+			},
+		},
+		{
+			triggers: []string{"refreshdb", "build"},
+			sched: &Schedule{
+				settings: map[string]string{
+					"trigger": "refreshdb,build",
+				},
+			},
+		},
+		{
+			triggers: []string{"refreshdb", "build"},
+			sched: &Schedule{
+				settings: map[string]string{
+					"trigger": "refreshdb,,build",
+				},
+			},
+		},
+		{
+			triggers: []string{"refreshdb", "build"},
+			sched: &Schedule{
+				settings: map[string]string{
+					"trigger": "refreshdb,,build,",
+				},
+			},
+		},
+		{
+			triggers: []string{},
+			sched: &Schedule{
+				settings: map[string]string{
+					"trigger": ",,",
+				},
+			},
+		},
+	}
+	for i, tst := range tests {
+		r := tst.sched.GetTriggers()
+		if !reflect.DeepEqual(r, tst.triggers) {
+			t.Errorf("failed test %d; expected %#v, got %#v", i, tst.triggers, r)
 		}
 	}
 }
