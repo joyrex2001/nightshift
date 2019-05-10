@@ -6,6 +6,7 @@ import (
 
 // Config is reflection of the yaml root configuration entrypoint.
 type Config struct {
+	Trigger []*Trigger `yaml:"trigger"`
 	Scanner []*Scanner `yaml:"scanner"`
 }
 
@@ -15,6 +16,13 @@ type Scanner struct {
 	Default    *Default      `yaml:"default"`
 	Deployment []*Deployment `yaml:"deployment"`
 	Type       string        `yaml:"type"`
+}
+
+// Trigger is reflection of the yaml configuration file's section "trigger".
+type Trigger struct {
+	Id      string   `yaml:"id"`
+	Job     *Job     `yaml:"job"`
+	Webhook *Webhook `yaml:"webhook"`
 }
 
 // Default is reflection of the yaml configuration file's section "default".
@@ -31,4 +39,14 @@ type Deployment struct {
 	Schedule []string `yaml:"schedule"`
 	schedule []*schedule.Schedule
 	parsed   bool
+}
+
+// Job is reflection of the yaml configuration file's section "job".
+type Job struct {
+	Name string `yaml:"name"`
+}
+
+// Job is reflection of the yaml configuration file's section "job".
+type Webhook struct {
+	Url string `yaml:"url"`
 }

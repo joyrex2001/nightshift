@@ -41,6 +41,10 @@ func TestNew(t *testing.T) {
 			file: "testdata/empty.yaml",
 			err:  false,
 		},
+		{
+			file: "testdata/triggers.yaml",
+			err:  false,
+		},
 	}
 	for i, tst := range tests {
 		_, err := New(tst.file)
@@ -93,6 +97,22 @@ func TestParse(t *testing.T) {
 								Schedule: nil,
 							},
 						},
+					},
+				},
+			},
+			err: false,
+		},
+		{
+			file: "testdata/triggers.yaml",
+			result: &Config{
+				Trigger: []*Trigger{
+					{
+						Id:  "refreshdb",
+						Job: &Job{Name: "somejob"},
+					},
+					{
+						Id:      "build",
+						Webhook: &Webhook{Url: "http://localhost:8080"},
 					},
 				},
 			},

@@ -9,6 +9,14 @@ logging:
     threshold: "info"
     verbose: 3
 
+trigger:
+    - id: refreshdb
+      job:
+        name: somejob
+    - id: build
+      webhook:
+        url: http://localhost:8080
+
 scanner:
 
     - namespace:
@@ -17,7 +25,7 @@ scanner:
         - "development-3"
       default:
         schedule:
-          - "Mon-Fri  8:00 replicas=1 state=restore"
+          - "Mon-Fri  8:00 replicas=1 state=restore trigger=refreshdb,somejob"
           - "Mon-Fri 18:00 replicas=0 state=save"
       deployment:
         - selector:

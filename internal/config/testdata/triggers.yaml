@@ -1,0 +1,8 @@
+trigger:
+    - id: refreshdb
+      job:
+        name: somejob
+
+    - id: build
+      webhook:
+        url: http://localhost:8080
