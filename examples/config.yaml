@@ -11,12 +11,15 @@ logging:
 
 trigger:
     - id: refreshdb
-      job:
+      type: job
+      config:
         name: somejob
     - id: build
-      webhook:
+      type: webhook
+      config:
         url: http://localhost:8080
-
+        timeout: 1s
+        
 scanner:
 
     - namespace:

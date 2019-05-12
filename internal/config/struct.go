@@ -20,9 +20,9 @@ type Scanner struct {
 
 // Trigger is reflection of the yaml configuration file's section "trigger".
 type Trigger struct {
-	Id      string   `yaml:"id"`
-	Job     *Job     `yaml:"job"`
-	Webhook *Webhook `yaml:"webhook"`
+	Id     string            `yaml:"id"`
+	Type   string            `yaml:"type"`
+	Config map[string]string `yaml:"config"`
 }
 
 // Default is reflection of the yaml configuration file's section "default".
@@ -39,14 +39,4 @@ type Deployment struct {
 	Schedule []string `yaml:"schedule"`
 	schedule []*schedule.Schedule
 	parsed   bool
-}
-
-// Job is reflection of the yaml configuration file's section "job".
-type Job struct {
-	Name string `yaml:"name"`
-}
-
-// Job is reflection of the yaml configuration file's section "job".
-type Webhook struct {
-	Url string `yaml:"url"`
 }

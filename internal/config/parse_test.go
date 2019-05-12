@@ -102,17 +102,54 @@ func TestParse(t *testing.T) {
 			},
 			err: false,
 		},
+	}
+	for i, tst := range tests {
+		y, err := ioutil.ReadFile(tst.file)
+		if err != nil {
+			t.Errorf("failed test %d - test configfile %s does not exist", i, err)
+		}
+		res, err := loadConfig(y)
+		if err != nil && !tst.err {
+			t.Errorf("failed test %d - unexpected err: %s", i, err)
+		}
+		if err == nil && tst.err {
+			t.Errorf("failed test %d - expected err, but got none", i)
+		}
+		if !tst.err && !reflect.DeepEqual(res, tst.result) {
+			t.Errorf("failed test %d - expected: %# v, got %# v", i, pretty.Formatter(tst.result), pretty.Formatter(res))
+		}
+	}
+}
+
+func TestParseTrigger(t *testing.T) {
+	tests := []struct {
+		file   string
+		result *Config
+		err    bool
+	}{
 		{
 			file: "testdata/triggers.yaml",
 			result: &Config{
 				Trigger: []*Trigger{
 					{
-						Id:  "refreshdb",
-						Job: &Job{Name: "somejob"},
+						Id:     "cleanup",
+						Type:   "job",
+						Config: map[string]string{"name": "cleanup"},
 					},
 					{
-						Id:      "build",
-						Webhook: &Webhook{Url: "http://localhost:8080"},
+						Id:     "refreshdb",
+						Type:   "job",
+						Config: map[string]string{"name": "somejob"},
+					},
+					{
+						Id:     "build",
+						Type:   "webhook",
+						Config: map[string]string{"url": "http://localhost:8080", "timeout": "1s"},
+					},
+					{
+						Id:     "dummy",
+						Type:   "dummyerror",
+						Config: map[string]string{},
 					},
 				},
 			},
@@ -128,6 +165,7 @@ func TestParse(t *testing.T) {
 		if err != nil && !tst.err {
 			t.Errorf("failed test %d - unexpected err: %s", i, err)
 		}
+		res.processTriggers()
 		if err == nil && tst.err {
 			t.Errorf("failed test %d - expected err, but got none", i)
 		}

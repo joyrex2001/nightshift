@@ -39,7 +39,7 @@ func (s *Schedule) GetTriggers() []string {
 	trgs := []string{}
 	for _, trg := range strings.Split(s.settings["trigger"], ",") {
 		if trg != "" {
-			trgs = append(trgs, trg)
+			trgs = append(trgs, strings.ToLower(trg))
 		}
 	}
 	return trgs

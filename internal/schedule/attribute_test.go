@@ -153,7 +153,7 @@ func TestGetTriggers(t *testing.T) {
 			triggers: []string{"refreshdb", "build"},
 			sched: &Schedule{
 				settings: map[string]string{
-					"trigger": "refreshdb,build",
+					"trigger": "refReshdb,build",
 				},
 			},
 		},

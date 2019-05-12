@@ -1,8 +1,19 @@
 trigger:
+    - id: Cleanup
+      type: job
+      config:
+        name: cleanup
+
     - id: refreshdb
-      job:
-        name: somejob
+      type: Job
+      config:
+        Name: somejob
 
     - id: build
-      webhook:
+      type: WebHook
+      config:
         url: http://localhost:8080
+        timeout: 1s
+
+    - id: dummy
+      type: dummyerror
