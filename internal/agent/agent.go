@@ -7,14 +7,17 @@ import (
 	"github.com/golang/glog"
 
 	"github.com/joyrex2001/nightshift/internal/scanner"
+	"github.com/joyrex2001/nightshift/internal/trigger"
 )
 
 // Agent is the public interface that is implemented by the agent.
 type Agent interface {
 	AddScanner(scanner.Scanner)
+	AddTrigger(string, trigger.Trigger)
 	SetResyncInterval(time.Duration)
 	GetObjects() map[string]*scanner.Object
 	GetScanners() []scanner.Scanner
+	GetTriggers() map[string]trigger.Trigger
 	UpdateSchedule()
 	Start()
 	Stop()
@@ -25,6 +28,7 @@ type worker struct {
 	m        sync.Mutex
 	done     chan bool
 	scanners []scanner.Scanner
+	triggers map[string]trigger.Trigger
 	watchers []watch
 	objects  map[string]*objectspq
 	now      time.Time
@@ -44,6 +48,7 @@ func New() Agent {
 			done:     make(chan bool),
 			past:     time.Now().Add(-60 * time.Minute),
 			scanners: []scanner.Scanner{},
+			triggers: map[string]trigger.Trigger{},
 		}
 	})
 	return instance
@@ -56,10 +61,10 @@ func (a *worker) SetResyncInterval(interval time.Duration) {
 }
 
 // AddScanner will add a scanner to the agent.
-func (a *worker) AddScanner(scanner scanner.Scanner) {
+func (a *worker) AddScanner(scnr scanner.Scanner) {
 	a.m.Lock()
 	defer a.m.Unlock()
-	a.scanners = append(a.scanners, scanner)
+	a.scanners = append(a.scanners, scnr)
 }
 
 // GetScanners will return the configured scanners.
@@ -68,6 +73,21 @@ func (a *worker) GetScanners() []scanner.Scanner {
 	// a.m.Lock()
 	// defer a.m.Unlock()
 	return a.scanners
+}
+
+// AddTrigger will add a trigger to the agent.
+func (a *worker) AddTrigger(id string, trgr trigger.Trigger) {
+	a.m.Lock()
+	defer a.m.Unlock()
+	a.triggers[id] = trgr
+}
+
+// GetScanners will return the configured scanners.
+func (a *worker) GetTriggers() map[string]trigger.Trigger {
+	// disabled; AddTrigger is only done during initialization...
+	// a.m.Lock()
+	// defer a.m.Unlock()
+	return a.triggers
 }
 
 // Start will start the agent.
