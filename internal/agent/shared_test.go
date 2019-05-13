@@ -42,7 +42,7 @@ func (m *mockScanner) Watch(_stop chan bool) (chan scanner.Event, error) {
 	return m.out, nil
 }
 
-func getFactory(typ string, m *mockScanner) scanner.Factory {
+func getScannerFactory(typ string, m *mockScanner) scanner.Factory {
 	return func() (scanner.Scanner, error) {
 		return m, nil
 	}
@@ -51,6 +51,7 @@ func getFactory(typ string, m *mockScanner) scanner.Factory {
 // mockTrigger is a generic mock for triggers
 type mockTrigger struct {
 	id  string
+	exc int
 	cfg trigger.Config
 	err error
 }
@@ -64,5 +65,12 @@ func (m *mockTrigger) GetConfig() trigger.Config {
 }
 
 func (m *mockTrigger) Execute() error {
+	m.exc++
 	return nil
+}
+
+func getTriggerFactory(typ string, m *mockTrigger) trigger.Factory {
+	return func() (trigger.Trigger, error) {
+		return m, nil
+	}
 }

@@ -2,11 +2,13 @@ package agent
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 	"time"
 
 	"github.com/joyrex2001/nightshift/internal/scanner"
 	"github.com/joyrex2001/nightshift/internal/schedule"
+	"github.com/joyrex2001/nightshift/internal/trigger"
 )
 
 func TestGetEvents(t *testing.T) {
@@ -99,7 +101,7 @@ func TestGetEvents(t *testing.T) {
 
 func TestHandleStateScale(t *testing.T) {
 	mock := &mockScanner{}
-	scanner.RegisterModule("scanner", getFactory("scanner", mock))
+	scanner.RegisterModule("scanner", getScannerFactory("scanner", mock))
 
 	tests := []struct {
 		sched   string
@@ -158,4 +160,66 @@ func TestHandleStateScale(t *testing.T) {
 		}
 	}
 
+}
+
+func TestAppendTriggers(t *testing.T) {
+	tests := []struct {
+		sched string
+		init  []string
+		trgrs []string
+	}{
+		{
+			init:  []string{},
+			sched: "Mon-Fri 8:00 replicas=3 state=restore trigger=trigger2,trigger3",
+			trgrs: []string{"trigger2", "trigger3"},
+		},
+		{
+			init:  []string{"trigger1"},
+			sched: "Mon-Fri 8:00 replicas=3 state=restore trigger=trigger2,trigger3",
+			trgrs: []string{"trigger1", "trigger2", "trigger3"},
+		},
+		{
+			init:  []string{"trigger1", "trigger2"},
+			sched: "Mon-Fri 8:00 replicas=3 state=restore trigger=trigger2,trigger3",
+			trgrs: []string{"trigger1", "trigger2", "trigger2", "trigger3"},
+		},
+	}
+
+	for i, tst := range tests {
+		agent := &worker{}
+		sc, _ := schedule.New(tst.sched)
+		evt := &event{sched: sc}
+		trgrs := agent.appendTriggers(tst.init, evt)
+		if !reflect.DeepEqual(trgrs, tst.trgrs) {
+			t.Errorf("failed test %d - expected %s, got %s", i, tst.trgrs, trgrs)
+		}
+	}
+}
+
+func TestHandleTriggers(t *testing.T) {
+	agent := &worker{}
+	agent.triggers = map[string]trigger.Trigger{}
+
+	mock1 := &mockTrigger{}
+	mock2 := &mockTrigger{}
+	mock3 := &mockTrigger{}
+	trigger.RegisterModule("trigger1", getTriggerFactory("trigger1", mock1))
+	trigger.RegisterModule("trigger2", getTriggerFactory("trigger2", mock2))
+	trigger.RegisterModule("trigger3", getTriggerFactory("trigger3", mock3))
+	agent.AddTrigger("trigger1", mock1)
+	agent.AddTrigger("trigger2", mock2)
+	agent.AddTrigger("trigger3", mock3)
+
+	trgrs := []string{"trigger1", "trigger1", "trigger2", "trigger1", "trigger1"}
+	agent.handleTriggers(trgrs)
+
+	if mock1.exc != 1 {
+		t.Errorf("invalid number of calls to trigger 1; expected 1, got %d", mock1.exc)
+	}
+	if mock2.exc != 1 {
+		t.Errorf("invalid number of calls to trigger 2; expected 1, got %d", mock1.exc)
+	}
+	if mock3.exc != 0 {
+		t.Errorf("invalid number of calls to trigger 3; expected 0, got %d", mock1.exc)
+	}
 }

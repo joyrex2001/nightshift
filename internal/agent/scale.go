@@ -40,15 +40,18 @@ func (a *worker) StopScale() {
 
 // Scale will process all scanned objects and scale them accordingly.
 func (a *worker) scaleObjects() {
+	trgrs := []string{}
 	glog.V(4).Info("Scaling resources start...")
 	a.now = time.Now()
 	for _, obj := range a.GetObjects() {
 		for _, e := range a.getEvents(obj) {
 			glog.V(4).Infof("Scale event: %v", e)
+			trgrs = a.appendTriggers(trgrs, e)
 			a.handleState(e)
 			a.scale(e)
 		}
 	}
+	a.handleTriggers(trgrs)
 	a.past = a.now
 	glog.V(4).Info("Scaling resources finished...")
 }
@@ -119,5 +122,27 @@ func (a *worker) scale(e *event) {
 	}
 	if err != nil {
 		glog.Errorf("Error scaling deployment: %s", err)
+	}
+}
+
+// appendTriggers will append the triggers set on the schedule to the given
+// list of triggers.
+func (a *worker) appendTriggers(trgrs []string, e *event) []string {
+	for _, trg := range e.sched.GetTriggers() {
+		trgrs = append(trgrs, trg)
+	}
+	return trgrs
+}
+
+// handleTriggers will execute the triggers as specified in the list.
+func (a *worker) handleTriggers(trgrs []string) {
+	done := map[string]bool{}
+	for _, trgr := range trgrs {
+		if !done[trgr] {
+			if err := a.triggers[trgr].Execute(); err != nil {
+				glog.Errorf("Error execute trigger: %s", err)
+			}
+			done[trgr] = true
+		}
 	}
 }

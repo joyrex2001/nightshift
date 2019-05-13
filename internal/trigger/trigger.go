@@ -16,14 +16,14 @@ type Trigger interface {
 // lowercased always.
 type Config map[string]string
 
-// Factory is the factory method for a scanner implementation module.
+// Factory is the factory method for a trigger implementation module.
 type Factory func() (Trigger, error)
 
 var modules map[string]Factory
 
 // RegisterModule will add the provided module, with given factory method to
 // the list of available modules in order to support dependency injection, as
-// well as easing up modular development for scanners.
+// well as easing up modular development for triggers.
 func RegisterModule(typ string, factory Factory) {
 	if modules == nil {
 		modules = map[string]Factory{}
