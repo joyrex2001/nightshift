@@ -51,7 +51,7 @@ func (a *worker) scaleObjects() {
 			a.scale(e)
 		}
 	}
-	a.handleTriggers(trgrs)
+	a.queueTriggers(trgrs)
 	a.past = a.now
 	glog.V(4).Info("Scaling resources finished...")
 }
@@ -134,14 +134,13 @@ func (a *worker) appendTriggers(trgrs []string, e *event) []string {
 	return trgrs
 }
 
-// handleTriggers will execute the triggers as specified in the list.
-func (a *worker) handleTriggers(trgrs []string) {
+// queueTriggers will enqueue the collected triggers as specified in the
+// prodived list of trigger id's. Each trigger will be enqueued just once.
+func (a *worker) queueTriggers(trgrs []string) {
 	done := map[string]bool{}
 	for _, trgr := range trgrs {
 		if !done[trgr] {
-			if err := a.triggers[trgr].Execute(); err != nil {
-				glog.Errorf("Error execute trigger: %s", err)
-			}
+			a.trigqueue <- trgr
 			done[trgr] = true
 		}
 	}

@@ -8,7 +8,6 @@ import (
 
 	"github.com/joyrex2001/nightshift/internal/scanner"
 	"github.com/joyrex2001/nightshift/internal/schedule"
-	"github.com/joyrex2001/nightshift/internal/trigger"
 )
 
 func TestGetEvents(t *testing.T) {
@@ -196,30 +195,23 @@ func TestAppendTriggers(t *testing.T) {
 	}
 }
 
-func TestHandleTriggers(t *testing.T) {
+func TestQueueTriggers(t *testing.T) {
 	agent := &worker{}
-	agent.triggers = map[string]trigger.Trigger{}
+	agent.trigqueue = make(chan string)
 
-	mock1 := &mockTrigger{}
-	mock2 := &mockTrigger{}
-	mock3 := &mockTrigger{}
-	trigger.RegisterModule("trigger1", getTriggerFactory("trigger1", mock1))
-	trigger.RegisterModule("trigger2", getTriggerFactory("trigger2", mock2))
-	trigger.RegisterModule("trigger3", getTriggerFactory("trigger3", mock3))
-	agent.AddTrigger("trigger1", mock1)
-	agent.AddTrigger("trigger2", mock2)
-	agent.AddTrigger("trigger3", mock3)
-
+	res := []string{}
 	trgrs := []string{"trigger1", "trigger1", "trigger2", "trigger1", "trigger1"}
-	agent.handleTriggers(trgrs)
+	go agent.queueTriggers(trgrs)
+	go func() {
+		for trgr := range agent.trigqueue {
+			res = append(res, trgr)
+		}
+	}()
+	time.Sleep(time.Second)
+	close(agent.trigqueue)
 
-	if mock1.exc != 1 {
-		t.Errorf("invalid number of calls to trigger 1; expected 1, got %d", mock1.exc)
-	}
-	if mock2.exc != 1 {
-		t.Errorf("invalid number of calls to trigger 2; expected 1, got %d", mock1.exc)
-	}
-	if mock3.exc != 0 {
-		t.Errorf("invalid number of calls to trigger 3; expected 0, got %d", mock1.exc)
+	exp := []string{"trigger1", "trigger2"}
+	if !reflect.DeepEqual(res, exp) {
+		t.Errorf("failed queueTriggers - expected %s, got %s", exp, res)
 	}
 }

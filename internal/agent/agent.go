@@ -24,15 +24,16 @@ type Agent interface {
 }
 
 type worker struct {
-	interval time.Duration
-	m        sync.Mutex
-	done     chan bool
-	scanners []scanner.Scanner
-	triggers map[string]trigger.Trigger
-	watchers []watch
-	objects  map[string]*objectspq
-	now      time.Time
-	past     time.Time
+	interval  time.Duration
+	m         sync.Mutex
+	done      chan bool
+	scanners  []scanner.Scanner
+	triggers  map[string]trigger.Trigger
+	trigqueue chan string
+	watchers  []watch
+	objects   map[string]*objectspq
+	now       time.Time
+	past      time.Time
 }
 
 var instance *worker
@@ -42,13 +43,14 @@ var once sync.Once
 func New() Agent {
 	once.Do(func() {
 		instance = &worker{
-			objects:  map[string]*objectspq{},
-			interval: 15 * time.Minute,
-			watchers: []watch{},
-			done:     make(chan bool),
-			past:     time.Now().Add(-60 * time.Minute),
-			scanners: []scanner.Scanner{},
-			triggers: map[string]trigger.Trigger{},
+			objects:   map[string]*objectspq{},
+			interval:  15 * time.Minute,
+			watchers:  []watch{},
+			done:      make(chan bool),
+			past:      time.Now().Add(-60 * time.Minute),
+			scanners:  []scanner.Scanner{},
+			triggers:  map[string]trigger.Trigger{},
+			trigqueue: make(chan string, 500),
 		}
 	})
 	return instance
@@ -96,10 +98,12 @@ func (a *worker) Start() {
 	a.UpdateSchedule()
 	go a.StartWatch()
 	go a.StartScale()
+	go a.StartTrigger()
 }
 
 // Stop will stop the agent.
 func (a *worker) Stop() {
 	a.StopWatch()
 	a.StopScale()
+	a.StopTrigger()
 }
