@@ -18,3 +18,20 @@ func (a *worker) StartTrigger() {
 func (a *worker) StopTrigger() {
 	close(a.trigqueue)
 }
+
+// queueTriggers will enqueue the collected triggers as specified in the
+// prodived list of trigger id's. Each trigger will be enqueued just once.
+func (a *worker) queueTriggers(trgrs []string) {
+	done := map[string]bool{}
+	for _, trgr := range trgrs {
+		if !done[trgr] {
+			a.queueTrigger(trgr)
+			done[trgr] = true
+		}
+	}
+}
+
+// queueTrigger will add a trigger to the triggerqueue.
+func (a *worker) queueTrigger(trgr string) {
+	a.trigqueue <- trgr
+}

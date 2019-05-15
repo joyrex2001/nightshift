@@ -46,7 +46,7 @@ func (a *worker) scaleObjects() {
 	for _, obj := range a.GetObjects() {
 		for _, e := range a.getEvents(obj) {
 			glog.V(4).Infof("Scale event: %v", e)
-			trgrs = a.appendTriggers(trgrs, e)
+			trgrs = a.appendEventTriggers(trgrs, e)
 			a.handleState(e)
 			a.scale(e)
 		}
@@ -125,23 +125,11 @@ func (a *worker) scale(e *event) {
 	}
 }
 
-// appendTriggers will append the triggers set on the schedule to the given
-// list of triggers.
-func (a *worker) appendTriggers(trgrs []string, e *event) []string {
+// appendEventTriggers will append the triggers set on the schedule to the
+// given list of triggers.
+func (a *worker) appendEventTriggers(trgrs []string, e *event) []string {
 	for _, trg := range e.sched.GetTriggers() {
 		trgrs = append(trgrs, trg)
 	}
 	return trgrs
-}
-
-// queueTriggers will enqueue the collected triggers as specified in the
-// prodived list of trigger id's. Each trigger will be enqueued just once.
-func (a *worker) queueTriggers(trgrs []string) {
-	done := map[string]bool{}
-	for _, trgr := range trgrs {
-		if !done[trgr] {
-			a.trigqueue <- trgr
-			done[trgr] = true
-		}
-	}
 }

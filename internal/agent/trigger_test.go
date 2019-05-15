@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -30,7 +31,7 @@ func TestHandleTriggers(t *testing.T) {
 	}()
 
 	for _, trgr := range trgrs {
-		agent.trigqueue <- trgr
+		agent.queueTrigger(trgr)
 	}
 
 	time.Sleep(time.Second)
@@ -49,5 +50,26 @@ func TestHandleTriggers(t *testing.T) {
 
 	if !stopped {
 		t.Errorf("StopTrigger did not stop the trigger")
+	}
+}
+
+func TestQueueTriggers(t *testing.T) {
+	agent := &worker{}
+	agent.trigqueue = make(chan string)
+
+	res := []string{}
+	trgrs := []string{"trigger1", "trigger1", "trigger2", "trigger1", "trigger1"}
+	go agent.queueTriggers(trgrs)
+	go func() {
+		for trgr := range agent.trigqueue {
+			res = append(res, trgr)
+		}
+	}()
+	time.Sleep(time.Second)
+	close(agent.trigqueue)
+
+	exp := []string{"trigger1", "trigger2"}
+	if !reflect.DeepEqual(res, exp) {
+		t.Errorf("failed queueTriggers - expected %s, got %s", exp, res)
 	}
 }

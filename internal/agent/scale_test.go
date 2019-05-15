@@ -161,7 +161,7 @@ func TestHandleStateScale(t *testing.T) {
 
 }
 
-func TestAppendTriggers(t *testing.T) {
+func TestAppendEventTriggers(t *testing.T) {
 	tests := []struct {
 		sched string
 		init  []string
@@ -188,30 +188,9 @@ func TestAppendTriggers(t *testing.T) {
 		agent := &worker{}
 		sc, _ := schedule.New(tst.sched)
 		evt := &event{sched: sc}
-		trgrs := agent.appendTriggers(tst.init, evt)
+		trgrs := agent.appendEventTriggers(tst.init, evt)
 		if !reflect.DeepEqual(trgrs, tst.trgrs) {
 			t.Errorf("failed test %d - expected %s, got %s", i, tst.trgrs, trgrs)
 		}
-	}
-}
-
-func TestQueueTriggers(t *testing.T) {
-	agent := &worker{}
-	agent.trigqueue = make(chan string)
-
-	res := []string{}
-	trgrs := []string{"trigger1", "trigger1", "trigger2", "trigger1", "trigger1"}
-	go agent.queueTriggers(trgrs)
-	go func() {
-		for trgr := range agent.trigqueue {
-			res = append(res, trgr)
-		}
-	}()
-	time.Sleep(time.Second)
-	close(agent.trigqueue)
-
-	exp := []string{"trigger1", "trigger2"}
-	if !reflect.DeepEqual(res, exp) {
-		t.Errorf("failed queueTriggers - expected %s, got %s", exp, res)
 	}
 }
