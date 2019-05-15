@@ -2,11 +2,10 @@
 
 [![CircleCI](https://circleci.com/gh/joyrex2001/nightshift.svg?style=svg)](https://circleci.com/gh/joyrex2001/nightshift) [![Go Report Card](https://goreportcard.com/badge/github.com/joyrex2001/nightshift)](https://goreportcard.com/report/github.com/joyrex2001/nightshift)
 
-Nightshift is a service that will enable automatic down and upscaling of
-deployments within an OpenShift project to save resource usage (or use
-resources for something else). Typically this service will run in a container
-in a seperate namespace, where it will monitor and scale the namespaces
-according to a preset configuration.
+Nightshift is a service that will enable automatic down and upscalingof
+deployments within an OpenShift project at a predefined schedule. This in order
+to save resource usage (or use resources for something else). It will monitor
+and scale the namespaces according to a preset configuration.
 
 ## Install in OpenShift
 

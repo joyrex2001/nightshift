@@ -114,7 +114,7 @@ func watcher(_stop chan bool, connect connector, unmarshall unmarshaller) (chan 
 		return nil, err
 	}
 
-	out := make(chan Event)
+	out := make(chan Event, 50)
 	go func() {
 		for {
 			select {

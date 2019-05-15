@@ -19,7 +19,17 @@ trigger:
       config:
         url: http://localhost:8080
         timeout: 1s
-        
+    - id: upmetric
+      type: metric
+      config:
+        name: nightshift_scaled
+        value: 0
+    - id: downmetric
+      type: metric
+      config:
+        name: nightshift_scaled
+        value: 1
+
 scanner:
 
     - namespace:
@@ -28,8 +38,8 @@ scanner:
         - "development-3"
       default:
         schedule:
-          - "Mon-Fri  8:00 replicas=1 state=restore trigger=refreshdb,somejob"
-          - "Mon-Fri 18:00 replicas=0 state=save"
+          - "Mon-Fri  8:00 replicas=1 state=restore trigger=upmetric,refreshdb,somejob"
+          - "Mon-Fri 18:00 replicas=0 state=save trigger=downmetric"
       deployment:
         - selector:
             - "app=shell"
