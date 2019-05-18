@@ -74,9 +74,12 @@ func (s *WebhookTrigger) newClient() (*http.Client, error) {
 // newRequest will create a http.Request for the configured url, body and
 // method.
 func (s *WebhookTrigger) newRequest() (*http.Request, error) {
-	body := s.getBody()
 	method := s.getMethod()
 	url, err := s.getUrl()
+	if err != nil {
+		return nil, err
+	}
+	body, err := s.getBody()
 	if err != nil {
 		return nil, err
 	}
@@ -104,13 +107,16 @@ func (s *WebhookTrigger) getUrl() (string, error) {
 
 // getBody will process the configured body, and return an io.ReadWriter for
 // that body.
-func (s *WebhookTrigger) getBody() io.ReadWriter {
+func (s *WebhookTrigger) getBody() (io.ReadWriter, error) {
 	buf := new(bytes.Buffer)
-	body := s.config["body"]
+	body, err := RenderTemplate(s.config["body"], s.config)
+	if err != nil {
+		return buf, err
+	}
 	if body != "" {
 		buf.WriteString(body)
 	}
-	return buf
+	return buf, nil
 }
 
 // getTimeout will return a time.Duration for the configured timeout. If no
