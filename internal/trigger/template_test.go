@@ -69,35 +69,28 @@ func TestRenderTemplate(t *testing.T) {
 		},
 		{
 			in:     `epoch 0 = {{ time "rfc3339" "0" }}`,
-			out:    `epoch 0 = 1970-01-01T01:00:00+01:00`,
+			out:    `epoch 0 = 1970-01-01T00:00:00Z`,
 			values: Config{},
 			setup:  func() {},
 			err:    false,
 		},
 		{
 			in:     `epoch 0 = {{ add "0" "10" | time "ansic" }}`,
-			out:    `epoch 0 = Thu Jan  1 01:00:10 1970`,
+			out:    `epoch 0 = Thu Jan  1 00:00:10 1970`,
 			values: Config{},
 			setup:  func() {},
 			err:    false,
 		},
 		{
-			in:     `epoch 0 = {{ add "0" "10" | time "unixdate" }}`,
-			out:    `epoch 0 = Thu Jan  1 01:00:10 CET 1970`,
-			values: Config{},
-			setup:  func() {},
-			err:    false,
-		},
-		{
-			in:     `epoch 0 = {{ add "0" "10" | time "unixdate" }}`,
-			out:    `epoch 0 = Thu Jan  1 01:00:10 CET 1970`,
+			in:     `epoch 0 = {{ add "0" "20" | time "unixdate" }}`,
+			out:    `epoch 0 = Thu Jan  1 00:00:20 UTC 1970`,
 			values: Config{},
 			setup:  func() {},
 			err:    false,
 		},
 		{
 			in:     `epoch 0 + 10 = {{ add "0" "10" | time "20060102150405" }}`,
-			out:    `epoch 0 + 10 = 19700101010010`,
+			out:    `epoch 0 + 10 = 19700101000010`,
 			values: Config{},
 			setup:  func() {},
 			err:    false,
@@ -111,13 +104,14 @@ func TestRenderTemplate(t *testing.T) {
 		},
 		{
 			in:     `invalid time = {{ time "rfc3339" "a" }}`,
-			out:    `invalid time = 1970-01-01T01:00:00+01:00`,
+			out:    `invalid time = 1970-01-01T00:00:00Z`,
 			values: Config{},
 			setup:  func() {},
 			err:    false,
 		},
 	}
 
+	os.Setenv("TZ", "UTC")
 	for i, tst := range tests {
 		tst.setup()
 		out, err := RenderTemplate(tst.in, tst.values)
