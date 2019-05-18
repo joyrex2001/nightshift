@@ -176,6 +176,14 @@ func TestRequest(t *testing.T) {
 			method: "GET",
 			err:    true,
 		},
+		{
+			cfg: Config{
+				"url":     "http://localhost:8080",
+				"headers": "Content-type: {{ malformed template }}",
+			},
+			method: "GET",
+			err:    true,
+		},
 	}
 
 	wht := &WebhookTrigger{}

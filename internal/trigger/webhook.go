@@ -55,7 +55,7 @@ func (s *WebhookTrigger) Execute() error {
 		return fmt.Errorf("error webhook; status=%s(%d)", resp.Status, resp.StatusCode)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	glog.V(5).Infof("url: %s, status: %d, body: %s", s.config["url"], resp.Status, body)
+	glog.V(5).Infof("url: %s, status: %s, body: %s", s.config["url"], resp.Status, body)
 	return nil
 }
 
@@ -161,7 +161,11 @@ func (s *WebhookTrigger) getHeaders() (map[string]string, error) {
 		if flds[0] == "" || flds[1] == "" {
 			continue
 		}
-		headers[flds[0]] = flds[1]
+		val, err := RenderTemplate(flds[1], s.config)
+		if err != nil {
+			return headers, err
+		}
+		headers[flds[0]] = val
 	}
 	return headers, nil
 }
