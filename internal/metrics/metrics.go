@@ -46,7 +46,7 @@ var (
 			Name: metricsPrefix + "_replicas",
 			Help: "Current expected number of nightshift scaled replicas",
 		},
-		[]string{"target_namespace", "scanner_id"},
+		[]string{"target", "scanner"},
 	)
 )
 
@@ -58,6 +58,7 @@ func init() {
 		})
 		prometheus.MustRegister(m.prom)
 	}
+	prometheus.MustRegister(replicas)
 }
 
 // Increase will increase given metric with 1
@@ -76,6 +77,6 @@ func SetReplicas(ns, scanid string, repl int) {
 		return
 	}
 	replicas.With(prometheus.Labels{
-		"target_namespace": ns,
-		"scanner_id":       scanid}).Set(float64(repl))
+		"target":  ns,
+		"scanner": scanid}).Set(float64(repl))
 }
