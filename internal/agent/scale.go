@@ -124,6 +124,7 @@ func (a *worker) scale(e *event) {
 		metrics.SetReplicas(e.obj.Namespace, e.obj.ScannerId, repl)
 	}
 	if err != nil {
+		metrics.Increase("scale_error")
 		glog.Errorf("Error scaling deployment: %s", err)
 	}
 }

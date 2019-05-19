@@ -110,7 +110,7 @@ func addScanner(agent agent.Agent, cfg scanner.Config) {
 // addTriggers will add configured triggers to the provided agent.
 func addTriggers(agent agent.Agent, cfg *config.Config) {
 	for _, def := range cfg.Trigger {
-		trgr, err := trigger.New(def.Id)
+		trgr, err := trigger.New(def.Type)
 		if err != nil {
 			glog.Errorf("Error adding trigger: %s", err)
 		} else {
