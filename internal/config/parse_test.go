@@ -132,16 +132,6 @@ func TestParseTrigger(t *testing.T) {
 			result: &Config{
 				Trigger: []*Trigger{
 					{
-						Id:     "cleanup",
-						Type:   "job",
-						Config: map[string]string{"name": "cleanup"},
-					},
-					{
-						Id:     "refreshdb",
-						Type:   "job",
-						Config: map[string]string{"name": "somejob"},
-					},
-					{
 						Id:     "build",
 						Type:   "webhook",
 						Config: map[string]string{"url": "http://localhost:8080", "timeout": "1s"},

@@ -9,27 +9,6 @@ logging:
     threshold: "info"
     verbose: 3
 
-trigger:
-    - id: refreshdb
-      type: job
-      config:
-        name: somejob
-    - id: build
-      type: webhook
-      config:
-        url: http://localhost:8080
-        timeout: 1s
-    - id: upmetric
-      type: metric
-      config:
-        name: nightshift_scaled
-        value: 0
-    - id: downmetric
-      type: metric
-      config:
-        name: nightshift_scaled
-        value: 1
-
 scanner:
 
     - namespace:
@@ -38,8 +17,8 @@ scanner:
         - "development-3"
       default:
         schedule:
-          - "Mon-Fri  8:00 replicas=1 state=restore trigger=upmetric,refreshdb,somejob"
-          - "Mon-Fri 18:00 replicas=0 state=save trigger=downmetric"
+          - "Mon-Fri  8:00 replicas=1 state=restore"
+          - "Mon-Fri 18:00 replicas=0 state=save"
       deployment:
         - selector:
             - "app=shell"

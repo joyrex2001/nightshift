@@ -67,8 +67,7 @@ func templateTime(template, epoch string) string {
 	if err != nil {
 		glog.Errorf("invalid time given for time function: %s", err)
 	}
-	template = strings.ToLower(template)
-	switch template {
+	switch strings.ToLower(template) {
 	case "rfc3339":
 		template = time.RFC3339
 	case "ansic":

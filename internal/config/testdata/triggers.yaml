@@ -1,14 +1,4 @@
 trigger:
-    - id: Cleanup
-      type: job
-      config:
-        name: cleanup
-
-    - id: refreshdb
-      type: Job
-      config:
-        Name: somejob
-
     - id: build
       type: WebHook
       config:
