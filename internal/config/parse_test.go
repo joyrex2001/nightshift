@@ -70,6 +70,7 @@ func TestParse(t *testing.T) {
 					{
 						Namespace: []string{"development"},
 						Default: &Default{
+							Id: "development-default",
 							Schedule: []string{
 								"Mon-Fri  9:00 replicas=1",
 								"Mon-Fri 18:00 replicas=0",
@@ -77,6 +78,7 @@ func TestParse(t *testing.T) {
 						},
 						Deployment: []*Deployment{
 							{
+								Id:       "development-shell",
 								Selector: []string{"app=shell"},
 								Schedule: []string{""},
 							},
@@ -86,6 +88,7 @@ func TestParse(t *testing.T) {
 					{
 						Namespace: []string{"batch"},
 						Default: &Default{
+							Id: "batch",
 							Schedule: []string{
 								"Mon-Fri  9:00 replicas=0",
 								"Mon-Fri 18:00 replicas=1",
@@ -93,6 +96,7 @@ func TestParse(t *testing.T) {
 						},
 						Deployment: []*Deployment{
 							{
+								Id:       "",
 								Selector: []string{"app=shell", "app=nightshift"},
 								Schedule: nil,
 							},

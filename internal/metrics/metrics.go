@@ -40,6 +40,14 @@ var (
 			Help: "The total number of error events received from watcher connection",
 		},
 	}
+	// custom metric for exporting current number of replicas
+	replicas = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: metricsPrefix + "_replicas",
+			Help: "Current expected number of nightshift scaled replicas",
+		},
+		[]string{"target_namespace", "scanner_id"},
+	)
 )
 
 func init() {
@@ -58,4 +66,16 @@ func Increase(metr string) {
 	if ok && prom.prom != nil {
 		prom.prom.Inc()
 	}
+}
+
+// SetReplicas will set the replicas metric to given value for given namespace
+// and scanner id.
+func SetReplicas(ns, scanid string, repl int) {
+	if scanid == "" {
+		// don't store metrics without scanner id's configured.
+		return
+	}
+	replicas.With(prometheus.Labels{
+		"target_namespace": ns,
+		"scanner_id":       scanid}).Set(float64(repl))
 }

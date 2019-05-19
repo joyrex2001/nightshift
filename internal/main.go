@@ -68,6 +68,7 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 		// add namespace scanner
 		for _, ns := range scan.Namespace {
 			addScanner(agent, scanner.Config{
+				Id:        scan.Default.Id,
 				Type:      scan.Type,
 				Namespace: ns,
 				Schedule:  def,
@@ -81,6 +82,7 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 			for _, ns := range scan.Namespace {
 				for _, sel := range depl.Selector {
 					addScanner(agent, scanner.Config{
+						Id:        depl.Id,
 						Type:      scan.Type,
 						Namespace: ns,
 						Schedule:  sched,

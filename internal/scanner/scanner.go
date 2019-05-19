@@ -25,6 +25,7 @@ type Factory func() (Scanner, error)
 // Config describes the configuration of a scanner. It includes ScannerType
 // to allow to be used by the factory NewForConfig method.
 type Config struct {
+	Id        string               `json:"id"`
 	Namespace string               `json:"namespace"`
 	Label     string               `json:"label"`
 	Schedule  []*schedule.Schedule `json:"schedule"`
@@ -42,6 +43,7 @@ type Object struct {
 	State     *State               `json:"state"`
 	Replicas  int                  `json:"replicas"`
 	Priority  int                  `json:"priority"`
+	ScannerId string               `json:"scanner_id"`
 	scanner   Scanner
 }
 
@@ -107,6 +109,7 @@ func NewObjectForScanner(scnr Scanner) *Object {
 		Priority:  cfg.Priority,
 		Type:      cfg.Type,
 		Schedule:  cfg.Schedule,
+		ScannerId: cfg.Id,
 		scanner:   scnr,
 	}
 }
