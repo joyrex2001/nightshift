@@ -3,17 +3,20 @@ scanner:
         - "development"
       type: "openshift"
       default:
+        id: "development-default"
         schedule:
           - "Mon-Fri  9:00 replicas=1"
           - "Mon-Fri 18:00 replicas=0"
       deployment:
-        - selector:
+        - id: "development-shell"
+          selector:
             - "app=shell"
           schedule:
             - ""
     - namespace:
         - "batch"
       default:
+        id: "batch"
         schedule:
           - "Mon-Fri  9:00 replicas=0"
           - "Mon-Fri 18:00 replicas=1"

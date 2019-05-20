@@ -46,3 +46,25 @@ func TestAddGetScanner(t *testing.T) {
 		}
 	}
 }
+
+func TestAddGetTrigger(t *testing.T) {
+	tests := []string{"foo", "bar"}
+	obj := New()
+	for _, id := range tests {
+		trgr := &mockTrigger{id: id}
+		obj.AddTrigger(id, trgr)
+	}
+	trgrs := obj.GetTriggers()
+	if len(trgrs) != len(tests) {
+		t.Errorf("Invalid number of scanners in GetScanners; got %d, expected %d", len(trgrs), len(tests))
+	}
+	for id, trgr := range trgrs {
+		mock, ok := trgr.(*mockTrigger)
+		if !ok {
+			t.Errorf("Invalid trigger, expected a mockTrigger, got %#v", trgr)
+		}
+		if mock.id != id {
+			t.Errorf("Invalid trigger in GetTriggers; got %s, expected %s", mock.id, id)
+		}
+	}
+}

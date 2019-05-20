@@ -13,6 +13,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/config"
 	"github.com/joyrex2001/nightshift/internal/metrics"
 	"github.com/joyrex2001/nightshift/internal/scanner"
+	"github.com/joyrex2001/nightshift/internal/trigger"
 )
 
 // GetVersion will version details of nightshift.
@@ -53,6 +54,19 @@ func (f *handler) GetScanners(w http.ResponseWriter, r *http.Request, ps httprou
 	res := []scanner.Config{}
 	for _, scnr := range agent.New().GetScanners() {
 		res = append(res, scnr.GetConfig())
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		f.Error(w, r, http.StatusInternalServerError, err)
+	}
+	return
+}
+
+// GetTriggers will return the list of currently available triggers.
+func (f *handler) GetTriggers(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	res := []trigger.Config{}
+	for _, trgr := range agent.New().GetTriggers() {
+		res = append(res, trgr.GetConfig())
 	}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(res); err != nil {

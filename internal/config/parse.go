@@ -1,8 +1,10 @@
 package config
 
 import (
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/joyrex2001/nightshift/internal/schedule"
 )
@@ -22,6 +24,7 @@ func New(file string) (*Config, error) {
 		return nil, err
 	}
 	m.processDefaults()
+	m.processTriggers()
 	return m, nil
 }
 
@@ -41,6 +44,19 @@ func (c *Config) processDefaults() {
 		if scan.Type == "" {
 			scan.Type = "openshift"
 		}
+	}
+}
+
+// processDefaults will set default values for the configuration.
+func (c *Config) processTriggers() {
+	for _, trgr := range c.Trigger {
+		trgr.Id = strings.ToLower(trgr.Id)
+		trgr.Type = strings.ToLower(trgr.Type)
+		cfg := map[string]string{}
+		for k, v := range trgr.Config {
+			cfg[strings.ToLower(k)] = v
+		}
+		trgr.Config = cfg
 	}
 }
 

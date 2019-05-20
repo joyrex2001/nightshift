@@ -9,19 +9,50 @@ logging:
     threshold: "info"
     verbose: 3
 
+trigger:
+    - id: silence-dev
+      type: webhook
+      config:
+        url: http://localhost:9093/api/v2/silences
+        timeout: 500ms
+        method: POST
+        headers: |-
+          Content-Type: "application/json"
+        body: |-
+          {
+              "matchers": [ {
+                  "name": "blackbox-dev",
+                  "value": ".*",
+                  "isRegex": true
+                }
+              ],
+              "startsAt": "{{ now | time "rfc3339" }}",
+              "endsAt": "{{ now | add "86400" | time "rfc3339" }}",
+              "createdBy": "nightshift",
+              "comment": "Silencio"
+          }
+
+    - id: refreshdb
+      type: webhook
+      config:
+        url: http://localhost/pipelines/refreshdb
+
+    - id: startreport
+      type: webhook
+      config:
+        url: http://localhost/pipelines/report
+
 scanner:
     - namespace:
         - "development-1"
         - "development-2"
         - "development-3"
       default:
-        id: default-dev ## optional id, if set, the replica metric is available
         schedule:
-          - "Mon-Fri  8:00 replicas=1 state=restore"
-          - "Mon-Fri 18:00 replicas=0 state=save"
+          - "Mon-Fri  8:00 replicas=1 state=restore trigger=refreshdb"
+          - "Mon-Fri 18:00 replicas=0 state=save trigger=silence-dev,startreport"
       deployment:
-        - id: shell-dev ## optional id, if set, the replica metric is available
-          selector:
+        - selector:
             - "app=shell"
             - "app=nightshift"
           schedule:

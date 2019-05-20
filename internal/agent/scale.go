@@ -40,15 +40,18 @@ func (a *worker) StopScale() {
 
 // Scale will process all scanned objects and scale them accordingly.
 func (a *worker) scaleObjects() {
+	trgrs := []string{}
 	glog.V(4).Info("Scaling resources start...")
 	a.now = time.Now()
 	for _, obj := range a.GetObjects() {
 		for _, e := range a.getEvents(obj) {
 			glog.V(4).Infof("Scale event: %v", e)
+			trgrs = append(trgrs, e.sched.GetTriggers()...)
 			a.handleState(e)
 			a.scale(e)
 		}
 	}
+	a.queueTriggers(trgrs)
 	a.past = a.now
 	glog.V(4).Info("Scaling resources finished...")
 }
@@ -109,6 +112,8 @@ func (a *worker) scale(e *event) {
 			glog.Errorf("Error scaling deployment: %s", err)
 			metrics.Increase("scale_error")
 		}
+		metrics.Increase("scale")
+		metrics.SetReplicas(e.obj.Namespace, e.obj.ScannerId, repl)
 		return
 	}
 	// regular scaling
@@ -116,8 +121,10 @@ func (a *worker) scale(e *event) {
 	if err == nil {
 		err = e.obj.Scale(repl)
 		metrics.Increase("scale")
+		metrics.SetReplicas(e.obj.Namespace, e.obj.ScannerId, repl)
 	}
 	if err != nil {
+		metrics.Increase("scale_error")
 		glog.Errorf("Error scaling deployment: %s", err)
 	}
 }

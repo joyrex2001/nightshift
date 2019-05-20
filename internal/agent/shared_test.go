@@ -2,8 +2,10 @@ package agent
 
 import (
 	"github.com/joyrex2001/nightshift/internal/scanner"
+	"github.com/joyrex2001/nightshift/internal/trigger"
 )
 
+// mockScanner is a generic mock for triggers
 type mockScanner struct {
 	id    int
 	scale int
@@ -40,8 +42,34 @@ func (m *mockScanner) Watch(_stop chan bool) (chan scanner.Event, error) {
 	return m.out, nil
 }
 
-func getFactory(typ string, m *mockScanner) scanner.Factory {
+func getScannerFactory(typ string, m *mockScanner) scanner.Factory {
 	return func() (scanner.Scanner, error) {
+		return m, nil
+	}
+}
+
+// mockTrigger is a generic mock for triggers
+type mockTrigger struct {
+	id  string
+	exc int
+	cfg trigger.Config
+}
+
+func (m *mockTrigger) SetConfig(c trigger.Config) {
+	m.cfg = c
+}
+
+func (m *mockTrigger) GetConfig() trigger.Config {
+	return m.cfg
+}
+
+func (m *mockTrigger) Execute() error {
+	m.exc++
+	return nil
+}
+
+func getTriggerFactory(typ string, m *mockTrigger) trigger.Factory {
+	return func() (trigger.Trigger, error) {
 		return m, nil
 	}
 }

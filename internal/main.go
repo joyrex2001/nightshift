@@ -11,6 +11,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/config"
 	"github.com/joyrex2001/nightshift/internal/scanner"
 	"github.com/joyrex2001/nightshift/internal/schedule"
+	"github.com/joyrex2001/nightshift/internal/trigger"
 	"github.com/joyrex2001/nightshift/internal/webui"
 )
 
@@ -36,6 +37,7 @@ func startAgent() {
 	agt := agent.New()
 	if cfg := loadConfig(); cfg != nil {
 		addScanners(agt, cfg)
+		addTriggers(agt, cfg)
 	}
 	interval := viper.GetDuration("generic.interval")
 	agt.SetResyncInterval(interval)
@@ -66,6 +68,7 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 		// add namespace scanner
 		for _, ns := range scan.Namespace {
 			addScanner(agent, scanner.Config{
+				Id:        scan.Default.Id,
 				Type:      scan.Type,
 				Namespace: ns,
 				Schedule:  def,
@@ -79,6 +82,7 @@ func addScanners(agent agent.Agent, cfg *config.Config) {
 			for _, ns := range scan.Namespace {
 				for _, sel := range depl.Selector {
 					addScanner(agent, scanner.Config{
+						Id:        depl.Id,
 						Type:      scan.Type,
 						Namespace: ns,
 						Schedule:  sched,
@@ -101,6 +105,19 @@ func addScanner(agent agent.Agent, cfg scanner.Config) {
 		return
 	}
 	agent.AddScanner(scanr)
+}
+
+// addTriggers will add configured triggers to the provided agent.
+func addTriggers(agent agent.Agent, cfg *config.Config) {
+	for _, def := range cfg.Trigger {
+		trgr, err := trigger.New(def.Type)
+		if err != nil {
+			glog.Errorf("Error adding trigger: %s", err)
+		} else {
+			trgr.SetConfig(trigger.Config{Id: def.Id, Type: def.Type, Settings: def.Config})
+			agent.AddTrigger(def.Id, trgr)
+		}
+	}
 }
 
 // startWebUI will start the management webserver.

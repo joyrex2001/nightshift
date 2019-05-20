@@ -99,7 +99,7 @@ func TestGetEvents(t *testing.T) {
 
 func TestHandleStateScale(t *testing.T) {
 	mock := &mockScanner{}
-	scanner.RegisterModule("scanner", getFactory("scanner", mock))
+	scanner.RegisterModule("scanner", getScannerFactory("scanner", mock))
 
 	tests := []struct {
 		sched   string

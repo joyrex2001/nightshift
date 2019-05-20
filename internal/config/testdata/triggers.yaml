@@ -1,0 +1,9 @@
+trigger:
+    - id: build
+      type: WebHook
+      config:
+        url: http://localhost:8080
+        timeout: 1s
+
+    - id: dummy
+      type: dummyerror

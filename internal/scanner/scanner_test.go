@@ -198,6 +198,7 @@ func TestCopy(t *testing.T) {
 	sched2, _ := schedule.New("Thu 10:00 state=save replicas=0")
 	tests := []*Object{
 		{UID: "123", Name: "Something"},
+		{UID: "123", Name: "Something", ScannerId: "somescanner"},
 		{UID: "123", Name: "Something", State: &State{Replicas: 1}},
 		{UID: "123", Name: "Something", Schedule: []*schedule.Schedule{sched1, sched2}},
 	}
@@ -209,6 +210,13 @@ func TestCopy(t *testing.T) {
 		obj.UID = "changed"
 		if new.UID == obj.UID {
 			t.Errorf("failed test %d - change to UID is copied to new object as well", i)
+		}
+		if new.ScannerId != obj.ScannerId {
+			t.Errorf("failed test %d - ScannerId is not copied to new object", i)
+		}
+		obj.ScannerId = "changed"
+		if new.ScannerId == obj.ScannerId {
+			t.Errorf("failed test %d - change to ScannerId is copied to new object as well", i)
 		}
 		if new.State != nil && new.State == obj.State {
 			t.Errorf("failed test %d - object State attribute is identical (%p,%p)", i, new.State, obj.State)

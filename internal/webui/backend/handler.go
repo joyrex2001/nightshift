@@ -41,6 +41,7 @@ func (f *handler) init() {
 	f.mux.POST("/api/objects/scale/:replicas", f.Authenticate(f.PostObjectsScale))
 	f.mux.POST("/api/objects/restore", f.Authenticate(f.PostObjectsRestore))
 	f.mux.GET("/api/scanners", f.Authenticate(f.GetScanners))
+	f.mux.GET("/api/triggers", f.Authenticate(f.GetTriggers))
 	f.mux.GET("/api/version", f.Authenticate(f.GetVersion))
 	f.mux.GET("/metrics", f.Metrics())
 	f.mux.GET("/healthz", f.Healthz)

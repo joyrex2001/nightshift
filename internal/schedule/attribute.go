@@ -32,3 +32,15 @@ func (s *Schedule) GetState() (State, error) {
 	}
 	return st, nil
 }
+
+// GetTriggers will return the reference codes of the triggers that should be
+// triggered.
+func (s *Schedule) GetTriggers() []string {
+	trgs := []string{}
+	for _, trg := range strings.Split(s.settings["trigger"], ",") {
+		if trg != "" {
+			trgs = append(trgs, strings.ToLower(trg))
+		}
+	}
+	return trgs
+}

@@ -2,11 +2,10 @@
 
 [![CircleCI](https://circleci.com/gh/joyrex2001/nightshift.svg?style=svg)](https://circleci.com/gh/joyrex2001/nightshift) [![Go Report Card](https://goreportcard.com/badge/github.com/joyrex2001/nightshift)](https://goreportcard.com/report/github.com/joyrex2001/nightshift)
 
-Nightshift is a service that will enable automatic down and upscaling of
-deployments within an OpenShift project to save resource usage (or use
-resources for something else). Typically this service will run in a container
-in a seperate namespace, where it will monitor and scale the namespaces
-according to a preset configuration.
+Nightshift is a service that will enable automatic down and upscalingof
+deployments within an OpenShift project at a predefined schedule. This in order
+to save resource usage (or use resources for something else). It will monitor
+and scale the namespaces according to a preset configuration.
 
 ## Install in OpenShift
 
@@ -130,10 +129,28 @@ multiple scanner configurations, only the last one will be applied.
 See the examples folder for another example, which also includes basic
 nightshift configuration.
 
-### Prometheus metrics
+## Triggers
+
+Nightshift is able to trigger events when it will scale. This is done by
+triggers. Currently there is only one type of trigger "webhook", which will
+call a http endpoint with a predefined configuration.
+
+Triggers can only be configured in the configuration file. Each trigger has an
+id which can be used in the schedule definition to execute the trigger. When
+at a certain time, the endpoint is referenced by multiple schedules, it will be
+called only once.
+
+An detailed reference example can be found in the examples folder in the
+file ```triggers.yaml```.
+
+
+## Prometheus metrics
 
 When the web interface is enabled, prometheus metrics will be available as well.
-The endpoint of the metrics is ```/metrics```.
+The endpoint of the metrics is ```/metrics```. If an id is set for the schedule
+definitions, the current number of applied replicas for that schedule is
+reflected in the ```nightshift_replicas``` metric, and can be used to e.g.
+disable alerting when nightshift downscaled the pods as planned.
 
 ## See also
 
