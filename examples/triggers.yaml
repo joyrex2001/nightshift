@@ -1,0 +1,86 @@
+web:
+    enable: true
+    listen-addr: ":8080"
+
+generic:
+    timezone: "Europe/Amsterdam"
+
+logging:
+    threshold: "info"
+    verbose: 3
+
+trigger:
+    - id: silence-dev
+      type: webhook
+      config:
+        url: http://localhost:9093/api/v2/silences
+        timeout: 500ms
+        method: POST
+        headers: |-
+          Content-Type: "application/json"
+        body: |-
+          {
+              "matchers": [ {
+                  "name": "blackbox-dev",
+                  "value": ".*",
+                  "isRegex": true
+                }
+              ],
+              "startsAt": "{{ now | time "rfc3339" }}",
+              "endsAt": "{{ now | add "86400" | time "rfc3339" }}",
+              "createdBy": "nightshift",
+              "comment": "Silencio"
+          }
+
+    - id: refreshdb
+      type: webhook
+      config:
+        url: http://localhost/pipelines/refreshdb
+
+    - id: startreport
+      type: webhook
+      config:
+        url: http://localhost/pipelines/report
+
+scanner:
+    - namespace:
+        - "development-1"
+        - "development-2"
+        - "development-3"
+      default:
+        schedule:
+          - "Mon-Fri  8:00 replicas=1 state=restore trigger=refreshdb"
+          - "Mon-Fri 18:00 replicas=0 state=save trigger=silence-dev,startreport"
+      deployment:
+        - selector:
+            - "app=shell"
+            - "app=nightshift"
+          schedule:
+            - ""
+
+    - namespace:
+        - "development-1"
+        - "development-2"
+        - "development-3"
+      type: "statefulset"
+      default:
+        schedule:
+          - "Mon-Fri  8:00 replicas=3 state=restore"
+          - "Mon-Fri 18:00 replicas=0 state=save"
+
+    - namespace:
+        - "staging"
+      default:
+        schedule:
+          - "Mon-Fri  8:00 replicas=5"
+          - "Mon-Fri 18:00 replicas=2"
+      deployment:
+        - selector:
+            - "app=analytics"
+          schedule:
+          - "Mon-Fri  8:00 replicas=2"
+          - "Mon-Fri 18:00 replicas=5"
+        - selector:
+            - "app=nightshift"
+          schedule:
+            - ""
