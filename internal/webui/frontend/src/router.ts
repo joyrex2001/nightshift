@@ -20,7 +20,12 @@ export default new Router({
     {
       path: '/objects',
       name: 'objects',
-      component: () => import(/* webpackChunkName: "about" */ './views/ObjectsOverview.vue'),
+      component: () => import('./views/ObjectsOverview.vue'),
+    },
+    {
+      path: '/triggers',
+      name: 'triggers',
+      component: () => import('./views/TriggersOverview.vue'),
     },
     {
       path: '/about',

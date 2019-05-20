@@ -12,8 +12,10 @@ func TestNewWebhookTrigger(t *testing.T) {
 		t.Errorf("failed test - could not instantiate webhook module; %s", err)
 	}
 	in := Config{
-		"test1": "value1",
-		"test2": "value2",
+		Settings: map[string]string{
+			"test1": "value1",
+			"test2": "value2",
+		},
 	}
 	wht.SetConfig(in)
 	out := wht.GetConfig()
@@ -35,14 +37,18 @@ func TestTimeout(t *testing.T) {
 		},
 		{
 			cfg: Config{
-				"timeout": "1s",
+				Settings: map[string]string{
+					"timeout": "1s",
+				},
 			},
 			duration: 1 * time.Second,
 			err:      false,
 		},
 		{
 			cfg: Config{
-				"timeout": "just wait for 1 second",
+				Settings: map[string]string{
+					"timeout": "just wait for 1 second",
+				},
 			},
 			duration: 0,
 			err:      true,
@@ -88,98 +94,122 @@ func TestRequest(t *testing.T) {
 		},
 		{
 			cfg: Config{
-				"url": "http://localhost:8080",
+				Settings: map[string]string{
+					"url": "http://localhost:8080",
+				},
 			},
 			method: "GET",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":  "http://localhost:8080",
-				"body": "post this for me",
+				Settings: map[string]string{
+					"url":  "http://localhost:8080",
+					"body": "post this for me",
+				},
 			},
 			method: "POST",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":    "http://localhost:8080",
-				"method": "POST",
-				"body":   "post this for me",
+				Settings: map[string]string{
+					"url":    "http://localhost:8080",
+					"method": "POST",
+					"body":   "post this for me",
+				},
 			},
 			method: "POST",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":    "http://localhost:8080",
-				"method": "GET",
-				"body":   "method will override, even if body is present",
+				Settings: map[string]string{
+					"url":    "http://localhost:8080",
+					"method": "GET",
+					"body":   "method will override, even if body is present",
+				},
 			},
 			method: "GET",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":    "http://localhost:8080",
-				"method": "UPDATE",
-				"body":   "update this for me",
+				Settings: map[string]string{
+					"url":    "http://localhost:8080",
+					"method": "UPDATE",
+					"body":   "update this for me",
+				},
 			},
 			method: "UPDATE",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":    "http://localhost:8080",
-				"method": "Update",
+				Settings: map[string]string{
+					"url":    "http://localhost:8080",
+					"method": "Update",
+				},
 			},
 			method: "UPDATE",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":     "http://localhost:8080",
-				"headers": "Content-type: application/json",
+				Settings: map[string]string{
+					"url":     "http://localhost:8080",
+					"headers": "Content-type: application/json",
+				},
 			},
 			method: "GET",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":     "http://localhost:8080",
-				"headers": "Content-type: ",
+				Settings: map[string]string{
+					"url":     "http://localhost:8080",
+					"headers": "Content-type: ",
+				},
 			},
 			method: "GET",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":     "http://localhost:8080",
-				"headers": " : ",
+				Settings: map[string]string{
+					"url":     "http://localhost:8080",
+					"headers": " : ",
+				},
 			},
 			method: "GET",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":     "http://localhost:8080",
-				"headers": "Content-type: application/json\nAuthorisation: something",
+				Settings: map[string]string{
+					"url":     "http://localhost:8080",
+					"headers": "Content-type: application/json\nAuthorisation: something",
+				},
 			},
 			method: "GET",
 			err:    false,
 		},
 		{
 			cfg: Config{
-				"url":     "http://localhost:8080",
-				"headers": "Content-type",
+				Settings: map[string]string{
+					"url":     "http://localhost:8080",
+					"headers": "Content-type",
+				},
 			},
 			method: "GET",
 			err:    true,
 		},
 		{
 			cfg: Config{
-				"url":     "http://localhost:8080",
-				"headers": "Content-type: {{ malformed template }}",
+				Settings: map[string]string{
+					"url":     "http://localhost:8080",
+					"headers": "Content-type: {{ malformed template }}",
+				},
 			},
 			method: "GET",
 			err:    true,

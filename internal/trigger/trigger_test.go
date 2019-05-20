@@ -15,7 +15,9 @@ func (m *mock) SetConfig(c Config) {
 }
 
 func (m *mock) GetConfig() Config {
-	m.cfg["type"] = m.typ
+	m.cfg.Settings = map[string]string{
+		"type": m.typ,
+	}
 	return m.cfg
 }
 
@@ -55,8 +57,8 @@ func TestNew(t *testing.T) {
 		}
 		if err == nil {
 			cfg := m.GetConfig()
-			if cfg["type"] != tst.test {
-				t.Errorf("failed test %d - expected %s, got: %s", i, tst.test, cfg["type"])
+			if cfg.Settings["type"] != tst.test {
+				t.Errorf("failed test %d - expected %s, got: %s", i, tst.test, cfg.Settings["type"])
 			}
 		}
 	}

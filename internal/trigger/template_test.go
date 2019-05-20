@@ -30,11 +30,13 @@ func TestRenderTemplate(t *testing.T) {
 			err: false,
 		},
 		{
-			in:  `config key1 contains {{ .key1 }} and config key2 contains {{ .key2 }}`,
+			in:  `config key1 contains {{ .Settings.key1 }} and config key2 contains {{ .Settings.key2 }}`,
 			out: `config key1 contains value1 and config key2 contains value2`,
 			values: Config{
-				"key1": "value1",
-				"key2": "value2",
+				Settings: map[string]string{
+					"key1": "value1",
+					"key2": "value2",
+				},
 			},
 			setup: func() {},
 			err:   false,

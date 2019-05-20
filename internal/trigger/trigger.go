@@ -12,9 +12,13 @@ type Trigger interface {
 	Execute() error
 }
 
-// Config is a hashmap with generic settings. The key for each value should be
-// lowercased always.
-type Config map[string]string
+// Config is the configuration for this trigger, and contains a hashmap with
+// generic settings. The key for each value should be lowercased always.
+type Config struct {
+	Id       string            `json:"id"`
+	Type     string            `json:"type"`
+	Settings map[string]string `json:"settings"`
+}
 
 // Factory is the factory method for a trigger implementation module.
 type Factory func() (Trigger, error)

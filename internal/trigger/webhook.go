@@ -55,7 +55,7 @@ func (s *WebhookTrigger) Execute() error {
 		return fmt.Errorf("error webhook; status=%s(%d)", resp.Status, resp.StatusCode)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	glog.V(5).Infof("url: %s, status: %s, body: %s", s.config["url"], resp.Status, body)
+	glog.V(5).Infof("url: %s, status: %s, body: %s", s.config.Settings["url"], resp.Status, body)
 	return nil
 }
 
@@ -98,7 +98,7 @@ func (s *WebhookTrigger) newRequest() (*http.Request, error) {
 }
 
 func (s *WebhookTrigger) getUrl() (string, error) {
-	url := strings.TrimSpace(s.config["url"])
+	url := strings.TrimSpace(s.config.Settings["url"])
 	if url == "" {
 		return "", fmt.Errorf("no url specified")
 	}
@@ -109,7 +109,7 @@ func (s *WebhookTrigger) getUrl() (string, error) {
 // that body.
 func (s *WebhookTrigger) getBody() (io.ReadWriter, error) {
 	buf := new(bytes.Buffer)
-	body, err := RenderTemplate(s.config["body"], s.config)
+	body, err := RenderTemplate(s.config.Settings["body"], s.config.Settings)
 	if err != nil {
 		return buf, err
 	}
@@ -122,7 +122,7 @@ func (s *WebhookTrigger) getBody() (io.ReadWriter, error) {
 // getTimeout will return a time.Duration for the configured timeout. If no
 // timeout has been configured it will use a default timeout instead.
 func (s *WebhookTrigger) getTimeout() (time.Duration, error) {
-	to := s.config["timeout"]
+	to := s.config.Settings["timeout"]
 	if to == "" {
 		to = "300ms"
 	}
@@ -133,10 +133,10 @@ func (s *WebhookTrigger) getTimeout() (time.Duration, error) {
 // default to GET if no body is configured, or POST if a body has been
 // configured.
 func (s *WebhookTrigger) getMethod() string {
-	method := strings.ToUpper(s.config["method"])
+	method := strings.ToUpper(s.config.Settings["method"])
 	if method == "" {
 		method = "GET"
-		if s.config["body"] != "" {
+		if s.config.Settings["body"] != "" {
 			method = "POST"
 		}
 	}
@@ -147,7 +147,7 @@ func (s *WebhookTrigger) getMethod() string {
 // the headers and its' values.
 func (s *WebhookTrigger) getHeaders() (map[string]string, error) {
 	headers := map[string]string{}
-	chdrs := strings.Split(strings.Replace(s.config["headers"], "\r\n", "\n", -1), "\n")
+	chdrs := strings.Split(strings.Replace(s.config.Settings["headers"], "\r\n", "\n", -1), "\n")
 	for _, header := range chdrs {
 		if header == "" {
 			continue
@@ -161,7 +161,7 @@ func (s *WebhookTrigger) getHeaders() (map[string]string, error) {
 		if flds[0] == "" || flds[1] == "" {
 			continue
 		}
-		val, err := RenderTemplate(flds[1], s.config)
+		val, err := RenderTemplate(flds[1], s.config.Settings)
 		if err != nil {
 			return headers, err
 		}

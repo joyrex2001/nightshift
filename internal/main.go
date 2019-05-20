@@ -114,7 +114,7 @@ func addTriggers(agent agent.Agent, cfg *config.Config) {
 		if err != nil {
 			glog.Errorf("Error adding trigger: %s", err)
 		} else {
-			trgr.SetConfig(def.Config)
+			trgr.SetConfig(trigger.Config{Id: def.Id, Type: def.Type, Settings: def.Config})
 			agent.AddTrigger(def.Id, trgr)
 		}
 	}

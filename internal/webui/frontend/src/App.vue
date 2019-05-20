@@ -4,6 +4,7 @@
           <h1>NIGHTSHIFT admin</h1>
           <router-link to="/scanners">Scanners</router-link> |
           <router-link to="/objects">Objects</router-link> |
+          <!--<router-link to="/triggers">Triggers</router-link> |-->
           <router-link to="/about">About</router-link>
     </div>
     <router-view/>

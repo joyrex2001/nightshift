@@ -20,6 +20,10 @@ cover:
 	go test ./... -cover -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 
+frontend:
+	cd ./internal/webui/frontend ; npm install ; npm run build
+	go generate ./internal/...
+	
 deps:
 	go get -u golang.org/x/lint/golint
 	go get -u github.com/jteeuwen/go-bindata/...
