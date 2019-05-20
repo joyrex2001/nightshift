@@ -24,10 +24,16 @@ func (a *worker) StopTrigger() {
 func (a *worker) queueTriggers(trgrs []string) {
 	done := map[string]bool{}
 	for _, trgr := range trgrs {
-		if !done[trgr] {
-			a.queueTrigger(trgr)
-			done[trgr] = true
+		if done[trgr] {
+			continue
 		}
+		_, ok := a.triggers[trgr]
+		if ok {
+			a.queueTrigger(trgr)
+		} else {
+			glog.Errorf("Error execute trigger: invalid trigger %s", trgr)
+		}
+		done[trgr] = true
 	}
 }
 

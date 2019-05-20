@@ -56,9 +56,12 @@ func TestHandleTriggers(t *testing.T) {
 func TestQueueTriggers(t *testing.T) {
 	agent := &worker{}
 	agent.trigqueue = make(chan string)
-
+	agent.triggers = map[string]trigger.Trigger{
+		"trigger1": &mockTrigger{},
+		"trigger2": &mockTrigger{},
+	}
 	res := []string{}
-	trgrs := []string{"trigger1", "trigger1", "trigger2", "trigger1", "trigger1"}
+	trgrs := []string{"trigger1", "trigger1", "trigger2", "trigger3", "trigger1", "trigger1"}
 	go agent.queueTriggers(trgrs)
 	go func() {
 		for trgr := range agent.trigqueue {
