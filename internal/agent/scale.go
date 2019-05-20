@@ -46,7 +46,7 @@ func (a *worker) scaleObjects() {
 	for _, obj := range a.GetObjects() {
 		for _, e := range a.getEvents(obj) {
 			glog.V(4).Infof("Scale event: %v", e)
-			trgrs = a.appendEventTriggers(trgrs, e)
+			trgrs = append(trgrs, e.sched.GetTriggers()...)
 			a.handleState(e)
 			a.scale(e)
 		}
@@ -127,13 +127,4 @@ func (a *worker) scale(e *event) {
 		metrics.Increase("scale_error")
 		glog.Errorf("Error scaling deployment: %s", err)
 	}
-}
-
-// appendEventTriggers will append the triggers set on the schedule to the
-// given list of triggers.
-func (a *worker) appendEventTriggers(trgrs []string, e *event) []string {
-	for _, trg := range e.sched.GetTriggers() {
-		trgrs = append(trgrs, trg)
-	}
-	return trgrs
 }

@@ -53,7 +53,6 @@ type mockTrigger struct {
 	id  string
 	exc int
 	cfg trigger.Config
-	err error
 }
 
 func (m *mockTrigger) SetConfig(c trigger.Config) {

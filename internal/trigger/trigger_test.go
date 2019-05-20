@@ -7,7 +7,6 @@ import (
 type mock struct {
 	typ string
 	cfg Config
-	err error
 }
 
 func (m *mock) SetConfig(c Config) {

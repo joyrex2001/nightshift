@@ -54,7 +54,7 @@ func (s *WebhookTrigger) Execute() error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("error webhook; status=%s(%d)", resp.Status, resp.StatusCode)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	glog.V(5).Infof("url: %s, status: %s, body: %s", s.config.Settings["url"], resp.Status, body)
 	return nil
 }

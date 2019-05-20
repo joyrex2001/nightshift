@@ -2,7 +2,6 @@ package agent
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 	"time"
 
@@ -159,38 +158,4 @@ func TestHandleStateScale(t *testing.T) {
 		}
 	}
 
-}
-
-func TestAppendEventTriggers(t *testing.T) {
-	tests := []struct {
-		sched string
-		init  []string
-		trgrs []string
-	}{
-		{
-			init:  []string{},
-			sched: "Mon-Fri 8:00 replicas=3 state=restore trigger=trigger2,trigger3",
-			trgrs: []string{"trigger2", "trigger3"},
-		},
-		{
-			init:  []string{"trigger1"},
-			sched: "Mon-Fri 8:00 replicas=3 state=restore trigger=trigger2,trigger3",
-			trgrs: []string{"trigger1", "trigger2", "trigger3"},
-		},
-		{
-			init:  []string{"trigger1", "trigger2"},
-			sched: "Mon-Fri 8:00 replicas=3 state=restore trigger=trigger2,trigger3",
-			trgrs: []string{"trigger1", "trigger2", "trigger2", "trigger3"},
-		},
-	}
-
-	for i, tst := range tests {
-		agent := &worker{}
-		sc, _ := schedule.New(tst.sched)
-		evt := &event{sched: sc}
-		trgrs := agent.appendEventTriggers(tst.init, evt)
-		if !reflect.DeepEqual(trgrs, tst.trgrs) {
-			t.Errorf("failed test %d - expected %s, got %s", i, tst.trgrs, trgrs)
-		}
-	}
 }
