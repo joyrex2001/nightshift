@@ -129,10 +129,28 @@ multiple scanner configurations, only the last one will be applied.
 See the examples folder for another example, which also includes basic
 nightshift configuration.
 
-### Prometheus metrics
+## Triggers
+
+Nightshift is able to trigger events when it will scale. This is done by
+triggers. Currently there is only one type of trigger "webhook", which will
+call a http endpoint with a predefined configuration.
+
+Triggers can only be configured in the configuration file. Each trigger has an
+id which can be used in the schedule definition to execute the trigger. When
+at a certain time, the endpoint is referenced by multiple schedules, it will be
+called only once.
+
+An detailed reference example can be found in the examples folder in the
+file ```triggers.yaml```.
+
+
+## Prometheus metrics
 
 When the web interface is enabled, prometheus metrics will be available as well.
-The endpoint of the metrics is ```/metrics```.
+The endpoint of the metrics is ```/metrics```. If an id is set for the schedule
+definitions, the current number of applied replicas for that schedule is
+reflected in the ```nightshift_replicas``` metric, and can be used to e.g.
+disable alerting when nightshift downscaled the pods as planned.
 
 ## See also
 

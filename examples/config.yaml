@@ -10,17 +10,18 @@ logging:
     verbose: 3
 
 scanner:
-
     - namespace:
         - "development-1"
         - "development-2"
         - "development-3"
       default:
+        id: default-dev ## optional id, if set, the replica metric is available
         schedule:
           - "Mon-Fri  8:00 replicas=1 state=restore"
           - "Mon-Fri 18:00 replicas=0 state=save"
       deployment:
-        - selector:
+        - id: shell-dev ## optional id, if set, the replica metric is available
+          selector:
             - "app=shell"
             - "app=nightshift"
           schedule:
