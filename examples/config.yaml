@@ -15,12 +15,12 @@ scanner:
         - "development-2"
         - "development-3"
       default:
-        id: default-dev ## optional id, if set, the replica metric is available
+        id: "default-dev" ## optional id, if set, replica metric is available
         schedule:
           - "Mon-Fri  8:00 replicas=1 state=restore"
           - "Mon-Fri 18:00 replicas=0 state=save"
       deployment:
-        - id: shell-dev ## optional id, if set, the replica metric is available
+        - id: "shell-dev" ## optional id, if set, replica metric is available
           selector:
             - "app=shell"
             - "app=nightshift"

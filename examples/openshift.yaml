@@ -56,6 +56,10 @@ objects:
       type: "Recreate"
     template:
       metadata:
+        annotations:
+          prometheus.io/path: "/metrics"
+          prometheus.io/port: "8080"
+          prometheus.io/scrape: "true"
         labels:
           name: "${NAME}"
         name: "${NAME}"
