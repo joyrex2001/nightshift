@@ -30,7 +30,7 @@ func TestRenderTemplate(t *testing.T) {
 			err: false,
 		},
 		{
-			in:  `config key1 contains {{ .Settings.key1 }} and config key2 contains {{ .Settings.key2 }}`,
+			in:  `config key1 contains {{ .key1 }} and config key2 contains {{ .key2 }}`,
 			out: `config key1 contains value1 and config key2 contains value2`,
 			values: Config{
 				Settings: map[string]string{
@@ -116,7 +116,7 @@ func TestRenderTemplate(t *testing.T) {
 	os.Setenv("TZ", "UTC")
 	for i, tst := range tests {
 		tst.setup()
-		out, err := RenderTemplate(tst.in, tst.values)
+		out, err := RenderTemplate(tst.in, tst.values.Settings)
 		if err != nil && !tst.err {
 			t.Errorf("failed test %d - unexpected err: %s", i, err)
 		}

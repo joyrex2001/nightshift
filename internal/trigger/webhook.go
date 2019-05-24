@@ -99,6 +99,10 @@ func (s *WebhookTrigger) newRequest() (*http.Request, error) {
 
 func (s *WebhookTrigger) getUrl() (string, error) {
 	url := strings.TrimSpace(s.config.Settings["url"])
+	url, err := RenderTemplate(url, s.config.Settings)
+	if err != nil {
+		return "", err
+	}
 	if url == "" {
 		return "", fmt.Errorf("no url specified")
 	}

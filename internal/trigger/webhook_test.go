@@ -81,6 +81,74 @@ func TestTimeout(t *testing.T) {
 	}
 }
 
+func TestGetUrl(t *testing.T) {
+	tests := []struct {
+		cfg Config
+		url string
+		err bool
+	}{
+		{
+			cfg: Config{},
+			url: "",
+			err: true,
+		},
+		{
+			cfg: Config{
+				Settings: map[string]string{
+					"url": "http://localhost:8080",
+				},
+			},
+			url: "http://localhost:8080",
+			err: false,
+		},
+		{
+			cfg: Config{
+				Settings: map[string]string{
+					"url":  "http://localhost:8080/{{ .key1 }}",
+					"key1": "value1",
+				},
+			},
+			url: "http://localhost:8080/value1",
+			err: false,
+		},
+		{
+			cfg: Config{
+				Settings: map[string]string{
+					"url":  "http://localhost:8080/ {{- .key2 }}",
+					"key1": "value1",
+					"key2": "value2",
+				},
+			},
+			url: "http://localhost:8080/value2",
+			err: false,
+		},
+		{
+			cfg: Config{
+				Settings: map[string]string{
+					"url": "http://localhost:8080/{{ not so good }}",
+				},
+			},
+			url: "",
+			err: true,
+		},
+	}
+
+	wht := &WebhookTrigger{}
+	for i, tst := range tests {
+		wht.SetConfig(tst.cfg)
+		url, err := wht.getUrl()
+		if err != nil && !tst.err {
+			t.Errorf("failed test %d - unexpected err when newRequest: %s", i, err)
+		}
+		if err == nil && tst.err {
+			t.Errorf("failed test %d - expected err when newRequest, but got none", i)
+		}
+		if err == nil && tst.url != url {
+			t.Errorf("failed test %d - expected %s, but got %s", i, tst.url, url)
+		}
+	}
+}
+
 func TestRequest(t *testing.T) {
 	tests := []struct {
 		cfg    Config
@@ -209,6 +277,15 @@ func TestRequest(t *testing.T) {
 				Settings: map[string]string{
 					"url":     "http://localhost:8080",
 					"headers": "Content-type: {{ malformed template }}",
+				},
+			},
+			method: "GET",
+			err:    true,
+		},
+		{
+			cfg: Config{
+				Settings: map[string]string{
+					"url": "http://localhost:8080/{{ malformed template }}",
 				},
 			},
 			method: "GET",
