@@ -5,7 +5,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/trigger"
 )
 
-// mockScanner is a generic mock for triggers
+// mockScanner is a generic mock for scanners
 type mockScanner struct {
 	id    int
 	scale int
