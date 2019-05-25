@@ -113,7 +113,8 @@ func (s *WebhookTrigger) getUrl() (string, error) {
 // that body.
 func (s *WebhookTrigger) getBody() (io.ReadWriter, error) {
 	buf := new(bytes.Buffer)
-	body, err := RenderTemplate(s.config.Settings["body"], s.config.Settings)
+	bodyTemplateVars := mixinObjects(s.config.Settings, s.config.Objects)
+	body, err := RenderTemplate(s.config.Settings["body"], bodyTemplateVars)
 	if err != nil {
 		return buf, err
 	}
@@ -165,7 +166,8 @@ func (s *WebhookTrigger) getHeaders() (map[string]string, error) {
 		if flds[0] == "" || flds[1] == "" {
 			continue
 		}
-		val, err := RenderTemplate(flds[1], s.config.Settings)
+		headerTemplateVars := mixinObjects(s.config.Settings, s.config.Objects)
+		val, err := RenderTemplate(flds[1], headerTemplateVars)
 		if err != nil {
 			return headers, err
 		}

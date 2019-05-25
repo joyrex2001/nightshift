@@ -3,6 +3,8 @@ package trigger
 import (
 	"os"
 	"testing"
+
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 func TestRenderTemplate(t *testing.T) {
@@ -36,6 +38,24 @@ func TestRenderTemplate(t *testing.T) {
 				Settings: map[string]string{
 					"key1": "value1",
 					"key2": "value2",
+				},
+			},
+			setup: func() {},
+			err:   false,
+		},
+		{
+			in:  `config key1 contains {{ .key1 }} and matched namespace contains {{ .objects.foo.Namespace }} with type {{ .objects.foo.Type }}`,
+			out: `config key1 contains value1 and matched namespace contains default with type deploymentconfig`,
+			values: Config{
+				Settings: map[string]string{
+					"key1": "value1",
+				},
+				Objects: map[string]*scanner.Object{
+					"foo": &scanner.Object{
+						Namespace: "default",
+						Name:      "app",
+						Type:      "deploymentconfig",
+					},
 				},
 			},
 			setup: func() {},
@@ -116,7 +136,8 @@ func TestRenderTemplate(t *testing.T) {
 	os.Setenv("TZ", "UTC")
 	for i, tst := range tests {
 		tst.setup()
-		out, err := RenderTemplate(tst.in, tst.values.Settings)
+		tstTempVars := mixinObjects(tst.values.Settings, tst.values.Objects)
+		out, err := RenderTemplate(tst.in, tstTempVars)
 		if err != nil && !tst.err {
 			t.Errorf("failed test %d - unexpected err: %s", i, err)
 		}

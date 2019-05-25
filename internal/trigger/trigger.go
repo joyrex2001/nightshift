@@ -3,6 +3,8 @@ package trigger
 import (
 	"fmt"
 	"strings"
+
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 // Trigger defines the public interface of trigger modules.
@@ -15,9 +17,10 @@ type Trigger interface {
 // Config is the configuration for this trigger, and contains a hashmap with
 // generic settings. The key for each value should be lowercased always.
 type Config struct {
-	Id       string            `json:"id"`
-	Type     string            `json:"type"`
-	Settings map[string]string `json:"settings"`
+	Id       string                     `json:"id"`
+	Type     string                     `json:"type"`
+	Settings map[string]string          `json:"settings"`
+	Objects  map[string]*scanner.Object `json:"agentObjects"`
 }
 
 // Factory is the factory method for a trigger implementation module.

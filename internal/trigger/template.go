@@ -10,7 +10,23 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
+
+func mixinObjects(settings map[string]string, objects map[string]*scanner.Object) map[string]interface{} {
+	templateValues := make(map[string]interface{}, len(settings)+1)
+	for key, element := range settings {
+		templateValues[key] = element
+	}
+	if len(objects) > 0 {
+		templateValues["objects"] = make(map[string]scanner.Object, len(objects))
+		objs, _ := templateValues["objects"].(map[string]scanner.Object)
+		for key, element := range objects {
+			objs[key] = *element
+		}
+	}
+	return templateValues
+}
 
 // RenderTemplate will render provided template. It will return an error if the
 // rendering of the template fails.
