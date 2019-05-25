@@ -61,14 +61,20 @@ func loadConfig() *config.Config {
 // are added in the order of priority, lowest priority is added first.
 func addScanners(agent agent.Agent, cfg *config.Config) {
 	// go through configured scanners
+	defaultID := ""
 	prio := 0
 	for _, scan := range cfg.Scanner {
 		glog.V(5).Infof("Adding scanner: %v", scan)
 		def, _ := scan.Default.GetSchedule()
+		if scan.Default != nil {
+			defaultID = scan.Default.Id
+		} else {
+			defaultID = ""
+		}
 		// add namespace scanner
 		for _, ns := range scan.Namespace {
 			addScanner(agent, scanner.Config{
-				Id:        scan.Default.Id,
+				Id:        defaultID,
 				Type:      scan.Type,
 				Namespace: ns,
 				Schedule:  def,

@@ -183,12 +183,23 @@ func TestAddAgents(t *testing.T) {
 					},
 					{
 						Namespace: []string{"batch"},
+						Deployment: []*config.Deployment{
+							{
+								Id:       "",
+								Selector: []string{"app=shell", "app=nightshift"},
+								Schedule: nil,
+							},
+						},
+						Type: "mockscanner",
+					},
+					{
+						Namespace: []string{"batch"},
 						Default:   &config.Default{},
 						Type:      "errorscanner",
 					},
 				},
 			},
-			out: []scinfo{{"mockscanner", 0}, {"mockscanner", 1}, {"mockscanner", 2}, {"mockscanner", 3}, {"mockscanner", 4}},
+			out: []scinfo{{"mockscanner", 0}, {"mockscanner", 1}, {"mockscanner", 2}, {"mockscanner", 3}, {"mockscanner", 4}, {"mockscanner", 5}, {"mockscanner", 6}, {"mockscanner", 7}},
 		},
 	}
 
