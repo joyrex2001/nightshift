@@ -27,7 +27,7 @@ type Trigger struct {
 
 // Default is reflection of the yaml configuration file's section "default".
 type Default struct {
-	Id       string
+	Id       string   `yaml:"id"`
 	Schedule []string `yaml:"schedule"`
 	schedule []*schedule.Schedule
 	parsed   bool
@@ -36,7 +36,7 @@ type Default struct {
 // Deployment is reflection of the yaml configuration file's section
 // "deployment".
 type Deployment struct {
-	Id       string
+	Id       string   `yaml:"id"`
 	Selector []string `yaml:"selector"`
 	Schedule []string `yaml:"schedule"`
 	schedule []*schedule.Schedule

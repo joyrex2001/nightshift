@@ -77,6 +77,16 @@ func (c *Config) processSchedule() error {
 	return nil
 }
 
+// GetId will return the id that has been configured on the default schedule.
+// If no id is configured, or if default does not exist, it will return an
+// empty string.
+func (d *Default) GetId() string {
+	if d != nil {
+		return d.Id
+	}
+	return ""
+}
+
 // GetSchedule will parse the schedule strings and return an array of schedule
 // objects, or an error if the schedule strings are invalid.
 func (d *Default) GetSchedule() ([]*schedule.Schedule, error) {

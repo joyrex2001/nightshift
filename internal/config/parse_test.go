@@ -215,11 +215,73 @@ func TestProcessDefaults(t *testing.T) {
 				},
 			},
 		},
+		{
+			in: &Config{
+				Scanner: []*Scanner{
+					{
+						Namespace: []string{"batch"},
+						Deployment: []*Deployment{
+							{
+								Selector: []string{"app=shell", "app=nightshift"},
+								Schedule: nil,
+							},
+						},
+					},
+				},
+			},
+			out: &Config{
+				Scanner: []*Scanner{
+					{
+						Namespace: []string{"batch"},
+						Default:   nil,
+						Deployment: []*Deployment{
+							{
+								Selector: []string{"app=shell", "app=nightshift"},
+								Schedule: nil,
+							},
+						},
+						Type: "openshift",
+					},
+				},
+			},
+		},
 	}
 	for i, tst := range tests {
 		tst.in.processDefaults()
 		if !reflect.DeepEqual(tst.out, tst.in) {
 			t.Errorf("failed test %d - expected: %# v, got %# v", i, pretty.Formatter(tst.out), pretty.Formatter(tst.in))
 		}
+	}
+}
+
+func TestDefaultGetId(t *testing.T) {
+	tests := []struct {
+		d  *Default
+		id string
+	}{
+		{nil, ""},
+		{&Default{Id: "abc"}, "abc"},
+	}
+	for i, tst := range tests {
+		id := tst.d.GetId()
+		if id != tst.id {
+			t.Errorf("failed test %d - expected %s, but got %s", i, tst.id, id)
+		}
+	}
+}
+
+func TestLazyGetSchedule(t *testing.T) {
+	def := &Default{Schedule: []string{"Mon-Fri 9:00 replicas=0"}}
+	s1, _ := def.GetSchedule()
+	s2, _ := def.GetSchedule()
+	if !reflect.DeepEqual(s1, s2) {
+		t.Errorf("failed lazy processing of schedule; sequential calls produced different lists")
+	}
+
+	dep := &Deployment{Schedule: []string{"Mon-Fri 9:00 replicas=0"}}
+	s3, _ := dep.GetSchedule()
+	s4, _ := dep.GetSchedule()
+	if !reflect.DeepEqual(s3, s4) {
+		t.Errorf("failed lazy processing of schedule; sequential calls produced different lists")
 	}
 }
