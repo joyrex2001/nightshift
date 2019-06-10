@@ -261,14 +261,14 @@ func TestWatcher(t *testing.T) {
 		t.Errorf("failed test watcher - unexpected error: %s", err)
 	}
 	if conns != 2 {
-		t.Errorf("failed test watcher - expected: 2 connection attemps, got %d", conns)
+		t.Errorf("failed test watcher - expected: 2 connection attempts, got %d", conns)
 	}
 
 	// test error evt
 	w.Action(watch.Error, nil)
 	time.Sleep(time.Second)
 	if conns != 3 {
-		t.Errorf("failed test watcher - expected: 3 connection attemps, got %d", conns)
+		t.Errorf("failed test watcher - expected: 3 connection attempts, got %d", conns)
 	}
 
 	// done testing
