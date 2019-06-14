@@ -29,7 +29,7 @@ type worker struct {
 	done      chan bool
 	scanners  []scanner.Scanner
 	triggers  map[string]trigger.Trigger
-	trigqueue chan string
+	trigqueue chan triggr
 	watchers  []watch
 	objects   map[string]*objectspq
 	now       time.Time
@@ -50,7 +50,7 @@ func New() Agent {
 			past:      time.Now().Add(-60 * time.Minute),
 			scanners:  []scanner.Scanner{},
 			triggers:  map[string]trigger.Trigger{},
-			trigqueue: make(chan string, 500),
+			trigqueue: make(chan triggr, 500),
 		}
 	})
 	return instance

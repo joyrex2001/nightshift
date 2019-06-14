@@ -2,6 +2,8 @@ package trigger
 
 import (
 	"testing"
+
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 type mock struct {
@@ -20,7 +22,7 @@ func (m *mock) GetConfig() Config {
 	return m.cfg
 }
 
-func (m *mock) Execute() error {
+func (m *mock) Execute([]*scanner.Object) error {
 	return nil
 }
 

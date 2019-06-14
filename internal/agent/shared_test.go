@@ -50,21 +50,24 @@ func getScannerFactory(typ string, m *mockScanner) scanner.Factory {
 
 // mockTrigger is a generic mock for triggers
 type mockTrigger struct {
-	id  string
-	exc int
-	cfg trigger.Config
+	id   string
+	exc  int
+	objs []*scanner.Object
+	cfg  trigger.Config
 }
 
 func (m *mockTrigger) SetConfig(c trigger.Config) {
 	m.cfg = c
+	m.objs = []*scanner.Object{}
 }
 
 func (m *mockTrigger) GetConfig() trigger.Config {
 	return m.cfg
 }
 
-func (m *mockTrigger) Execute() error {
+func (m *mockTrigger) Execute(objs []*scanner.Object) error {
 	m.exc++
+	m.objs = append(m.objs, objs...)
 	return nil
 }
 

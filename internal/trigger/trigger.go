@@ -3,13 +3,15 @@ package trigger
 import (
 	"fmt"
 	"strings"
+
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 // Trigger defines the public interface of trigger modules.
 type Trigger interface {
 	SetConfig(Config)
 	GetConfig() Config
-	Execute() error
+	Execute([]*scanner.Object) error
 }
 
 // Config is the configuration for this trigger, and contains a hashmap with

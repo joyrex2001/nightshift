@@ -61,9 +61,9 @@ type mockTrigger struct {
 	cfg trigger.Config
 }
 
-func (m *mockTrigger) SetConfig(c trigger.Config) { m.cfg = c }
-func (m *mockTrigger) GetConfig() trigger.Config  { return m.cfg }
-func (m *mockTrigger) Execute() error             { return nil }
+func (m *mockTrigger) SetConfig(c trigger.Config)      { m.cfg = c }
+func (m *mockTrigger) GetConfig() trigger.Config       { return m.cfg }
+func (m *mockTrigger) Execute([]*scanner.Object) error { return nil }
 
 func getTriggerFactory(typ string, m *mockTrigger) trigger.Factory {
 	return func() (trigger.Trigger, error) {

@@ -40,13 +40,13 @@ func (a *worker) StopScale() {
 
 // Scale will process all scanned objects and scale them accordingly.
 func (a *worker) scaleObjects() {
-	trgrs := []string{}
+	trgrs := []*triggr{}
 	glog.V(4).Info("Scaling resources start...")
 	a.now = time.Now()
 	for _, obj := range a.GetObjects() {
 		for _, e := range a.getEvents(obj) {
 			glog.V(4).Infof("Scale event: %v", e)
-			trgrs = append(trgrs, e.sched.GetTriggers()...)
+			trgrs = a.appendTrigger(trgrs, obj, e.sched.GetTriggers())
 			a.handleState(e)
 			a.scale(e)
 		}

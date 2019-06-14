@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 // WebhookTrigger is the object that implements http based triggers.
@@ -37,7 +39,7 @@ func (s *WebhookTrigger) GetConfig() Config {
 }
 
 // Execute will trigger the webhook.
-func (s *WebhookTrigger) Execute() error {
+func (s *WebhookTrigger) Execute(objs []*scanner.Object) error {
 	cli, err := s.newClient()
 	if err != nil {
 		return err
