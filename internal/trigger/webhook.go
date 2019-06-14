@@ -40,11 +40,12 @@ func (s *WebhookTrigger) GetConfig() Config {
 
 // Execute will trigger the webhook.
 func (s *WebhookTrigger) Execute(objs []*scanner.Object) error {
+	vars := getTemplateVars(s.config.Settings, objs)
 	cli, err := s.newClient()
 	if err != nil {
 		return err
 	}
-	req, err := s.newRequest()
+	req, err := s.newRequest(vars)
 	if err != nil {
 		return err
 	}
@@ -75,13 +76,13 @@ func (s *WebhookTrigger) newClient() (*http.Client, error) {
 
 // newRequest will create a http.Request for the configured url, body and
 // method.
-func (s *WebhookTrigger) newRequest() (*http.Request, error) {
+func (s *WebhookTrigger) newRequest(vars map[string]interface{}) (*http.Request, error) {
 	method := s.getMethod()
-	url, err := s.getUrl()
+	url, err := s.getUrl(vars)
 	if err != nil {
 		return nil, err
 	}
-	body, err := s.getBody()
+	body, err := s.getBody(vars)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +90,7 @@ func (s *WebhookTrigger) newRequest() (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	headers, err := s.getHeaders()
+	headers, err := s.getHeaders(vars)
 	if err != nil {
 		return nil, err
 	}
@@ -99,9 +100,9 @@ func (s *WebhookTrigger) newRequest() (*http.Request, error) {
 	return req, nil
 }
 
-func (s *WebhookTrigger) getUrl() (string, error) {
+func (s *WebhookTrigger) getUrl(vars map[string]interface{}) (string, error) {
 	url := strings.TrimSpace(s.config.Settings["url"])
-	url, err := RenderTemplate(url, s.config.Settings)
+	url, err := RenderTemplate(url, vars)
 	if err != nil {
 		return "", err
 	}
@@ -113,9 +114,9 @@ func (s *WebhookTrigger) getUrl() (string, error) {
 
 // getBody will process the configured body, and return an io.ReadWriter for
 // that body.
-func (s *WebhookTrigger) getBody() (io.ReadWriter, error) {
+func (s *WebhookTrigger) getBody(vars map[string]interface{}) (io.ReadWriter, error) {
 	buf := new(bytes.Buffer)
-	body, err := RenderTemplate(s.config.Settings["body"], s.config.Settings)
+	body, err := RenderTemplate(s.config.Settings["body"], vars)
 	if err != nil {
 		return buf, err
 	}
@@ -151,7 +152,7 @@ func (s *WebhookTrigger) getMethod() string {
 
 // getHeaders will parse the headers configuration, and return a map containing
 // the headers and its' values.
-func (s *WebhookTrigger) getHeaders() (map[string]string, error) {
+func (s *WebhookTrigger) getHeaders(vars map[string]interface{}) (map[string]string, error) {
 	headers := map[string]string{}
 	chdrs := strings.Split(strings.Replace(s.config.Settings["headers"], "\r\n", "\n", -1), "\n")
 	for _, header := range chdrs {
@@ -167,7 +168,7 @@ func (s *WebhookTrigger) getHeaders() (map[string]string, error) {
 		if flds[0] == "" || flds[1] == "" {
 			continue
 		}
-		val, err := RenderTemplate(flds[1], s.config.Settings)
+		val, err := RenderTemplate(flds[1], vars)
 		if err != nil {
 			return headers, err
 		}

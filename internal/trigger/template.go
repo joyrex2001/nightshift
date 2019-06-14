@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 // RenderTemplate will render provided template. It will return an error if the
@@ -77,4 +79,18 @@ func templateTime(template, epoch string) string {
 	}
 	t := time.Unix(ep, 0)
 	return t.Format(template)
+}
+
+// getTemplateVars will combine the settings map with the scanner objects list.
+// The settings will be added as "settings" and the objects will be added as
+// 'objects' where it will add the scanner objects, indexed by their name.
+func getTemplateVars(settings map[string]string, objs []*scanner.Object) map[string]interface{} {
+	vars := map[string]interface{}{}
+	vo := map[string]scanner.Object{}
+	for _, obj := range objs {
+		vo[obj.Name] = *obj
+	}
+	vars["objects"] = vo
+	vars["settings"] = settings
+	return vars
 }

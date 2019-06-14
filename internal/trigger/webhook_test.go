@@ -104,7 +104,7 @@ func TestGetUrl(t *testing.T) {
 		{
 			cfg: Config{
 				Settings: map[string]string{
-					"url":  "http://localhost:8080/{{ .key1 }}",
+					"url":  "http://localhost:8080/{{ .settings.key1 }}",
 					"key1": "value1",
 				},
 			},
@@ -114,7 +114,7 @@ func TestGetUrl(t *testing.T) {
 		{
 			cfg: Config{
 				Settings: map[string]string{
-					"url":  "http://localhost:8080/ {{- .key2 }}",
+					"url":  "http://localhost:8080/ {{- .settings.key2 }}",
 					"key1": "value1",
 					"key2": "value2",
 				},
@@ -136,7 +136,8 @@ func TestGetUrl(t *testing.T) {
 	wht := &WebhookTrigger{}
 	for i, tst := range tests {
 		wht.SetConfig(tst.cfg)
-		url, err := wht.getUrl()
+		vars := getTemplateVars(tst.cfg.Settings, nil)
+		url, err := wht.getUrl(vars)
 		if err != nil && !tst.err {
 			t.Errorf("failed test %d - unexpected err when newRequest: %s", i, err)
 		}
@@ -296,7 +297,8 @@ func TestRequest(t *testing.T) {
 	wht := &WebhookTrigger{}
 	for i, tst := range tests {
 		wht.SetConfig(tst.cfg)
-		req, err := wht.newRequest()
+		vars := getTemplateVars(tst.cfg.Settings, nil)
+		req, err := wht.newRequest(vars)
 		if err != nil && !tst.err {
 			t.Errorf("failed test %d - unexpected err when newRequest: %s", i, err)
 		}

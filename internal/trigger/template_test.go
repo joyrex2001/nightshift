@@ -3,6 +3,8 @@ package trigger
 import (
 	"os"
 	"testing"
+
+	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 func TestRenderTemplate(t *testing.T) {
@@ -11,6 +13,7 @@ func TestRenderTemplate(t *testing.T) {
 		out    string
 		setup  func()
 		values Config
+		objs   []*scanner.Object
 		err    bool
 	}{
 		{
@@ -30,12 +33,35 @@ func TestRenderTemplate(t *testing.T) {
 			err: false,
 		},
 		{
-			in:  `config key1 contains {{ .key1 }} and config key2 contains {{ .key2 }}`,
+			in:  `config key1 contains {{ .settings.key1 }} and config key2 contains {{ .settings.key2 }}`,
 			out: `config key1 contains value1 and config key2 contains value2`,
 			values: Config{
 				Settings: map[string]string{
 					"key1": "value1",
 					"key2": "value2",
+				},
+			},
+			setup: func() {},
+			err:   false,
+		},
+		{
+			in:  `config key1 contains {{ .settings.key1 }} and matched namespace contains {{ .objects.app1.Namespace }} with type {{ .objects.app2.Type }}`,
+			out: `config key1 contains value1 and matched namespace contains default with type statefulset`,
+			values: Config{
+				Settings: map[string]string{
+					"key1": "value1",
+				},
+			},
+			objs: []*scanner.Object{
+				{
+					Namespace: "default",
+					Name:      "app1",
+					Type:      "deploymentconfig",
+				},
+				{
+					Namespace: "development",
+					Name:      "app2",
+					Type:      "statefulset",
 				},
 			},
 			setup: func() {},
@@ -116,7 +142,8 @@ func TestRenderTemplate(t *testing.T) {
 	os.Setenv("TZ", "UTC")
 	for i, tst := range tests {
 		tst.setup()
-		out, err := RenderTemplate(tst.in, tst.values.Settings)
+		vars := getTemplateVars(tst.values.Settings, tst.objs)
+		out, err := RenderTemplate(tst.in, vars)
 		if err != nil && !tst.err {
 			t.Errorf("failed test %d - unexpected err: %s", i, err)
 		}
@@ -124,7 +151,7 @@ func TestRenderTemplate(t *testing.T) {
 			t.Errorf("failed test %d - expected err, but got none", i)
 		}
 		if err == nil && tst.out != out {
-			t.Errorf("failed test %d - expected %s, but got %s", i, tst.out, out)
+			t.Errorf("failed test %d - expected %s, but got %s; vars=%#v", i, tst.out, out, vars)
 		}
 	}
 }
