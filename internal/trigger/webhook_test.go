@@ -286,6 +286,16 @@ func TestRequest(t *testing.T) {
 		{
 			cfg: Config{
 				Settings: map[string]string{
+					"url":  "http://localhost:8080",
+					"body": "This is a {{ malformed template }}",
+				},
+			},
+			method: "GET",
+			err:    true,
+		},
+		{
+			cfg: Config{
+				Settings: map[string]string{
 					"url": "http://localhost:8080/{{ malformed template }}",
 				},
 			},

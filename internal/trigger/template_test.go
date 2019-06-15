@@ -45,7 +45,7 @@ func TestRenderTemplate(t *testing.T) {
 			err:   false,
 		},
 		{
-			in:  `config key1 contains {{ .settings.key1 }} and matched namespace contains {{ .objects.app1.Namespace }} with type {{ .objects.app2.Type }}`,
+			in:  `config key1 contains {{ .settings.key1 }} and matched namespace contains {{ (index .objects 0).Namespace}} with type {{ (index .objects 1).Type }}`,
 			out: `config key1 contains value1 and matched namespace contains default with type statefulset`,
 			values: Config{
 				Settings: map[string]string{

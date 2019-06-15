@@ -83,14 +83,10 @@ func templateTime(template, epoch string) string {
 
 // getTemplateVars will combine the settings map with the scanner objects list.
 // The settings will be added as "settings" and the objects will be added as
-// 'objects' where it will add the scanner objects, indexed by their name.
+// 'objects' where it will add the scanner objects array.
 func getTemplateVars(settings map[string]string, objs []*scanner.Object) map[string]interface{} {
 	vars := map[string]interface{}{}
-	vo := map[string]scanner.Object{}
-	for _, obj := range objs {
-		vo[obj.Name] = *obj
-	}
-	vars["objects"] = vo
+	vars["objects"] = objs
 	vars["settings"] = settings
 	return vars
 }
