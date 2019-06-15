@@ -7,7 +7,7 @@ generic:
 
 logging:
     threshold: "info"
-    verbose: 3
+    level: 3
 
 trigger:
     - id: silence-dev
