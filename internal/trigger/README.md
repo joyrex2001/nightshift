@@ -1,4 +1,4 @@
-# Trigger§
+# Trigger
 
 Nightshift is able to trigger modules when a scale event occurs. These triggers
 can be used to e.g. disable alerting for the scaled down pods, or e.g. to start
