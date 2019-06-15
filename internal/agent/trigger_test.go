@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -15,7 +16,7 @@ func TestHandleTriggers(t *testing.T) {
 	agent.trigqueue = make(chan triggr, 500)
 
 	mock1 := &mockTrigger{}
-	mock2 := &mockTrigger{}
+	mock2 := &mockTrigger{err: fmt.Errorf("oops")}
 	mock3 := &mockTrigger{}
 	trigger.RegisterModule("trigger1", getTriggerFactory("trigger1", mock1))
 	trigger.RegisterModule("trigger2", getTriggerFactory("trigger2", mock2))
@@ -33,6 +34,7 @@ func TestHandleTriggers(t *testing.T) {
 	agent.queueTriggers(agent.appendTrigger([]*triggr{}, obj2, []string{"trigger2"}))
 	agent.queueTriggers(agent.appendTrigger([]*triggr{}, obj3, []string{"trigger1"}))
 	agent.queueTriggers(agent.appendTrigger([]*triggr{}, obj4, []string{"trigger1"}))
+	agent.queueTriggers(agent.appendTrigger([]*triggr{}, obj4, []string{"trigger4"}))
 
 	stopped := false
 	go func() {

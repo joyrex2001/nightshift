@@ -15,7 +15,12 @@ type triggr struct {
 // triggers sequentially. It will block until the channel is closed.
 func (a *worker) StartTrigger() {
 	for tr := range a.trigqueue {
-		if err := a.triggers[tr.id].Execute(tr.objects); err != nil {
+		trgr, ok := a.triggers[tr.id]
+		if !ok {
+			glog.Errorf("Non existing trigger called: %s", tr.id)
+			continue
+		}
+		if err := trgr.Execute(tr.objects); err != nil {
 			glog.Errorf("Error execute trigger: %s", err)
 		}
 	}
@@ -50,7 +55,9 @@ func (a *worker) appendTrigger(list []*triggr, obj *scanner.Object, ids []string
 // queueTriggers will enqueue the collected triggers as specified in the
 // prodived list of trigger id's. Each trigger will be enqueued just once.
 func (a *worker) queueTriggers(list []*triggr) {
+	glog.V(6).Infof("trigger to be queueed: %#v", list)
 	for _, tr := range list {
+		glog.V(6).Infof("trigger added to queue: %#v", tr)
 		a.trigqueue <- *tr
 	}
 }
