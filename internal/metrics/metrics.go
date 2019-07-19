@@ -43,7 +43,7 @@ var (
 	// custom metric for exporting current number of replicas
 	replicas = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: metricsPrefix + "_replicas",
+			Name: metricsPrefix + "replicas",
 			Help: "Current expected number of nightshift scaled replicas",
 		},
 		[]string{"target", "scanner"},
