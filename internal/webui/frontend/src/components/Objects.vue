@@ -3,12 +3,17 @@
 
     <b-navbar v-show="selected.length" fixed="bottom" type="dark" variant="light">
       <b-nav-form>
-        <b-form-input class="mr-sm-2" type="number" v-model.number="replicas" placeholder="Replicas" />
-        <b-button size="sm" class="my-2 my-sm-0" type="button" v-on:click="showScaleDialog">Scale now</b-button>
-        &nbsp;
+        <b-form-input class="mr-sm-2" type="number" v-model.number="replicas" placeholder="Replicas" />&nbsp;
+        <b-button size="sm" class="my-2 my-sm-0" type="button" v-on:click="showScaleDialog">Scale now</b-button>&nbsp;
         <b-button size="sm" class="my-2 my-sm-0" type="button" v-on:click="showRestoreDialog">Restore state</b-button>
       </b-nav-form>
     </b-navbar>
+
+    <div style="text-align: right">
+      <b-button size="sm" class="my-2 my-sm-2" type="button" v-on:click="showDownscaleAllDialog">All down</b-button>&nbsp;
+      <b-button size="sm" class="my-2 my-sm-2" type="button" v-on:click="showRestoreAllDialog">All restore</b-button>&nbsp;
+      <b-button size="sm" class="my-2 my-sm-2" type="button" v-on:click="showUpscaleAllDialog">All up</b-button>
+    </div>
 
     <b-table class="noselect"
         striped hover bordered small
@@ -27,7 +32,7 @@
       <div class="d-block">{{ this.error }}</div>
     </b-modal>
 
-    <b-modal@ok="reload" ok-only title="Success" id="success">
+    <b-modal @ok="reload" ok-only title="Success" id="success">
       <div class="d-block">
           Resource scaling has been succesfully scheduled.
       </div>
@@ -43,6 +48,27 @@
     <b-modal @ok="restore" title="Restore selected resources" id="restoring">
       <div class="d-block">
           The selection will be restored to the previously known number of replicas.
+          Are you sure?
+      </div>
+    </b-modal>
+
+    <b-modal @ok="upscaleAll" title="Scale all resources" id="upscale_all">
+      <div class="d-block">
+          All listed objects will be scaled to 1 replica.
+          Are you sure?
+      </div>
+    </b-modal>
+
+    <b-modal @ok="downscaleAll" title="Scale all resources" id="downscale_all">
+      <div class="d-block">
+          All listed objects will be scaled down to 0 replicas.
+          Are you sure?
+      </div>
+    </b-modal>
+
+    <b-modal @ok="restoreAll" title="Restore all resources" id="restore_all">
+      <div class="d-block">
+          All listed objects will be restored to the previously known number of replicas.
           Are you sure?
       </div>
     </b-modal>
@@ -129,6 +155,48 @@ export default class Objects extends Vue {
 
   private restore(evt: object) {
       axios.post(`/api/objects/restore`, this.selected)
+          .then( (response) => {
+              this.$root.$emit('bv::show::modal', 'success', '#btnShow');
+          })
+          .catch( (err) => {
+              this.showErrorDialog(err);
+          });
+  }
+
+  private showUpscaleAllDialog() {
+      this.$root.$emit('bv::show::modal', 'upscale_all', '#btnShow');
+  }
+
+  private upscaleAll(evt: object) {
+      axios.post(`/api/objects/scale/1`, this.objects)
+          .then( (response) => {
+              this.$root.$emit('bv::show::modal', 'success', '#btnShow');
+          })
+          .catch( (err) => {
+              this.showErrorDialog(err);
+          });
+  }
+
+  private showDownscaleAllDialog() {
+      this.$root.$emit('bv::show::modal', 'downscale_all', '#btnShow');
+  }
+
+  private downscaleAll(evt: object) {
+      axios.post(`/api/objects/scale/0`, this.objects)
+          .then( (response) => {
+              this.$root.$emit('bv::show::modal', 'success', '#btnShow');
+          })
+          .catch( (err) => {
+              this.showErrorDialog(err);
+          });
+  }
+
+  private showRestoreAllDialog() {
+      this.$root.$emit('bv::show::modal', 'restore_all', '#btnShow');
+  }
+
+  private restoreAll(evt: object) {
+      axios.post(`/api/objects/restore`, this.objects)
           .then( (response) => {
               this.$root.$emit('bv::show::modal', 'success', '#btnShow');
           })
