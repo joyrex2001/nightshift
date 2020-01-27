@@ -9,6 +9,8 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	_ "k8s.io/client-go/plugin/pkg/client/auth/azure"
 )
 
 // DeploymentScanner is the object that implements scanning of kubernetes
