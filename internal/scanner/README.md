@@ -11,6 +11,7 @@ responsible for:
 Currently there are two watcher modules:
 
 * openshift - which scans, scales and watch OpenShift DeploymentConfig resources
+* deployment - which scans, scales and watch Kubernetes Deployment resources
 * statefulset - which scans, scales and watch Kubernetes/OpenShift Statefulset resources
 
 To add a new scanner, implement a factory method that implements the factory
