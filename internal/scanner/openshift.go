@@ -60,12 +60,12 @@ func (s *OpenShiftScanner) Scale(obj *Object, replicas int) error {
 	if err != nil {
 		return err
 	}
-	scale, err := apps.DeploymentConfigs(obj.Namespace).GetScale(obj.Name, metav1.GetOptions{})
+	dc, err := apps.DeploymentConfigs(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("GetScale failed with: %s", err)
 	}
-	scale.Spec.Replicas = int32(replicas)
-	_, err = apps.DeploymentConfigs(obj.Namespace).UpdateScale(obj.Name, scale)
+	dc.Spec.Replicas = int32(replicas)
+	_, err = apps.DeploymentConfigs(obj.Namespace).Update(dc)
 	return err
 }
 
