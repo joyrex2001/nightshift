@@ -62,12 +62,13 @@ func (s *DeploymentScanner) Scale(obj *Object, replicas int) error {
 	if err != nil {
 		return err
 	}
-	scale, err := apps.AppsV1().Deployments(obj.Namespace).GetScale(obj.Name, metav1.GetOptions{})
+	dp, err := apps.AppsV1().Deployments(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("GetScale failed with: %s", err)
 	}
-	scale.Spec.Replicas = int32(replicas)
-	_, err = apps.AppsV1().Deployments(obj.Namespace).UpdateScale(obj.Name, scale)
+	repl := int32(replicas)
+	dp.Spec.Replicas = &repl
+	_, err = apps.AppsV1().Deployments(obj.Namespace).Update(dp)
 	return err
 }
 
