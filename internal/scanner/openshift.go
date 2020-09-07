@@ -54,7 +54,7 @@ func (s *OpenShiftScanner) GetObjects() ([]*Object, error) {
 }
 
 // Scale will scale a given object to given amount of replicas.
-func (s *OpenShiftScanner) Scale(obj *Object, replicas int) error {
+func (s *OpenShiftScanner) Scale(obj *Object, state *int, replicas int) error {
 	glog.Infof("Scaling %s/%s to %d replicas", obj.Namespace, obj.Name, replicas)
 	apps, err := appsv1.NewForConfig(s.kubernetes)
 	if err != nil {
@@ -64,22 +64,21 @@ func (s *OpenShiftScanner) Scale(obj *Object, replicas int) error {
 	if err != nil {
 		return fmt.Errorf("GetScale failed with: %s", err)
 	}
+	if state != nil {
+		dc.ObjectMeta = updateState(dc.ObjectMeta, *state)
+	}
 	dc.Spec.Replicas = int32(replicas)
 	_, err = apps.DeploymentConfigs(obj.Namespace).Update(dc)
 	return err
 }
 
-// SaveState will save the current number of replicas as an annotation on the
-// deployment config.
-func (s *OpenShiftScanner) SaveState(obj *Object) (int, error) {
+// GetState will save the current number of replicas.
+func (s *OpenShiftScanner) GetState(obj *Object) (int, error) {
 	dc, err := s.getDeploymentConfig(obj)
 	if err != nil {
 		return 0, err
 	}
 	repl := int(dc.Spec.Replicas)
-	dc.ObjectMeta = updateState(dc.ObjectMeta, repl)
-	apps, _ := appsv1.NewForConfig(s.kubernetes)
-	_, err = apps.DeploymentConfigs(obj.Namespace).Update(dc)
 	return repl, err
 }
 

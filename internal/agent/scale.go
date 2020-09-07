@@ -17,6 +17,7 @@ type event struct {
 	at      time.Time
 	obj     *scanner.Object
 	sched   *schedule.Schedule
+	state   *int
 	restore bool
 }
 
@@ -69,7 +70,7 @@ func (a *worker) getEvents(obj *scanner.Object) []*event {
 				continue
 			}
 			if a.now.After(next) || a.now == next {
-				ev = append(ev, &event{next, obj, s, false})
+				ev = append(ev, &event{next, obj, s, nil, false})
 			}
 		}
 	}
@@ -87,10 +88,12 @@ func (a *worker) handleState(e *event) {
 	}
 	// Save the current number of pods
 	if state == schedule.SaveState {
-		if err := e.obj.SaveState(); err != nil {
+		pods, err := e.obj.GetState()
+		if err != nil {
 			glog.Errorf("Error saving state: %s", err)
 			return
 		}
+		e.state = pods
 	}
 	// Restore the number of pods previously saved, and update object with the
 	// State that should be applied.
@@ -108,7 +111,7 @@ func (a *worker) scale(e *event) {
 	// restore state
 	if e.restore {
 		repl := e.obj.State.Replicas
-		if err := e.obj.Scale(repl); err != nil {
+		if err := e.obj.Scale(e.state, repl); err != nil {
 			glog.Errorf("Error scaling deployment: %s", err)
 			metrics.Increase("scale_error")
 		}
@@ -119,7 +122,7 @@ func (a *worker) scale(e *event) {
 	// regular scaling
 	repl, err := e.sched.GetReplicas()
 	if err == nil {
-		err = e.obj.Scale(repl)
+		err = e.obj.Scale(e.state, repl)
 		metrics.Increase("scale")
 		metrics.SetReplicas(e.obj.Namespace, e.obj.ScannerId, repl)
 	}

@@ -14,8 +14,8 @@ type Scanner interface {
 	SetConfig(Config)
 	GetConfig() Config
 	GetObjects() ([]*Object, error)
-	SaveState(*Object) (int, error)
-	Scale(*Object, int) error
+	GetState(*Object) (int, error)
+	Scale(*Object, *int, int) error
 	Watch(chan bool) (chan Event, error)
 }
 
@@ -159,27 +159,27 @@ func (obj *Object) getScanner() (Scanner, error) {
 }
 
 // Scale will scale the Object to the given amount of replicas.
-func (obj *Object) Scale(replicas int) error {
+func (obj *Object) Scale(state *int, replicas int) error {
 	scanner, err := obj.getScanner()
 	if err != nil {
 		return err
 	}
-	if err := scanner.Scale(obj, replicas); err != nil {
+	if err := scanner.Scale(obj, state, replicas); err != nil {
 		return err
 	}
 	obj.Replicas = replicas
 	return nil
 }
 
-// SaveState will save the current number of replicas.
-func (obj *Object) SaveState() error {
+// GetState will return the current number of replicas.
+func (obj *Object) GetState() (*int, error) {
 	scanner, err := obj.getScanner()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	repl, err := scanner.SaveState(obj)
+	repl, err := scanner.GetState(obj)
 	if err == nil {
 		obj.State = &State{Replicas: repl}
 	}
-	return err
+	return &repl, err
 }

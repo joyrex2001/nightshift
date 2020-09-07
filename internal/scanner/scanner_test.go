@@ -36,7 +36,7 @@ func (m *mock) SaveState(obj *Object) (int, error) {
 	return 0, nil
 }
 
-func (m *mock) Scale(obj *Object, r int) error {
+func (m *mock) Scale(obj *Object, state *int, r int) error {
 	m.scale = obj
 	m.replicas = r
 	return m.err

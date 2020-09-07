@@ -54,7 +54,7 @@ func (s *StatefulSetScanner) GetObjects() ([]*Object, error) {
 }
 
 // Scale will scale a given object to given amount of replicas.
-func (s *StatefulSetScanner) Scale(obj *Object, replicas int) error {
+func (s *StatefulSetScanner) Scale(obj *Object, state *int, replicas int) error {
 	glog.Infof("Scaling %s/%s to %d replicas", obj.Namespace, obj.Name, replicas)
 	ss, err := s.getStatefulSet(obj)
 	if err != nil {
@@ -62,22 +62,21 @@ func (s *StatefulSetScanner) Scale(obj *Object, replicas int) error {
 	}
 	repl := int32(replicas)
 	ss.Spec.Replicas = &repl
+	if state != nil {
+		ss.ObjectMeta = updateState(ss.ObjectMeta, *state)
+	}
 	apps, _ := appsv1beta.NewForConfig(s.kubernetes)
 	_, err = apps.StatefulSets(obj.Namespace).Update(ss)
 	return err
 }
 
-// SaveState will save the current number of replicas as an annotation on the
-// statefulset config.
-func (s *StatefulSetScanner) SaveState(obj *Object) (int, error) {
+// GetState will save the current number of replicas.
+func (s *StatefulSetScanner) GetState(obj *Object) (int, error) {
 	ss, err := s.getStatefulSet(obj)
 	if err != nil {
 		return 0, err
 	}
 	repl := int(*ss.Spec.Replicas)
-	ss.ObjectMeta = updateState(ss.ObjectMeta, repl)
-	apps, _ := appsv1beta.NewForConfig(s.kubernetes)
-	_, err = apps.StatefulSets(obj.Namespace).Update(ss)
 	return repl, err
 }
 
