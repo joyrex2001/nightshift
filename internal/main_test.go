@@ -79,8 +79,8 @@ type mockScanner struct {
 func (m *mockScanner) SetConfig(c scanner.Config)                        { m.cfg = c }
 func (m *mockScanner) GetConfig() scanner.Config                         { return m.cfg }
 func (m *mockScanner) GetObjects() ([]*scanner.Object, error)            { return []*scanner.Object{}, nil }
-func (m *mockScanner) SaveState(obj *scanner.Object) (int, error)        { return 0, nil }
-func (m *mockScanner) Scale(obj *scanner.Object, r int) error            { return nil }
+func (m *mockScanner) GetState(obj *scanner.Object) (int, error)         { return 0, nil }
+func (m *mockScanner) Scale(obj *scanner.Object, s *int, r int) error    { return nil }
 func (m *mockScanner) Watch(_stop chan bool) (chan scanner.Event, error) { return nil, nil }
 
 func getScannerFactory(typ string, m *mockScanner) scanner.Factory {

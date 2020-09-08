@@ -90,7 +90,7 @@ func (a *worker) handleState(e *event) {
 	if state == schedule.SaveState {
 		pods, err := e.obj.GetState()
 		if err != nil {
-			glog.Errorf("Error saving state: %s", err)
+			glog.Errorf("Error retrieving state: %s", err)
 			return
 		}
 		e.state = pods

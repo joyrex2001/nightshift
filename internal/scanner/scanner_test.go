@@ -31,7 +31,7 @@ func (m *mock) GetObjects() ([]*Object, error) {
 	return nil, nil
 }
 
-func (m *mock) SaveState(obj *Object) (int, error) {
+func (m *mock) GetState(obj *Object) (int, error) {
 	m.state = obj
 	return 0, nil
 }
@@ -125,7 +125,7 @@ func TestScale(t *testing.T) {
 		for i := 0; i < 10; i++ {
 			obj := &Object{Type: "mock"}
 			state.err = nil
-			err := obj.Scale(i)
+			err := obj.Scale(nil, i)
 			if err != nil {
 				t.Errorf("failed test scaling to %d - unexpected err: %s", i, err)
 			}
@@ -133,14 +133,14 @@ func TestScale(t *testing.T) {
 				t.Errorf("failed test - expected %d replicas, got %d", i, state.replicas)
 			}
 			state.err = errors.New("some error")
-			if err := obj.Scale(i); err == nil {
+			if err := obj.Scale(nil, i); err == nil {
 				t.Errorf("failed test scaling to %d - expcted an error, but got none", i)
 			}
 		}
 	}
 }
 
-func TestSaveState(t *testing.T) {
+func TestSavetState(t *testing.T) {
 	state := &mock{}
 	RegisterModule("mock", getFactory("mock", state))
 	_, err := New("mock")
@@ -149,7 +149,7 @@ func TestSaveState(t *testing.T) {
 	} else {
 		for i := 0; i < 10; i++ {
 			obj := &Object{Type: "mock", Replicas: i}
-			err := obj.SaveState()
+			_, err := obj.GetState()
 			if err != nil {
 				t.Errorf("failed test %d - save state unexpected err: %s", i, err)
 			}
