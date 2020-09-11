@@ -56,7 +56,7 @@ func (s *DeploymentScanner) GetObjects() ([]*Object, error) {
 }
 
 // Scale will scale a given object to given amount of replicas.
-func (s *DeploymentScanner) Scale(obj *Object, replicas int) error {
+func (s *DeploymentScanner) Scale(obj *Object, state *int, replicas int) error {
 	glog.Infof("Scaling %s/%s to %d replicas", obj.Namespace, obj.Name, replicas)
 	apps, err := kubernetes.NewForConfig(s.kubernetes)
 	if err != nil {
@@ -68,21 +68,20 @@ func (s *DeploymentScanner) Scale(obj *Object, replicas int) error {
 	}
 	repl := int32(replicas)
 	dp.Spec.Replicas = &repl
+	if state != nil {
+		dp.ObjectMeta = updateState(dp.ObjectMeta, *state)
+	}
 	_, err = apps.AppsV1().Deployments(obj.Namespace).Update(dp)
 	return err
 }
 
-// SaveState will save the current number of replicas as an annotation on the
-// deployment config.
-func (s *DeploymentScanner) SaveState(obj *Object) (int, error) {
+// GetState will return the current number of replicas.
+func (s *DeploymentScanner) GetState(obj *Object) (int, error) {
 	dc, err := s.getDeployment(obj)
 	if err != nil {
 		return 0, err
 	}
 	repl := int(*dc.Spec.Replicas)
-	dc.ObjectMeta = updateState(dc.ObjectMeta, repl)
-	apps, _ := kubernetes.NewForConfig(s.kubernetes)
-	_, err = apps.AppsV1().Deployments(obj.Namespace).Update(dc)
 	return repl, err
 }
 

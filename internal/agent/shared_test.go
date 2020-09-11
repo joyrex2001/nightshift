@@ -26,12 +26,12 @@ func (m *mockScanner) GetObjects() ([]*scanner.Object, error) {
 	return m.objs, nil
 }
 
-func (m *mockScanner) SaveState(obj *scanner.Object) (int, error) {
+func (m *mockScanner) GetState(obj *scanner.Object) (int, error) {
 	m.save = true
 	return 0, nil
 }
 
-func (m *mockScanner) Scale(obj *scanner.Object, r int) error {
+func (m *mockScanner) Scale(obj *scanner.Object, state *int, r int) error {
 	m.scale = r
 	return nil
 }

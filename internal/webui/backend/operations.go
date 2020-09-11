@@ -123,7 +123,7 @@ func scaleObjects(objects []*scanner.Object, replicas int) error {
 	errs := []string{}
 	metrics.Increase("manual_scale")
 	for _, obj := range objects {
-		if _err := obj.Scale(replicas); _err != nil {
+		if _err := obj.Scale(nil, replicas); _err != nil {
 			errs = append(errs, _err.Error())
 		}
 	}
@@ -145,7 +145,7 @@ func restoreObjects(objects []*scanner.Object) error {
 			continue
 		}
 		if obj.State != nil {
-			if _err := obj.Scale(obj.State.Replicas); _err != nil {
+			if _err := obj.Scale(nil, obj.State.Replicas); _err != nil {
 				errs = append(errs, _err.Error())
 			}
 		}
