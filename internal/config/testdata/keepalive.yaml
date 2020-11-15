@@ -1,0 +1,7 @@
+keepalive:
+    - id: checklogs
+      config:
+        url: http://localhost:8080/checklogs
+        timeout: 1s
+
+    - id: dummy
