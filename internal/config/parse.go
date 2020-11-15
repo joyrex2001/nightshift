@@ -25,6 +25,7 @@ func New(file string) (*Config, error) {
 	}
 	m.processDefaults()
 	m.processTriggers()
+	m.processKeepAlive()
 	return m, nil
 }
 
@@ -47,7 +48,7 @@ func (c *Config) processDefaults() {
 	}
 }
 
-// processDefaults will set default values for the configuration.
+// processTriggers will parse the trigger configuration.
 func (c *Config) processTriggers() {
 	for _, trgr := range c.Trigger {
 		trgr.Id = strings.ToLower(trgr.Id)
@@ -57,6 +58,18 @@ func (c *Config) processTriggers() {
 			cfg[strings.ToLower(k)] = v
 		}
 		trgr.Config = cfg
+	}
+}
+
+// processKeepAlive will parse the keepalive configuration.
+func (c *Config) processKeepAlive() {
+	for _, ka := range c.KeepAlive {
+		ka.Id = strings.ToLower(ka.Id)
+		cfg := map[string]string{}
+		for k, v := range ka.Config {
+			cfg[strings.ToLower(k)] = v
+		}
+		ka.Config = cfg
 	}
 }
 

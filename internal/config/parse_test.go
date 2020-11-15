@@ -125,6 +125,48 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestParseKeepAlive(t *testing.T) {
+	tests := []struct {
+		file   string
+		result *Config
+		err    bool
+	}{
+		{
+			file: "testdata/keepalive.yaml",
+			result: &Config{
+				KeepAlive: []*KeepAlive{
+					{
+						Id:     "checklogs",
+						Config: map[string]string{"url": "http://localhost:8080/checklogs", "timeout": "1s"},
+					},
+					{
+						Id:     "dummy",
+						Config: map[string]string{},
+					},
+				},
+			},
+			err: false,
+		},
+	}
+	for i, tst := range tests {
+		y, err := ioutil.ReadFile(tst.file)
+		if err != nil {
+			t.Errorf("failed test %d - test configfile %s does not exist", i, err)
+		}
+		res, err := loadConfig(y)
+		if err != nil && !tst.err {
+			t.Errorf("failed test %d - unexpected err: %s", i, err)
+		}
+		res.processKeepAlive()
+		if err == nil && tst.err {
+			t.Errorf("failed test %d - expected err, but got none", i)
+		}
+		if !tst.err && !reflect.DeepEqual(res, tst.result) {
+			t.Errorf("failed test %d - expected: %# v, got %# v", i, pretty.Formatter(tst.result), pretty.Formatter(res))
+		}
+	}
+}
+
 func TestParseTrigger(t *testing.T) {
 	tests := []struct {
 		file   string

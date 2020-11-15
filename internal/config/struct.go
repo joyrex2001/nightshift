@@ -6,11 +6,12 @@ import (
 
 // Config is reflection of the yaml root configuration entrypoint.
 type Config struct {
-	Trigger []*Trigger `yaml:"trigger"`
-	Scanner []*Scanner `yaml:"scanner"`
+	Trigger   []*Trigger   `yaml:"trigger"`
+	Scanner   []*Scanner   `yaml:"scanner"`
+	KeepAlive []*KeepAlive `yaml:"keepalive"`
 }
 
-// Scanner is reflection of the yaml configuration file's section "scanner".
+// Scanner is a reflection of the yaml configuration file's section "scanner".
 type Scanner struct {
 	Namespace  []string      `yaml:"namespace"`
 	Default    *Default      `yaml:"default"`
@@ -18,14 +19,20 @@ type Scanner struct {
 	Type       string        `yaml:"type"`
 }
 
-// Trigger is reflection of the yaml configuration file's section "trigger".
+// Trigger is a reflection of the yaml configuration file's section "trigger".
 type Trigger struct {
 	Id     string            `yaml:"id"`
 	Type   string            `yaml:"type"`
 	Config map[string]string `yaml:"config"`
 }
 
-// Default is reflection of the yaml configuration file's section "default".
+// KeepAlive is reflection of the yaml configuration file's section "keepalive".
+type KeepAlive struct {
+	Id     string            `yaml:"id"`
+	Config map[string]string `yaml:"config"`
+}
+
+// Default is a reflection of the yaml configuration file's section "default".
 type Default struct {
 	Id       string   `yaml:"id"`
 	Schedule []string `yaml:"schedule"`
@@ -33,7 +40,7 @@ type Default struct {
 	parsed   bool
 }
 
-// Deployment is reflection of the yaml configuration file's section
+// Deployment is a reflection of the yaml configuration file's section
 // "deployment".
 type Deployment struct {
 	Id       string   `yaml:"id"`
