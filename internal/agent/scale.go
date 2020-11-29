@@ -44,22 +44,38 @@ func (a *worker) scaleObjects() {
 	trgrs := []*triggr{}
 	glog.V(4).Info("Scaling resources start...")
 	a.now = time.Now()
-	for _, obj := range a.GetObjects() {
-		for _, e := range a.getEvents(obj) {
-			glog.V(4).Infof("Scale event: %v", e)
-			trgrs = a.appendTrigger(trgrs, obj, e.sched.GetTriggers())
-			a.handleState(e)
-			a.scale(e)
+
+	for _, e := range a.getEvents() {
+		delay := a.shouldDelayScale(e.sched.GetKeepAlives())
+		if delay {
+			glog.V(4).Infof("Delay event: %v", e)
+			a.delayScale(e)
+			continue
 		}
+		glog.V(4).Infof("Scale event: %v", e)
+		trgrs = a.appendTrigger(trgrs, e.obj, e.sched.GetTriggers())
+		a.handleState(e)
+		a.scale(e)
 	}
+
 	a.queueTriggers(trgrs)
 	a.past = a.now
 	glog.V(4).Info("Scaling resources finished...")
 }
 
-// getEvents will return the events in chronological order that have to be
-// done for the given object in the current tick.
-func (a *worker) getEvents(obj *scanner.Object) []*event {
+// getEvents will return all events for all objects. This list also
+// includes previously postponed events.
+func (a *worker) getEvents() []*event {
+	ev := []*event{}
+	for _, obj := range a.GetObjects() {
+		ev = append(ev, a.getEventsForObject(obj)...)
+	}
+	return append(ev, a.getDelayedEvents()...)
+}
+
+// getEventsForObject will return the events in chronological order that
+// have to be done for the given object in the current tick.
+func (a *worker) getEventsForObject(obj *scanner.Object) []*event {
 	var err error
 	ev := []*event{}
 	for _, s := range obj.Schedule {

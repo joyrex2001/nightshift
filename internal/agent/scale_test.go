@@ -9,7 +9,7 @@ import (
 	"github.com/joyrex2001/nightshift/internal/schedule"
 )
 
-func TestGetEvents(t *testing.T) {
+func TestGetEventsForObject(t *testing.T) {
 	tests := []struct {
 		past   time.Time
 		now    time.Time
@@ -81,7 +81,7 @@ func TestGetEvents(t *testing.T) {
 				obj.Schedule = append(obj.Schedule, sc)
 			}
 		}
-		evts := agt.getEvents(obj)
+		evts := agt.getEventsForObject(obj)
 		for j, evt := range evts {
 			fmt.Printf("[%02d] %s\n", j, evt.at)
 		}

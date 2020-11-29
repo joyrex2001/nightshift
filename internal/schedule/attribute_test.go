@@ -189,3 +189,71 @@ func TestGetTriggers(t *testing.T) {
 		}
 	}
 }
+
+func TestGetKeepAlives(t *testing.T) {
+	tests := []struct {
+		keepalives []string
+		sched      *Schedule
+	}{
+		{
+			keepalives: []string{},
+			sched: &Schedule{
+				settings: map[string]string{},
+			},
+		},
+		{
+			keepalives: []string{},
+			sched: &Schedule{
+				settings: map[string]string{
+					"keepalive": "",
+				},
+			},
+		},
+		{
+			keepalives: []string{"refreshdb"},
+			sched: &Schedule{
+				settings: map[string]string{
+					"keepalive": "refreshdb",
+				},
+			},
+		},
+		{
+			keepalives: []string{"refreshdb", "build"},
+			sched: &Schedule{
+				settings: map[string]string{
+					"keepalive": "refReshdb,build",
+				},
+			},
+		},
+		{
+			keepalives: []string{"refreshdb", "build"},
+			sched: &Schedule{
+				settings: map[string]string{
+					"keepalive": "refreshdb,,build",
+				},
+			},
+		},
+		{
+			keepalives: []string{"refreshdb", "build"},
+			sched: &Schedule{
+				settings: map[string]string{
+					"keepalive": "refreshdb,,build,",
+				},
+			},
+		},
+		{
+			keepalives: []string{},
+			sched: &Schedule{
+				settings: map[string]string{
+					"keepalive": ",,",
+				},
+			},
+		},
+	}
+	for i, tst := range tests {
+		r := tst.sched.GetKeepAlives()
+		if !reflect.DeepEqual(r, tst.keepalives) {
+			t.Errorf("failed test %d; expected %#v, got %#v", i, tst.keepalives, r)
+		}
+	}
+}

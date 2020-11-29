@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/glog"
 
+	"github.com/joyrex2001/nightshift/internal/keepalive"
 	"github.com/joyrex2001/nightshift/internal/scanner"
 	"github.com/joyrex2001/nightshift/internal/trigger"
 )
@@ -14,26 +15,30 @@ import (
 type Agent interface {
 	AddScanner(scanner.Scanner)
 	AddTrigger(string, trigger.Trigger)
+	AddKeepAlive(string, keepalive.KeepAlive)
 	SetResyncInterval(time.Duration)
 	GetObjects() map[string]*scanner.Object
 	GetScanners() []scanner.Scanner
 	GetTriggers() map[string]trigger.Trigger
+	GetKeepAlives() map[string]keepalive.KeepAlive
 	UpdateSchedule()
 	Start()
 	Stop()
 }
 
 type worker struct {
-	interval  time.Duration
-	m         sync.Mutex
-	done      chan bool
-	scanners  []scanner.Scanner
-	triggers  map[string]trigger.Trigger
-	trigqueue chan triggr
-	watchers  []watch
-	objects   map[string]*objectspq
-	now       time.Time
-	past      time.Time
+	interval   time.Duration
+	m          sync.Mutex
+	done       chan bool
+	scanners   []scanner.Scanner
+	triggers   map[string]trigger.Trigger
+	keepalives map[string]keepalive.KeepAlive
+	delay      delay
+	trigqueue  chan triggr
+	watchers   []watch
+	objects    map[string]*objectspq
+	now        time.Time
+	past       time.Time
 }
 
 var instance *worker
@@ -43,14 +48,15 @@ var once sync.Once
 func New() Agent {
 	once.Do(func() {
 		instance = &worker{
-			objects:   map[string]*objectspq{},
-			interval:  15 * time.Minute,
-			watchers:  []watch{},
-			done:      make(chan bool),
-			past:      time.Now().Add(-60 * time.Minute),
-			scanners:  []scanner.Scanner{},
-			triggers:  map[string]trigger.Trigger{},
-			trigqueue: make(chan triggr, 500),
+			objects:    map[string]*objectspq{},
+			interval:   15 * time.Minute,
+			watchers:   []watch{},
+			done:       make(chan bool),
+			past:       time.Now().Add(-60 * time.Minute),
+			scanners:   []scanner.Scanner{},
+			triggers:   map[string]trigger.Trigger{},
+			keepalives: map[string]keepalive.KeepAlive{},
+			trigqueue:  make(chan triggr, 500),
 		}
 	})
 	return instance
@@ -92,10 +98,26 @@ func (a *worker) GetTriggers() map[string]trigger.Trigger {
 	return a.triggers
 }
 
+// AddKeepAlive will add a keepalive to the agent.
+func (a *worker) AddKeepAlive(id string, ka keepalive.KeepAlive) {
+	a.m.Lock()
+	defer a.m.Unlock()
+	a.keepalives[id] = ka
+}
+
+// GetKeepAlives will return the configured keepalive checks.
+func (a *worker) GetKeepAlives() map[string]keepalive.KeepAlive {
+	// disabled; AddTrigger is only done during initialization...
+	// a.m.Lock()
+	// defer a.m.Unlock()
+	return a.keepalives
+}
+
 // Start will start the agent.
 func (a *worker) Start() {
 	glog.Info("Starting agent...")
 	a.UpdateSchedule()
+	a.InitDelay()
 	go a.StartWatch()
 	go a.StartScale()
 	go a.StartTrigger()

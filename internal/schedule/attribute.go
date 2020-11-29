@@ -44,3 +44,15 @@ func (s *Schedule) GetTriggers() []string {
 	}
 	return trgs
 }
+
+// GetKeepAlives will return the reference codes of the triggers that should be
+// triggered.
+func (s *Schedule) GetKeepAlives() []string {
+	kas := []string{}
+	for _, ka := range strings.Split(s.settings["keepalive"], ",") {
+		if ka != "" {
+			kas = append(kas, strings.ToLower(ka))
+		}
+	}
+	return kas
+}

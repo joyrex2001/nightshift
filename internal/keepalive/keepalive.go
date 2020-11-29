@@ -9,14 +9,13 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/joyrex2001/nightshift/internal/scanner"
 )
 
 // KeepAlive defines the public interface.
 type KeepAlive interface {
 	SetConfig(Config)
 	GetConfig() Config
-	Execute([]*scanner.Object) error
+	Execute() error
 }
 
 // Config is the configuration for this keepalive, and contains a hashmap with
@@ -47,7 +46,7 @@ func (s *WebhookKeepAlive) GetConfig() Config {
 }
 
 // Execute will trigger the webhook.
-func (s *WebhookKeepAlive) Execute(objs []*scanner.Object) error {
+func (s *WebhookKeepAlive) Execute() error {
 	cli, err := s.newClient()
 	if err != nil {
 		return err

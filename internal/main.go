@@ -9,6 +9,7 @@ import (
 
 	"github.com/joyrex2001/nightshift/internal/agent"
 	"github.com/joyrex2001/nightshift/internal/config"
+	"github.com/joyrex2001/nightshift/internal/keepalive"
 	"github.com/joyrex2001/nightshift/internal/scanner"
 	"github.com/joyrex2001/nightshift/internal/schedule"
 	"github.com/joyrex2001/nightshift/internal/trigger"
@@ -38,6 +39,7 @@ func startAgent() {
 	if cfg := loadConfig(); cfg != nil {
 		addScanners(agt, cfg)
 		addTriggers(agt, cfg)
+		addKeepAlives(agt, cfg)
 	}
 	interval := viper.GetDuration("generic.interval")
 	agt.SetResyncInterval(interval)
@@ -117,6 +119,19 @@ func addTriggers(agent agent.Agent, cfg *config.Config) {
 		} else {
 			trgr.SetConfig(trigger.Config{Id: def.Id, Type: def.Type, Settings: def.Config})
 			agent.AddTrigger(def.Id, trgr)
+		}
+	}
+}
+
+// addKeepAlives will add configured keepalives to the provided agent.
+func addKeepAlives(agent agent.Agent, cfg *config.Config) {
+	for _, def := range cfg.KeepAlive {
+		ka, err := keepalive.New()
+		if err != nil {
+			glog.Errorf("Error adding keepalive: %s", err)
+		} else {
+			ka.SetConfig(keepalive.Config{Id: def.Id, Settings: def.Config})
+			agent.AddKeepAlive(def.Id, ka)
 		}
 	}
 }

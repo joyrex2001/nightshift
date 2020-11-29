@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/joyrex2001/nightshift/internal/config"
+	"github.com/joyrex2001/nightshift/internal/keepalive"
 	"github.com/joyrex2001/nightshift/internal/scanner"
 	"github.com/joyrex2001/nightshift/internal/trigger"
 )
@@ -17,12 +18,14 @@ type scinfo struct {
 
 type mockAgent struct {
 	trgrs []string
+	kas   []string
 	scnrs []scinfo
 }
 
 func NewMockAgent() *mockAgent {
 	return &mockAgent{
 		trgrs: []string{},
+		kas:   []string{},
 		scnrs: []scinfo{},
 	}
 }
@@ -41,6 +44,10 @@ func (a *mockAgent) AddTrigger(id string, trgr trigger.Trigger) {
 	a.trgrs = append(a.trgrs, id)
 }
 
+func (a *mockAgent) AddKeepAlive(id string, trgr keepalive.KeepAlive) {
+	a.kas = append(a.kas, id)
+}
+
 func (a *mockAgent) GetObjects() map[string]*scanner.Object {
 	objs := map[string]*scanner.Object{}
 	return objs
@@ -53,6 +60,11 @@ func (a *mockAgent) GetScanners() []scanner.Scanner {
 
 func (a *mockAgent) GetTriggers() map[string]trigger.Trigger {
 	res := map[string]trigger.Trigger{}
+	return res
+}
+
+func (a *mockAgent) GetKeepAlives() map[string]keepalive.KeepAlive {
+	res := map[string]keepalive.KeepAlive{}
 	return res
 }
 
@@ -129,6 +141,39 @@ func TestAddTriggers(t *testing.T) {
 		addTriggers(agt, tst.in)
 		if !reflect.DeepEqual(agt.trgrs, tst.out) {
 			t.Errorf("failed %d - expected %v, got %v", i, tst.out, agt.trgrs)
+		}
+	}
+}
+
+func TestAddKeepAlives(t *testing.T) {
+	tests := []struct {
+		in  *config.Config
+		out []string
+	}{
+		{
+			in:  &config.Config{},
+			out: []string{},
+		},
+		{
+			in: &config.Config{
+				KeepAlive: []*config.KeepAlive{
+					{
+						Id: "busycheck",
+					},
+					{
+						Id: "dummy",
+					},
+				},
+			},
+			out: []string{"busycheck", "dummy"},
+		},
+	}
+
+	for i, tst := range tests {
+		agt := NewMockAgent()
+		addKeepAlives(agt, tst.in)
+		if !reflect.DeepEqual(agt.kas, tst.out) {
+			t.Errorf("failed %d - expected %v, got %v", i, tst.out, agt.kas)
 		}
 	}
 }
