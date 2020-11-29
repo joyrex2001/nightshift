@@ -12,7 +12,7 @@ RUN npm install && npm run build
 ## Build nighshift ## ---------------------------------------------------------
 #####################
 
-FROM docker.io/golang:1.13 AS nightshift
+FROM docker.io/golang:1.15 AS nightshift
 
 ARG CODE=github.com/joyrex2001/nightshift
 
