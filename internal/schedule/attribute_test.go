@@ -51,6 +51,34 @@ func TestGetReplicas(t *testing.T) {
 	}
 }
 
+func TestHasReplicas(t *testing.T) {
+	tests := []struct {
+		res   bool
+		sched *Schedule
+	}{
+		{
+			res: true,
+			sched: &Schedule{
+				settings: map[string]string{
+					"replicas": "1",
+				},
+			},
+		},
+		{
+			res: false,
+			sched: &Schedule{
+				settings: map[string]string{},
+			},
+		},
+	}
+	for i, tst := range tests {
+		r := tst.sched.HasReplicas()
+		if r != tst.res {
+			t.Errorf("failed test %d; expected %t , got %t", i, tst.res, r)
+		}
+	}
+}
+
 func TestGetState(t *testing.T) {
 	tests := []struct {
 		state State

@@ -16,6 +16,13 @@ func (s *Schedule) GetReplicas() (int, error) {
 	return strconv.Atoi(r)
 }
 
+// HasReplicas checks if the given schedule has a replicas settings that
+// should be applied.
+func (s *Schedule) HasReplicas() bool {
+	_, ok := s.settings["replicas"]
+	return ok
+}
+
 // GetState will return the state that should be applied according to the
 // schedule.
 func (s *Schedule) GetState() (State, error) {

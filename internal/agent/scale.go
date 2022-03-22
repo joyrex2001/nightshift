@@ -120,6 +120,11 @@ func (a *worker) scale(e *event) {
 		return
 	}
 	// regular scaling
+	if !e.sched.HasReplicas() {
+		// ignore scalling if no replicas are present, this is probably a
+		// schedule just containing triggers.
+		return
+	}
 	repl, err := e.sched.GetReplicas()
 	if err == nil {
 		err = e.obj.Scale(e.state, repl)
