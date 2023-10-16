@@ -4,7 +4,6 @@ jobs:
     docker:
       - image: cimg/go:1.21
 
-    working_directory: /go/src/github.com/joyrex2001/nightshift
     steps:
       - checkout
       - run: go vet ./...
