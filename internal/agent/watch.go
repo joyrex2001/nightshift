@@ -42,7 +42,7 @@ func (a *worker) UpdateSchedule() {
 	for _, scnr := range a.GetScanners() {
 		objs, err := scnr.GetObjects()
 		if err != nil {
-			glog.Errorf("Error scanning pods: %s", err)
+			glog.Errorf("Error scanning objects with %s: %s", scnr.GetConfig().Id, err)
 			metrics.Increase("resync_error")
 		}
 		glog.V(5).Infof("Scan result: %#v", objs)

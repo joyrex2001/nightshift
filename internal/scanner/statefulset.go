@@ -1,13 +1,14 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golang/glog"
-	v1beta "k8s.io/api/apps/v1beta1"
+	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
-	appsv1beta "k8s.io/client-go/kubernetes/typed/apps/v1beta1"
+	appsv1 "k8s.io/client-go/kubernetes/typed/apps/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -65,8 +66,8 @@ func (s *StatefulSetScanner) Scale(obj *Object, state *int, replicas int) error 
 	if state != nil {
 		ss.ObjectMeta = updateState(ss.ObjectMeta, *state)
 	}
-	apps, _ := appsv1beta.NewForConfig(s.kubernetes)
-	_, err = apps.StatefulSets(obj.Namespace).Update(ss)
+	apps, _ := appsv1.NewForConfig(s.kubernetes)
+	_, err = apps.StatefulSets(obj.Namespace).Update(context.Background(), ss, metav1.UpdateOptions{})
 	return err
 }
 
@@ -81,29 +82,29 @@ func (s *StatefulSetScanner) GetState(obj *Object) (int, error) {
 }
 
 // getStatefulSet will return the statefulset for given object.
-func (s *StatefulSetScanner) getStatefulSet(obj *Object) (*v1beta.StatefulSet, error) {
-	apps, err := appsv1beta.NewForConfig(s.kubernetes)
+func (s *StatefulSetScanner) getStatefulSet(obj *Object) (*v1.StatefulSet, error) {
+	apps, err := appsv1.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
 	}
-	return apps.StatefulSets(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+	return apps.StatefulSets(obj.Namespace).Get(context.Background(), obj.Name, metav1.GetOptions{})
 }
 
 // getStatefulSets will return all statefulsets in the namespace that
 // match the label selector.
-func (s *StatefulSetScanner) getStatefulSets() (*v1beta.StatefulSetList, error) {
-	apps, err := appsv1beta.NewForConfig(s.kubernetes)
+func (s *StatefulSetScanner) getStatefulSets() (*v1.StatefulSetList, error) {
+	apps, err := appsv1.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
 	}
-	return apps.StatefulSets(s.config.Namespace).List(metav1.ListOptions{
+	return apps.StatefulSets(s.config.Namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: s.config.Label,
 	})
 }
 
 // getObjects will itterate through the list of deployment configs and populate
 // a list of objects containing the schedule configuration (if any).
-func (s *StatefulSetScanner) getObjects(rcs *v1beta.StatefulSetList) ([]*Object, error) {
+func (s *StatefulSetScanner) getObjects(rcs *v1.StatefulSetList) ([]*Object, error) {
 	objs := []*Object{}
 	for _, rc := range rcs.Items {
 		obj, err := s.unmarshall(&rc)
@@ -125,18 +126,18 @@ func (s *StatefulSetScanner) Watch(_stop chan bool) (chan Event, error) {
 
 // getWatcher will return a watcher for DeploymentConfigs
 func (s *StatefulSetScanner) getWatcher() (watch.Interface, error) {
-	apps, err := appsv1beta.NewForConfig(s.kubernetes)
+	apps, err := appsv1.NewForConfig(s.kubernetes)
 	if err != nil {
 		return nil, err
 	}
-	return apps.StatefulSets(s.config.Namespace).Watch(metav1.ListOptions{
+	return apps.StatefulSets(s.config.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: s.config.Label,
 	})
 }
 
 // unmarshall will convert a statefulset object to a scanner.Object.
 func (s *StatefulSetScanner) unmarshall(kobj interface{}) (*Object, error) {
-	m, ok := kobj.(*v1beta.StatefulSet)
+	m, ok := kobj.(*v1.StatefulSet)
 	if !ok {
 		return nil, fmt.Errorf("can't unmarshall %v to Statefulset", m)
 	}

@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golang/glog"
@@ -62,7 +63,7 @@ func (s *DeploymentScanner) Scale(obj *Object, state *int, replicas int) error {
 	if err != nil {
 		return err
 	}
-	dp, err := apps.AppsV1().Deployments(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+	dp, err := apps.AppsV1().Deployments(obj.Namespace).Get(context.Background(), obj.Name, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("GetScale failed with: %s", err)
 	}
@@ -71,7 +72,7 @@ func (s *DeploymentScanner) Scale(obj *Object, state *int, replicas int) error {
 	if state != nil {
 		dp.ObjectMeta = updateState(dp.ObjectMeta, *state)
 	}
-	_, err = apps.AppsV1().Deployments(obj.Namespace).Update(dp)
+	_, err = apps.AppsV1().Deployments(obj.Namespace).Update(context.Background(), dp, metav1.UpdateOptions{})
 	return err
 }
 
@@ -91,7 +92,7 @@ func (s *DeploymentScanner) getDeployment(obj *Object) (*v1.Deployment, error) {
 	if err != nil {
 		return nil, err
 	}
-	return apps.AppsV1().Deployments(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+	return apps.AppsV1().Deployments(obj.Namespace).Get(context.Background(), obj.Name, metav1.GetOptions{})
 }
 
 // getDeployments will return all deploymentconfigs in the namespace that
@@ -101,7 +102,7 @@ func (s *DeploymentScanner) getDeployments() (*v1.DeploymentList, error) {
 	if err != nil {
 		return nil, err
 	}
-	return apps.AppsV1().Deployments(s.config.Namespace).List(metav1.ListOptions{
+	return apps.AppsV1().Deployments(s.config.Namespace).List(context.Background(), metav1.ListOptions{
 		LabelSelector: s.config.Label,
 	})
 }
@@ -134,7 +135,7 @@ func (s *DeploymentScanner) getWatcher() (watch.Interface, error) {
 	if err != nil {
 		return nil, err
 	}
-	return apps.AppsV1().Deployments(s.config.Namespace).Watch(metav1.ListOptions{
+	return apps.AppsV1().Deployments(s.config.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: s.config.Label,
 	})
 }
