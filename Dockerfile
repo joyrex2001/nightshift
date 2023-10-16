@@ -18,8 +18,9 @@ ARG CODE=github.com/joyrex2001/nightshift
 
 ADD . /go/src/${CODE}/
 COPY --from=frontend /app/dist /go/src/${CODE}/internal/webui/frontend/dist
-RUN go get -u github.com/jteeuwen/go-bindata/... \
- && cd /go/src/${CODE} \
+RUN cd /go/src/${CODE} \
+ && go get github.com/go-bindata/go-bindata/... \
+ && go install github.com/go-bindata/go-bindata/... \
  && go generate ./internal/... \
  && go test ./... \
  && CGO_ENABLED=0 go build -ldflags \
