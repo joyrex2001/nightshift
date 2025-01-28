@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/elazarl/go-bindata-assetfs v1.0.1
-	github.com/golang/glog v1.1.2
+	github.com/golang/glog v1.2.4
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kr/pretty v0.3.1
 	github.com/openshift/api v3.9.0+incompatible
@@ -33,7 +33,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
-	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.1 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
